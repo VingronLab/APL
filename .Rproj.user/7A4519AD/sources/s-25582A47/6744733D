@@ -1,0 +1,25 @@
+{
+    "id": "6744733D",
+    "path": "~/APL/R/CA.R",
+    "project_path": "R/CA.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1611594171323.0,
+    "source_on_save": false,
+    "relative_order": 2,
+    "properties": {
+        "cursorPosition": "177,0",
+        "scrollLine": "180",
+        "docOutlineVisible": "1"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1611672595,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1611672595670,
+    "read_only": false,
+    "read_only_alternatives": []
+}

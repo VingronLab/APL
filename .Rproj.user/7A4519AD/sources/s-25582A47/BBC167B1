@@ -1,0 +1,24 @@
+{
+    "id": "BBC167B1",
+    "path": "~/APL/R/plot.R",
+    "project_path": "R/plot.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1611594172574.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "cursorPosition": "100,23",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1611594073,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1611594073,
+    "read_only": false,
+    "read_only_alternatives": []
+}
