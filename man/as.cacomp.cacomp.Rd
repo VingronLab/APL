@@ -4,10 +4,14 @@
 \alias{as.cacomp.cacomp}
 \title{Convert to cacomp object}
 \usage{
-\method{as.cacomp}{cacomp}(obj)
+\method{as.cacomp}{cacomp}(obj, assay = NULL, recompute = NULL)
 }
 \arguments{
 \item{obj}{An object of class "cacomp".}
+
+\item{assay}{ignored}
+
+\item{recompute}{ignored}
 }
 \value{
 A cacomp object.

@@ -14,7 +14,8 @@
   top = NULL,
   inertia = TRUE,
   rm_zeros = TRUE,
-  return_input = FALSE
+  return_input = FALSE,
+  ...
 )
 }
 \arguments{

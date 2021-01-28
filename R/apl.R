@@ -356,7 +356,7 @@ runAPL <- function(obj, assay, caobj = NULL, dims = NULL, group, nrow = 10, top 
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @export
-runAPL.default <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE){
+runAPL.default <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
   stop(paste0("runAPL does not know how to handle objects of class ",
               class(x),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -391,7 +391,7 @@ runAPL.default <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @export
-runAPL.matrix <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE){
+runAPL.matrix <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
 
   if (!is(obj, "matrix")){
     obj <- as.matrix(obj)
@@ -496,13 +496,13 @@ runAPL.matrix <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top 
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @export
-runAPL.SingleCellExperiment <- function(obj, group, assay = "counts", caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE){
+runAPL.SingleCellExperiment <- function(obj, group, assay = "counts", caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
   mat <- SingleCellExperiment::assay(obj, assay)
 
-  if ("CA" %in% reducedDimNames(obj)){
+  if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
     caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
   }
 
@@ -550,13 +550,13 @@ runAPL.SingleCellExperiment <- function(obj, group, assay = "counts", caobj = NU
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @export
-runAPL.Seurat <- function(obj, group, caobj = NULL, assay = DefaultAssay(obj), dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE){
+runAPL.Seurat <- function(obj, group, caobj = NULL, assay = DefaultAssay(obj), dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
   seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
 
-  if ("CA" %in% Reductions(obj)){
+  if ("CA" %in% Seurat::Reductions(obj)){
     caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
   }
 
