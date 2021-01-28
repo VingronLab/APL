@@ -17,7 +17,8 @@
   reps = 3,
   python = TRUE,
   row_labs = TRUE,
-  col_labs = TRUE
+  col_labs = TRUE,
+  ...
 )
 }
 \arguments{

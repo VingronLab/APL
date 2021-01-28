@@ -103,7 +103,7 @@ var_rows <- function(mat, top = 5000){
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
 #' @export
-cacomp <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE) UseMethod("cacomp")
+cacomp <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE, ...) UseMethod("cacomp")
 
 ##' Correspondance Analysis
 #'
@@ -137,7 +137,7 @@ cacomp <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
 #' @export
-cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE){
+cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE, ...){
   stop(paste0("cacomp does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -176,7 +176,7 @@ cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, di
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
 #' @export
-cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE){
+cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
 
   # chkDots(...)
 
@@ -329,7 +329,7 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
 #' @param return_input Logical. If TRUE returns the input (Seurat object) with the CA saved in the DimReduc slot "CA". Otherwise returns a "cacomp". Default FALSE.
 #' @export
-cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, return_input = FALSE){
+cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, return_input = FALSE, ...){
 
   stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -408,7 +408,7 @@ cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coo
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
 #' @param return_input Logical. If TRUE returns the input (SingleCellExperiment object) with the CA saved in the reducedDim slot "CA". Otherwise returns a "cacomp". Default FALSE.
 #' @export
-cacomp.SingleCellExperiment <- function(obj, assay = "counts", coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, return_input = FALSE){
+cacomp.SingleCellExperiment <- function(obj, assay = "counts", coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, return_input = FALSE, ...){
 
   stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
   stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
@@ -659,7 +659,7 @@ scree_plot <- function(df){
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
-pick_dims <- function(obj, assay, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE) UseMethod("pick_dims")
+pick_dims <- function(obj, assay, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...) UseMethod("pick_dims")
 
 
 #' Compute statistics to help choose the number of dimensions
@@ -690,7 +690,7 @@ pick_dims <- function(obj, assay, mat = NULL, method="scree_plot", reps=2, pytho
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
-pick_dims.default <- function(obj, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE){
+pick_dims.default <- function(obj, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
   stop(paste0("pick_dims does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'cacomp', 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -725,7 +725,7 @@ pick_dims.default <- function(obj, mat = NULL, method="scree_plot", reps=2, pyth
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
-pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE){
+pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
 
   if (!is(obj,"cacomp")){
     stop("Not a CA object. Please run cacomp() first!")
@@ -802,7 +802,7 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=2, pytho
 
         colnm <- paste0("perm",k)
         screeplot <- screeplot +
-          geom_line(data = df, aes(x=dims, y=.data[[colnm]]), color="black", alpha=0.8, linetype=2)
+          ggplot2::geom_line(data = df, aes(x=dims, y=.data[[colnm]]), color="black", alpha=0.8, linetype=2)
 
       }
     }
@@ -859,7 +859,7 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=2, pytho
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
-pick_dims.Seurat <- function(obj, assay, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE){
+pick_dims.Seurat <- function(obj, assay, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -911,7 +911,7 @@ pick_dims.Seurat <- function(obj, assay, method="scree_plot", reps=2, python = T
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
-pick_dims.SingleCellExperiment <- function(obj, assay, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE){
+pick_dims.SingleCellExperiment <- function(obj, assay, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 

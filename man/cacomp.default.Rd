@@ -12,7 +12,8 @@
   dims = min(nrow(S), ncol(S)),
   top = nrow(obj),
   inertia = TRUE,
-  rm_zeros = TRUE
+  rm_zeros = TRUE,
+  ...
 )
 }
 \arguments{

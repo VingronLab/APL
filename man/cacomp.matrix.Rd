@@ -12,7 +12,8 @@
   dims = NULL,
   top = NULL,
   inertia = TRUE,
-  rm_zeros = TRUE
+  rm_zeros = TRUE,
+  ...
 )
 }
 \arguments{

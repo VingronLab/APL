@@ -179,4 +179,5 @@ A biplot of the data can be generated similarly to the 3D plot by running:
 - S3 Constructor function! https://adv-r.hadley.nz/s3.html#s3-constructor
 - document datasets
 - Different (?) Documentation for S3 methods.
+- Implement print.cacomp() method for nicer printing of cacomp objects.
 

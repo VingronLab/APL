@@ -80,8 +80,10 @@ as.cacomp.default <- function(obj, assay, recompute = TRUE){
 #' A cacomp object.
 #'
 #' @param obj An object of class "cacomp".
+#' @param assay ignored
+#' @param recompute ignored
 #' @export
-as.cacomp.cacomp <- function(obj){
+as.cacomp.cacomp <- function(obj, assay = NULL, recompute = NULL){
   stopifnot(is(obj, "cacomp"))
   return(obj)
 }

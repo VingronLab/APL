@@ -11,7 +11,8 @@ pick_dims(
   method = "scree_plot",
   reps = 2,
   python = TRUE,
-  return_plot = FALSE
+  return_plot = FALSE,
+  ...
 )
 }
 \arguments{
