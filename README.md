@@ -18,6 +18,18 @@ The package is then installed as follows:
     install_github("ClemensKohl/APL")
 
 Additionally, python with the libraries torch and numpy have to be installed if you want to use the pytorch SVD implementation.
+One way to do this is with the R package reticulate:
+
+    # TODO: DOES NOT WORK CURRENTLY DO NOT RUN! 
+    # cant import/find pytorch for some reason after install.
+    
+    library(reticulate)
+    install_miniconda() # Installs Miniconda
+    conda_create("APLpy") # Creates a new environment
+    conda_install("APLpy", c("numpy", "pytorch")) # Installs numpy and pytorch to the newly created env.
+
+    # Call before running the code below
+    use_condaenv("APLpy")
 
 ## Feature overview
 
