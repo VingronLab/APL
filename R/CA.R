@@ -7,6 +7,7 @@
 # library(plotly)
 # reticulate::use_python("/usr/bin/python3", required = TRUE)
 
+reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
 
 #' Compute Standard Residuals
 #'
@@ -103,9 +104,9 @@ var_rows <- function(mat, top = 5000){
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
 #' @export
-cacomp <- function(obj, assay, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE, return_input = FALSE,...) UseMethod("cacomp")
+cacomp <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE) UseMethod("cacomp")
 
-#' Correspondance Analysis
+##' Correspondance Analysis
 #'
 #' @description
 #' `cacomp` performs correspondence analysis on a matrix and returns the transformed data.
@@ -125,7 +126,8 @@ cacomp <- function(obj, assay, coords=TRUE, princ_coords = 1, python = TRUE, dim
 #' @references
 #' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
 
-#' @param obj Any object.
+#' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' Should contain row and column names.
 #' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
@@ -136,7 +138,7 @@ cacomp <- function(obj, assay, coords=TRUE, princ_coords = 1, python = TRUE, dim
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
 #' @export
-cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = nrow(mat), inertia = TRUE, rm_zeros = TRUE, ...){
+cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE){
   stop(paste0("cacomp does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -175,9 +177,9 @@ cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, di
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
 #' @export
-cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
+cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE){
 
-  chkDots(...)
+  # chkDots(...)
 
   stopifnot("Input matrix does not have any rownames!" = !is.null(rownames(obj)))
   stopifnot("Input matrix does not have any colnames!" = !is.null(colnames(obj)))
@@ -226,8 +228,8 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
   message("Running singular value decomposition ...")
 
   if (python == TRUE){
-    require(reticulate)
-    source_python('./python_svd.py')
+    # require(reticulate)
+    # source_python('./python_svd.py')
     SVD <- svd_torch(S)
     names(SVD) <- c("U", "D", "V")
     SVD$D <- as.vector(SVD$D)
@@ -334,7 +336,7 @@ cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coo
   stopifnot("Set coords = TRUE when inputting a Seurat object and return_input = TRUE." = coords == TRUE)
 
 
-  seu <- GetAssayData(object = obj, assay = assay, slot = "data")
+  seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
   seu <- as.matrix(seu)
 
   caobj <- cacomp(obj = seu,
@@ -350,7 +352,7 @@ cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coo
     colnames(caobj$V) <- paste0("DIM_", seq(ncol(caobj$V)))
     colnames(caobj$U) <- paste0("DIM_", seq(ncol(caobj$U)))
 
-    obj[["CA"]] <- CreateDimReducObject(embeddings = caobj$std_coords_cols,
+    obj[["CA"]] <- Seurat::CreateDimReducObject(embeddings = caobj$std_coords_cols,
                                                loadings = caobj$prin_coords_rows,
                                                stdev = caobj$D,
                                                key = "DIM_",
@@ -411,7 +413,7 @@ cacomp.SingleCellExperiment <- function(obj, assay = "counts", coords=TRUE, prin
   stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
   stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
 
-  mat <- assay(obj, assay)
+  mat <- SingleCellExperiment::assay(obj, assay)
   mat <- as.matrix(mat)
 
   top <- min(nrow(mat), top)
@@ -435,7 +437,7 @@ cacomp.SingleCellExperiment <- function(obj, assay = "counts", coords=TRUE, prin
     attr(ca, "singval") <- caobj$D
     attr(ca, "percInertia") <- percentInertia
 
-    reducedDim(obj, "CA") <- ca
+    SingleCellExperiment::reducedDim(obj, "CA") <- ca
 
     return(obj)
 
@@ -518,6 +520,7 @@ subset_dims <- function(caobj, dims){
 #' Or, in other words, whether the standard coordinates are already calculated and stored in `caobj`. Default `FALSE`.
 #' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
 #' Default 3.
+#' @export
 ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
 
   stopifnot(is(caobj, "cacomp"))
@@ -606,15 +609,15 @@ scree_plot <- function(df){
   avg_inertia <- 100/nrow(df)
   max_num_dims <- nrow(df)
 
-  screeplot <- ggplot(df, aes(x=dims, y=inertia)) +
-    geom_col(fill="#4169E1") +
+  screeplot <- ggplot2::ggplot(df, ggplot2::aes(x=dims, y=inertia)) +
+    ggplot2::geom_col(fill="#4169E1") +
     # geom_point(color="#B22222")+
-    geom_line(color="#B22222", size=1) +
-    geom_abline(slope = 0, intercept = avg_inertia, linetype=3, alpha=0.8, color ="#606060")+
-    labs(title = "Scree plot of explained inertia per dimensions and the average inertia",
+    ggplot2::geom_line(color="#B22222", size=1) +
+    ggplot2::geom_abline(slope = 0, intercept = avg_inertia, linetype=3, alpha=0.8, color ="#606060")+
+    ggplot2::labs(title = "Scree plot of explained inertia per dimensions and the average inertia",
          y="Explained inertia [%]",
          x="Dimension") +
-    annotate(
+    ggplot2::annotate(
       "text",
       x = max_num_dims*0.9,
       y = avg_inertia,
@@ -623,7 +626,7 @@ scree_plot <- function(df){
     #                      breaks = c("#B22222"),
     #                      labels = c("Data"),
     #                      guide = "legend")+
-    theme_bw()
+    ggplot2::theme_bw()
   return(screeplot)
 }
 
@@ -861,13 +864,13 @@ pick_dims.Seurat <- function(obj, assay, method="scree_plot", reps=2, python = T
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
   if (method == "elbow_rule") {
-    seu <- GetAssayData(object = obj, assay = assay, slot = "data")
+    seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
     seu <- as.matrix(seu)
   } else {
     seu <- NULL
   }
 
-  if ("CA" %in% Reductions(obj)){
+  if ("CA" %in% Seurat::Reductions(obj)){
     caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(seurat_obj, top, coords = FALSE, return_input=TRUE) first.")
@@ -913,12 +916,12 @@ pick_dims.SingleCellExperiment <- function(obj, assay, method="scree_plot", reps
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
   if (method == "elbow_rule") {
-    mat <- assay(obj, assay)
+    mat <- SingleCellExperiment::assay(obj, assay)
   } else {
     mat <- NULL
   }
 
-  if ("CA" %in% reducedDimNames(obj)){
+  if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
     caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(sce, top, coords = FALSE, return_input=TRUE) first.")

@@ -9,15 +9,15 @@
   coords = TRUE,
   princ_coords = 1,
   python = TRUE,
-  dims = NULL,
-  top = nrow(mat),
+  dims = min(nrow(S), ncol(S)),
+  top = nrow(obj),
   inertia = TRUE,
-  rm_zeros = TRUE,
-  ...
+  rm_zeros = TRUE
 )
 }
 \arguments{
-\item{obj}{Any object.}
+\item{obj}{A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+Should contain row and column names.}
 
 \item{coords}{Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE}
 

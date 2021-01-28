@@ -27,7 +27,7 @@
 
 \item{row_labels}{Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.}
 
-\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames). 
+\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
 Default seq(ncol(obj$std_coords_cols)) (all columns).}
 }
 \value{

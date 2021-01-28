@@ -6,16 +6,13 @@
 \usage{
 cacomp(
   obj,
-  assay,
   coords = TRUE,
   princ_coords = 1,
   python = TRUE,
   dims = min(nrow(S), ncol(S)),
   top = nrow(obj),
   inertia = TRUE,
-  rm_zeros = TRUE,
-  return_input = FALSE,
-  ...
+  rm_zeros = TRUE
 )
 }
 \arguments{
