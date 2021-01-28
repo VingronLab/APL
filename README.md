@@ -23,12 +23,7 @@ Here we demonstrate the basic functionality on a count matrix which consists of 
     
     set.seed(1234)
     
-    # Dont run currently no data included!
-    # datmat <- read_tsv("./example_data/input_matrix_DEMO.txt")
-    # gene_nms <- datmat$Description
-    # datmat <- as.matrix(datmat[,-1])
-    # rownames(datmat) <- gene_nms
-    
+    # GTEx dataset included in package.
     datmat[1:5,1:5]
     
     # Filter out genes without reads
@@ -171,4 +166,6 @@ A biplot of the data can be generated similarly to the 3D plot by running:
 ## TODO
 
 - S3 Constructor function! https://adv-r.hadley.nz/s3.html#s3-constructor
+- document datasets
+- Different (?) Documentation for S3 methods.
 
