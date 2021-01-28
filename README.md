@@ -5,8 +5,19 @@
 
 ## Installation
 
+As of now all Bioconductor dependencies ("SingleCellExperiment") have to be installed manually:
+
+    if (!requireNamespace("BiocManager", quietly = TRUE))
+        install.packages("BiocManager")
+    
+    BiocManager::install("SingleCellExperiment")
+
+The package is then installed as follows:
+
     library(devtools)
     install_github("ClemensKohl/APL")
+
+Additionally, python with the libraries torch and numpy have to be installed if you want to use the pytorch SVD implementation.
 
 ## Feature overview
 
