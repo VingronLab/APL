@@ -170,7 +170,5 @@ A biplot of the data can be generated similarly to the 3D plot by running:
 
 ## TODO
 
-- S3 Constructor function !! https://adv-r.hadley.nz/s3.html#s3-constructor
-- Change scRNAseq to SingleCellExperiment library
-- Fix extra axis 3D plot
-- Change colors ggplots
+- S3 Constructor function! https://adv-r.hadley.nz/s3.html#s3-constructor
+
