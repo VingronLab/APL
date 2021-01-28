@@ -7,7 +7,6 @@
 # library(plotly)
 # reticulate::use_python("/usr/bin/python3", required = TRUE)
 
-reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
 
 #' Compute Standard Residuals
 #'
@@ -230,6 +229,7 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
   if (python == TRUE){
     # require(reticulate)
     # source_python('./python_svd.py')
+    reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
     SVD <- svd_torch(S)
     names(SVD) <- c("U", "D", "V")
     SVD$D <- as.vector(SVD$D)
