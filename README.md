@@ -5,8 +5,8 @@
 
 ## Installation
 
-library(devtools)
-install_github("CKohli/APL")
+    library(devtools)
+    install_github("ClemensKohl/APL")
 
 ## Feature overview
 
