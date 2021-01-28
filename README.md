@@ -2,9 +2,11 @@
 
 # APL
 
+
 ## Installation
 
-Put here the installation instructions.
+library(devtools)
+install_github("CKohli/APL")
 
 ## Feature overview
 
@@ -22,10 +24,12 @@ Here we demonstrate the basic functionality on a count matrix which consists of 
     set.seed(1234)
     
     # Dont run currently no data included!
-    datmat <- read_tsv("./example_data/input_matrix_DEMO.txt")
-    gene_nms <- datmat$Description
-    datmat <- as.matrix(datmat[,-1])
-    rownames(datmat) <- gene_nms
+    # datmat <- read_tsv("./example_data/input_matrix_DEMO.txt")
+    # gene_nms <- datmat$Description
+    # datmat <- as.matrix(datmat[,-1])
+    # rownames(datmat) <- gene_nms
+    
+    datmat[1:5,1:5]
     
     # Filter out genes without reads
     datmat <- datmat[rowSums(datmat) > 0,]
@@ -34,7 +38,7 @@ Here we demonstrate the basic functionality on a count matrix which consists of 
 To run Correspondence Analysis we can use the `cacomp()` function. By default it will also calculate the standard coordinates of the rows (genes) and columns (samples/cells), as well as the principal coordinates of the rows. This will be of use later for plotting, but can be turned off if undesired. Here we additionally only keep the 5000 most variable genes as determined by the  variance of the chisquare components matrix in order to filter out genes that do not vary over the samples (here tissues). Currently there are two functions available to perform singular value decomposition: the base R `svd` function and SVD as implemented in pytorch in python. The latter significantly speeds up the computation and it is therefore highly recommended to use it whenever possible (`python = TRUE`), however a working python installation with numpy and torch installed is required.
 
     # Change the path to your python installation
-    use_python("/usr/bin/python3", required = TRUE)
+    reticulate::use_python("/usr/bin/python3", required = TRUE)
     
     ca <- cacomp(obj = datmat,
                  top = 5000,
@@ -163,3 +167,10 @@ A biplot of the data can be generated similarly to the 3D plot by running:
             score = TRUE,
             reps = 3,
             nrow = 10)
+
+## TODO
+
+- S3 Constructor function !! https://adv-r.hadley.nz/s3.html#s3-constructor
+- Change scRNAseq to SingleCellExperiment library
+- Fix extra axis 3D plot
+- Change colors ggplots

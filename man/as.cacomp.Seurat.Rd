@@ -2,10 +2,8 @@
 % Please edit documentation in R/convert.R
 \name{as.cacomp.Seurat}
 \alias{as.cacomp.Seurat}
-\title{Convert to cacomp object}
+\title{Create cacomp object from Seurat container}
 \usage{
-\method{as.cacomp}{Seurat}(obj, assay = NULL, recompute = TRUE)
-
 \method{as.cacomp}{Seurat}(obj, assay = NULL, recompute = TRUE)
 }
 \arguments{
@@ -17,12 +15,8 @@
 }
 \value{
 A cacomp object.
-
-A cacomp object.
 }
 \description{
-If an object already is of class cacomp, the function simply returns the input.
-
 Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
 If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD.
 }

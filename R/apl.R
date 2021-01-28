@@ -19,6 +19,7 @@
 #' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
 #' @param calc_rows TRUE/FALSE. Whether apl row coordinates should be calculated. Default TRUE.
 #' @param calc_cols TRUE/FALSE. Whether apl column coordinates should be calculated. Default TRUE.
+#' @export
 apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
   stopifnot(is(caobj, "cacomp"))
@@ -96,6 +97,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' @param quant Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @export
 apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = TRUE){
 
   if (!is(caobj,"cacomp")){
@@ -173,6 +175,7 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
 #' @param cols_idx numeric vector. Indices of the columns that should be labelled. Default is only to label columns making up the centroid: caobj$group.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+#' @export
 apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_idx = 1:nrow(caobj$apl_rows), cols_idx = caobj$group, row_labs = TRUE, col_labs = TRUE){
 
   if (!is(caobj,"cacomp")){
@@ -210,27 +213,27 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
   if (type == "ggplot"){
 
 
-    p <- ggplot() +
-      geom_point(data=apl_cols.tmp, aes(x=x, y=y), color = "#990000", shape = 4) +
-      geom_point(data=apl_cols.tmp[caobj$group,], aes(x=x, y=y), color = "#990000", shape = 1)+
-      geom_point(data=apl_rows.tmp, aes(x=x, y=y), color = "#0066FF", alpha = 0.5, shape = 1) +
-      labs(title="Association Plot") +
-      theme_bw()
+    p <- ggplot2::ggplot() +
+      ggplot2::geom_point(data=apl_cols.tmp, ggplot2::aes(x=x, y=y), color = "#990000", shape = 4) +
+      ggplot2::geom_point(data=apl_cols.tmp[caobj$group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 1)+
+      ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.5, shape = 1) +
+      ggplot2::labs(title="Association Plot") +
+      ggplot2::theme_bw()
 
     if(collabels == TRUE){
       p <- p +
-        geom_text_repel(data=group_cols, aes(x=x, y=y, label=rownms), color = "#990000")}
+        ggrepel::geom_text_repel(data=group_cols, ggplot2::aes(x=x, y=y, label=rownms), color = "#990000")}
     if (rowlabels == TRUE){
       p <- p +
-        geom_point(data=group_rows, aes(x=x, y=y), color="#0066FF", shape = 16) +
-        geom_text_repel(data = group_rows, aes(x=x, y=y, label=rownms), color = "#0066FF")}
+        ggplot2::geom_point(data=group_rows, ggplot2::aes(x=x, y=y), color="#FF0000", shape = 16) +
+        ggrepel::geom_text_repel(data = group_rows, ggplot2::aes(x=x, y=y, label=rownms), color = "#FF0000")}
     rm(apl_rows.tmp, apl_cols.tmp)
 
     return(p)
 
   } else if (type == "plotly"){
-    p <- plot_ly() %>%
-      add_trace(data=apl_cols.tmp,
+    p <- plotly::plot_ly() %>%
+      plotly::add_trace(data=apl_cols.tmp,
                 x = ~x,
                 y =  ~y,
                 mode = 'markers',
@@ -242,7 +245,7 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
                 name = 'samples',
                 hoverinfo = 'text',
                 type = 'scatter') %>%
-      add_trace(data = apl_rows.tmp,
+      plotly::add_trace(data = apl_rows.tmp,
                 x = ~x,
                 y = ~y,
                 mode = 'markers',
@@ -255,7 +258,7 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
                 name = 'genes',
                 hoverinfo = 'text',
                 type = 'scatter') %>%
-      add_trace(data = group_rows,
+      plotly::add_trace(data = group_rows,
                 x = ~x,
                 y = ~y,
                 mode = rlabs,
@@ -268,7 +271,7 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
                 name = 'marked genes',
                 hoverinfo = 'text',
                 type = 'scatter') %>%
-      add_trace(data = group_cols,
+      plotly::add_trace(data = group_cols,
                 x = ~x,
                 y = ~y,
                 mode = clabs,
@@ -281,7 +284,7 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
                 name = 'marked samples',
                 hoverinfo = 'text',
                 type = 'scatter') %>%
-      layout(title = paste('Association Plot \n', ncol(caobj$U), ' first dimensions, ', length(caobj$group),' samples.\n'),
+      plotly::layout(title = paste('Association Plot \n', ncol(caobj$U), ' first dimensions, ', length(caobj$group),' samples.\n'),
              xaxis = list(title = 'Distance from origin (x)', rangemode = "tozero"),
              yaxis = list(title = 'Distance from gene to sample line (y)', rangemode = "tozero"),showlegend = TRUE)
 
@@ -497,7 +500,7 @@ runAPL.SingleCellExperiment <- function(obj, group, assay = "counts", caobj = NU
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
-  mat <- assay(obj, assay)
+  mat <- SingleCellExperiment::assay(obj, assay)
 
   if ("CA" %in% reducedDimNames(obj)){
     caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
@@ -551,7 +554,7 @@ runAPL.Seurat <- function(obj, group, caobj = NULL, assay = DefaultAssay(obj), d
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
-  seu <- GetAssayData(object = obj, assay = assay, slot = "data")
+  seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
 
   if ("CA" %in% Reductions(obj)){
     caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)

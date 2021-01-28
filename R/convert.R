@@ -1,7 +1,4 @@
 
-library(Seurat)
-library(scRNAseq)
-
 #' Recompute missing values of cacomp object.
 #'
 #' @description
@@ -84,7 +81,7 @@ as.cacomp.default <- function(obj, assay, recompute = TRUE){
 #'
 #' @param obj An object of class "cacomp".
 #' @export
-as.cacomp.Seurat <- function(obj){
+as.cacomp.cacomp <- function(obj){
   stopifnot(is(obj, "cacomp"))
   return(obj)
 }
@@ -109,9 +106,9 @@ as.cacomp.Seurat <- function(obj, assay=NULL, recompute = TRUE){
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
   stopifnot("obj doesn't contain a DimReduc object named 'CA'. Try running cacomp()." = "CA" %in% Reductions(pbmc_small))
 
-  ca_obj <- list("std_coords_cols" = Embeddings(obj, reduction = "CA"),
-                 "D" = Stdev(obj, reduction = "CA"),
-                 "prin_coords_rows" = Loadings(obj, reduction = "CA"))
+  ca_obj <- list("std_coords_cols" = Seurat::Embeddings(obj, reduction = "CA"),
+                 "D" = Seurat::Stdev(obj, reduction = "CA"),
+                 "prin_coords_rows" = Seurat::Loadings(obj, reduction = "CA"))
   ca_obj$top_rows <- nrow(ca_obj$prin_coords_rows)
   ca_obj$dims <- length(ca_obj$D)
 
@@ -120,7 +117,7 @@ as.cacomp.Seurat <- function(obj, assay=NULL, recompute = TRUE){
   if (recompute == TRUE){
     stopifnot("Assay is needed to recompute cacomp." = !is.null(assay))
 
-    seu <- GetAssayData(object = obj, assay = assay, slot = "data")
+    seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
     seu <- as.matrix(seu)
     # res <-  comp_std_residuals(mat=seu)
 
@@ -167,9 +164,10 @@ as.cacomp.Seurat <- function(obj, assay=NULL, recompute = TRUE){
 #' @param obj An object of class "SingleCellExperiment" with a LinearEmbeddingMatrix object in the reducedDim(sce, "CA") slot.
 #' @param assay The name of the assay to use, e.g. "RNA".
 #' @param recompute Should all values be recomputed (std_coords_rows, U and V as well as row and column masses)? Default TRUE.
+#' @export
 as.cacomp.SingleCellExperiment <- function(obj, assay = NULL, recompute = TRUE){
 
-  sce_ca <- reducedDim(sce, "CA")
+  sce_ca <- SingleCellExperiment::reducedDim(sce, "CA")
   stopifnot("Attribute singval of dimensional reduction slot CA is empty.\nThis can happen after subsetting the sce obj." = !is.null(attr(sce_ca, "singval")))
   stopifnot("Attribute prin_coords_rows of dimensional reduction slot CA is empty.\nThis can happen after subsetting the sce obj." = !is.null(attr(sce_ca, "prin_coords_rows")))
 
@@ -190,7 +188,7 @@ as.cacomp.SingleCellExperiment <- function(obj, assay = NULL, recompute = TRUE){
   if (recompute == TRUE){
 
     stopifnot("Assay is needed to recompute cacomp." = !is.null(assay))
-    scemat <- assay(sce, assay)
+    scemat <- SingleCellExperiment::assay(sce, assay)
     scemat
     # res <-  comp_std_residuals(mat=scemat)
 

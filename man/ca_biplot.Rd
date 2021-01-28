@@ -25,7 +25,7 @@ ca_biplot(
 
 \item{row_labels}{Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.}
 
-\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames). 
+\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
 Default seq(ncol(obj$std_coords_cols)) (all columns).}
 
 \item{type}{String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".}
