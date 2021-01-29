@@ -2,6 +2,10 @@
 % Please edit documentation in R/plot.R
 \name{ca_biplot}
 \alias{ca_biplot}
+\alias{ca_biplot.default}
+\alias{ca_biplot.cacomp}
+\alias{ca_biplot.Seurat}
+\alias{ca_biplot.SingleCellExperiment}
 \title{Plot of the first 2 CA dimensions.}
 \usage{
 ca_biplot(
@@ -13,9 +17,50 @@ ca_biplot(
   col_labels = seq(ncol(obj$std_coords_cols)),
   type = "plotly"
 )
+
+\method{ca_biplot}{default}(
+  obj,
+  xdim = 1,
+  ydim = 2,
+  princ_coords = 1,
+  row_labels = NULL,
+  col_labels = seq(ncol(obj$std_coords_cols)),
+  type = "plotly"
+)
+
+\method{ca_biplot}{cacomp}(
+  obj,
+  xdim = 1,
+  ydim = 2,
+  princ_coords = 1,
+  row_labels = NULL,
+  col_labels = seq(ncol(obj$std_coords_cols)),
+  type = "plotly"
+)
+
+\method{ca_biplot}{Seurat}(
+  obj,
+  xdim = 1,
+  ydim = 2,
+  princ_coords = 1,
+  row_labels = NULL,
+  col_labels = seq(ncol(caobj$std_coords_cols)),
+  type = "plotly"
+)
+
+\method{ca_biplot}{SingleCellExperiment}(
+  obj,
+  xdim = 1,
+  ydim = 2,
+  princ_coords = 1,
+  row_labels = NULL,
+  col_labels = seq(ncol(caobj$std_coords_cols)),
+  type = "plotly"
+)
 }
 \arguments{
-\item{obj}{An object of class "cacomp", "Seurat" or "SingleCellExperiment" with standard and principal coordinates calculated.}
+\item{obj}{An object of class "cacomp" with the relevant standard and principal coordinates calculated,
+or alternatively an object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved.}
 
 \item{xdim}{Integer. The dimension for the x-axis. Default 1.}
 

@@ -325,36 +325,15 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+#' @param ... Arguments forwarded to methods.
 #' @export
-runAPL <- function(obj, assay, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE) UseMethod("runAPL")
+runAPL <- function(obj, assay, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+  UseMethod("runAPL")
+}
 
 
-#' Compute and plot Association plot
-#'
-#' @description
-#' Computes singular value decomposition and coordinates for the Association plot.
-#'
-#' @details
-#' The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.
-#' The chosen defaults are most useful for genomics experiments, but for more fine grained control the functions
-#' can be also run individually for the same results.
-#' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
-#' @return
-#' Association plot (plotly object).
-#'
-#' @param obj
-#' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.
-#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).
-#' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
-#' @param nrow Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.
-#' @param top Integer. Number of most variable rows to retain. Default 5000.
-#' @param score Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.
-#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.
-#' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+
+#' @rdname runAPL
 #' @export
 runAPL.default <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
   stop(paste0("runAPL does not know how to handle objects of class ",
@@ -363,34 +342,9 @@ runAPL.default <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top
 }
 
 
-#' Compute and plot Association plot
-#'
-#' @description
-#' Computes singular value decomposition and coordinates for the Association plot.
-#'
-#' @details
-#' The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.
-#' The chosen defaults are most useful for genomics experiments, but for more fine grained control the functions
-#' can be also run individually for the same results.
-#' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
-#' @return
-#' Association plot (plotly object).
-#'
-#' @param obj A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
-#' Should contain row and column names.
-#' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.
-#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).
-#' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
-#' @param nrow Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.
-#' @param top Integer. Number of most variable rows to retain. Default 5000.
-#' @param score Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.
-#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.
-#' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+
 #' @export
+#' @rdname runAPL
 runAPL.matrix <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
 
   if (!is(obj, "matrix")){
@@ -468,33 +422,13 @@ runAPL.matrix <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top 
 }
 
 
-#' Compute and plot Association plot for SingleCellExperiment objects
-#'
+
 #' @description
-#' Computes singular value decomposition and coordinates for the Association plot from SingleCellExperiment objects.
+#' Computes singular value decomposition and coordinates for the Association plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
 #'
-#' @details
-#' The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.
-#' The chosen defaults are most useful for genomics experiments, but for more fine grained control the functions
-#' can be also run individually for the same results.
-#' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
-#' @return
-#' Association plot (plotly object).
+#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #'
-#' @param obj An object of class "SingleCellExperiment" optionally with a matrix stored in the reducedDim(obj, "CA") slot.
-#' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
-#' @param assay Character. The name of the assay to use, e.g. "counts" or "logcounts". Default "counts".
-#' @param caobj Optional. A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.
-#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default 5000.
-#' @param score Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.
-#' @param nrow Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.
-#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.
-#' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+#' @rdname runAPL
 #' @export
 runAPL.SingleCellExperiment <- function(obj, group, assay = "counts", caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
 
@@ -522,33 +456,12 @@ runAPL.SingleCellExperiment <- function(obj, group, assay = "counts", caobj = NU
 }
 
 
-#' Compute and plot Association plot for Seurat objects
-#'
 #' @description
-#' Computes singular value decomposition and coordinates for the Association plot from Seurat objects.
+#' Computes singular value decomposition and coordinates for the Association plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
 #'
-#' @details
-#' The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.
-#' The chosen defaults are most useful for genomics experiments, but for more fine grained control the functions
-#' can be also run individually for the same results.
-#' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
-#' @return
-#' Association plot (plotly object).
+#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #'
-#' @param obj An object of class "Seurat", optionally with a DimReduc Object in the "CA" slot.
-#' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
-#' @param caobj Optional. A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.
-#' @param assay Character. The name of the assay to use, e.g. "RNA". Default DefaultAssay(obj).
-#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default 5000.
-#' @param score Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.
-#' @param nrow Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.
-#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.
-#' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+#' @rdname runAPL
 #' @export
 runAPL.Seurat <- function(obj, group, caobj = NULL, assay = DefaultAssay(obj), dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
 

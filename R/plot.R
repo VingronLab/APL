@@ -11,7 +11,7 @@
 #' @return
 #' Plot of class "plotly".
 #'
-#' @param obj An object of class "cacomp", "Seurat" or "SingleCellExperiment", with standard and principal coordinates calculated.
+#' @param obj  An object of class "cacomp", or alternatively an object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved.
 #' @param xdim Integer. The dimension for the x-axis. Default 1.
 #' @param ydim Integer. The dimension for the y-axis. Default 2.
 #' @param zdim Integer. The dimension for the z-axis. Default 3.
@@ -20,54 +20,20 @@
 #' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
 #' Default seq(ncol(obj$std_coords_cols)) (all columns).
 #' @export
-ca_3Dplot <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(obj$std_coords_cols))) UseMethod("ca_3Dplot")
+ca_3Dplot <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(obj$std_coords_cols))){
+  UseMethod("ca_3Dplot")
+}
 
-#' Plot of the first 3 CA dimensions.
-#'
-#' @description
-#' Plots the first 3 dimensions of the rows and columns in the same plot.
-#'
-#' @details
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-#' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-#' Labels for rows and columns should be stored in the row- and columnnames respectively.
-#' @return
-#' Plot of class "plotly".
-#'
-#' @param obj Any object.
-#' @param xdim Integer. The dimension for the x-axis. Default 1.
-#' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param zdim Integer. The dimension for the z-axis. Default 3.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj$std_coords_cols)) (all columns).
+#' @rdname ca_3Dplot
 #' @export
 ca_3Dplot.default <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(caobj$std_coords_cols))){
   stop(paste0("ca_3Dplot does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'cacomp', 'Seurat' or 'SingleCellExperiment' are supported."))
 }
-#' Plot of the first 3 CA dimensions.
-#'
-#' @description
-#' Plots the first 3 dimensions of the rows and columns in the same plot.
-#'
-#' @details
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-#' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-#' Labels for rows and columns should be stored in the row- and columnnames respectively.
-#' @return
-#' Plot of class "plotly".
-#'
-#' @param obj An object of class "cacomp" with standard and principal coordinates calculated.
-#' @param xdim Integer. The dimension for the x-axis. Default 1.
-#' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param zdim Integer. The dimension for the z-axis. Default 3.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj$std_coords_cols)) (all columns).
+
+
+#' @rdname ca_3Dplot
 #' @export
 ca_3Dplot.cacomp <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(obj$std_coords_cols))){
 
@@ -162,26 +128,7 @@ ca_3Dplot.cacomp <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, ro
 }
 
 
-#' Plot of the first 3 CA dimensions.
-#'
-#' @description
-#' Plots the first 3 dimensions of the rows and columns in the same plot.
-#'
-#' @details
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-#' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-#' Labels for rows and columns should be stored in the row- and columnnames respectively.
-#' @return
-#' Plot of class "plotly".
-#'
-#' @param obj An object of class "Seurat" with standard and principal coordinates calculated and stored in the "CA" DimReduc slot.
-#' @param xdim Integer. The dimension for the x-axis. Default 1.
-#' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param zdim Integer. The dimension for the z-axis. Default 3.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(caobj$std_coords_cols)) (all columns).
+#' @rdname ca_3Dplot
 #' @export
 ca_3Dplot.Seurat <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(caobj$std_coords_cols))){
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
@@ -204,26 +151,7 @@ ca_3Dplot.Seurat <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, ro
 
 
 
-#' Plot of the first 3 CA dimensions.
-#'
-#' @description
-#' Plots the first 3 dimensions of the rows and columns in the same plot.
-#'
-#' @details
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-#' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-#' Labels for rows and columns should be stored in the row- and columnnames respectively.
-#' @return
-#' Plot of class "plotly".
-#'
-#' @param obj An object of class "SingleCellExperiment" with standard and principal coordinates calculated and stored in the "CA" reducedDim slot.
-#' @param xdim Integer. The dimension for the x-axis. Default 1.
-#' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param zdim Integer. The dimension for the z-axis. Default 3.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(caobj$std_coords_cols)) (all columns).
+#' @rdname ca_3Dplot
 #' @export
 ca_3Dplot.SingleCellExperiment <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(caobj$std_coords_cols))){
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
@@ -257,7 +185,8 @@ ca_3Dplot.SingleCellExperiment <- function(obj, xdim=1, ydim=2, zdim = 3, princ_
 #' @return
 #' Plot of class "plotly" or "ggplot".
 #'
-#' @param obj An object of class "cacomp", "Seurat" or "SingleCellExperiment" with standard and principal coordinates calculated.
+#' @param obj An object of class "cacomp" with the relevant standard and principal coordinates calculated,
+#'  or alternatively an object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved.
 #' @param xdim Integer. The dimension for the x-axis. Default 1.
 #' @param ydim Integer. The dimension for the y-axis. Default 2.
 #' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
@@ -266,56 +195,20 @@ ca_3Dplot.SingleCellExperiment <- function(obj, xdim=1, ydim=2, zdim = 3, princ_
 #' Default seq(ncol(obj$std_coords_cols)) (all columns).
 #' @param type String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".
 #' @export
-ca_biplot <- function(obj, xdim=1, ydim=2, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(obj$std_coords_cols)), type = "plotly") UseMethod("ca_biplot")
+ca_biplot <- function(obj, xdim=1, ydim=2, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(obj$std_coords_cols)), type = "plotly"){
+  UseMethod("ca_biplot")
+}
 
-#' Plot of the first 2 CA dimensions.
-#'
-#' @description
-#' Plots the first 2 dimensions of the rows and columns in the same plot.
-#'
-#' @details
-#' Choosing type "plotly" will generate an interactive html plot with the package plotly. Type "ggplot" generates a static plot.
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-#' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-#' Labels for rows and columns should be stored in the row and column names respectively.
-#' @return
-#' Plot of class "plotly" or "ggplot".
-#'
-#' @param obj obj
-#' @param xdim Integer. The dimension for the x-axis. Default 1.
-#' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj$std_coords_cols)) (all columns).
-#' @param type String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".
+#' @rdname ca_biplot
 #' @export
 ca_biplot.default <- function(obj, xdim=1, ydim=2, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(obj$std_coords_cols)), type = "plotly"){
   stop(paste0("ca_biplot does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'cacomp', 'Seurat' or 'SingleCellExperiment' are supported."))
 }
-#' Plot of the first 2 CA dimensions.
-#'
-#' @description
-#' Plots the first 2 dimensions of the rows and columns in the same plot.
-#'
-#' @details
-#' Choosing type "plotly" will generate an interactive html plot with the package plotly. Type "ggplot" generates a static plot.
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-#' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-#' Labels for rows and columns should be stored in the row and column names respectively.
-#' @return
-#' Plot of class "plotly" or "ggplot".
-#'
-#' @param obj An object of class "cacomp" with standard and principal coordinates calculated.
-#' @param xdim Integer. The dimension for the x-axis. Default 1.
-#' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj$std_coords_cols)) (all columns).
-#' @param type String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".
+
+
+#' @rdname ca_biplot
 #' @export
 ca_biplot.cacomp <- function(obj, xdim=1, ydim=2, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(obj$std_coords_cols)), type = "plotly"){
 
@@ -431,27 +324,7 @@ ca_biplot.cacomp <- function(obj, xdim=1, ydim=2, princ_coords = 1, row_labels=N
 }
 
 
-#' Plot of the first 2 CA dimensions.
-#'
-#' @description
-#' Plots the first 2 dimensions of the rows and columns in the same plot.
-#'
-#' @details
-#' Choosing type "plotly" will generate an interactive html plot with the package plotly. Type "ggplot" generates a static plot.
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-#' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-#' Labels for rows and columns should be stored in the row and column names respectively.
-#' @return
-#' Plot of class "plotly" or "ggplot".
-#'
-#' @param obj An object of class "Seurat" with standard and principal coordinates calculated and stored in the dim. Reductions slot.
-#' @param xdim Integer. The dimension for the x-axis. Default 1.
-#' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj$std_coords_cols)) (all columns).
-#' @param type String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".
+#' @rdname ca_biplot
 #' @export
 ca_biplot.Seurat <- function(obj, xdim=1, ydim=2, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(caobj$std_coords_cols)), type = "plotly"){
 
@@ -475,27 +348,7 @@ ca_biplot.Seurat <- function(obj, xdim=1, ydim=2, princ_coords = 1, row_labels=N
 }
 
 
-#' Plot of the first 2 CA dimensions.
-#'
-#' @description
-#' Plots the first 2 dimensions of the rows and columns in the same plot.
-#'
-#' @details
-#' Choosing type "plotly" will generate an interactive html plot with the package plotly. Type "ggplot" generates a static plot.
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-#' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-#' Labels for rows and columns should be stored in the row and column names respectively.
-#' @return
-#' Plot of class "plotly" or "ggplot".
-#'
-#' @param obj AAn object of class "SingleCellExperiment" with standard and principal coordinates calculated and stored in the dim. Reductions slot.
-#' @param xdim Integer. The dimension for the x-axis. Default 1.
-#' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj$std_coords_cols)) (all columns).
-#' @param type String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".
+#' @rdname ca_biplot
 #' @export
 ca_biplot.SingleCellExperiment <- function(obj, xdim=1, ydim=2, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(caobj$std_coords_cols)), type = "plotly"){
 

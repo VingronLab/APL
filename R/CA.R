@@ -74,7 +74,7 @@ var_rows <- function(mat, top = 5000){
 #' Correspondance Analysis
 #'
 #' @description
-#' `cacomp` performs correspondence analysis on a matrix and returns the transformed data.
+#' `cacomp` performs correspondence analysis on a matrix or Seurat/SingleCellExperiment object and returns the transformed data.
 #'
 #' @details
 #' The calculation is performed according to Greenacre. Singular value decomposition
@@ -102,79 +102,22 @@ var_rows <- function(mat, top = 5000){
 #' @param top Integer. Number of most variable rows to retain. Default NULL.
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
+#' @param ... Arguments forwarded to methods.
 #' @export
-cacomp <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE, ...) UseMethod("cacomp")
+cacomp <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
+  UseMethod("cacomp")
+}
 
-##' Correspondance Analysis
-#'
-#' @description
-#' `cacomp` performs correspondence analysis on a matrix and returns the transformed data.
-#'
-#' @details
-#' The calculation is performed according to Greenacre. Singular value decomposition
-#' can be performed either with the base R function `svd` or preferably by the much faster
-#' pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
-#' principal coordinates should only computed when needed to save computational time.
-#'
-#' @return
-#' Returns a named list of class "cacomp" with components
-#' U, V and D: The results from the SVD.
-#' row_masses and col_masses: Row and columns masses.
-#' top_rows: How many of the most variable rows were retained for the analysis.
-#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
-#' @references
-#' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
-
-#' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
-#' Should contain row and column names.
-#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
-#' Default 1.
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default NULL.
-#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
+#' @rdname cacomp
 #' @export
-cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = min(nrow(S), ncol(S)), top = nrow(obj), inertia = TRUE, rm_zeros = TRUE, ...){
+cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
   stop(paste0("cacomp does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
 }
 
 
-#' Correspondance Analysis
-#'
-#' @description
-#' `cacomp` performs correspondence analysis on a matrix and returns the transformed data.
-#'
-#' @details
-#' The calculation is performed according to Greenacre. Singular value decomposition
-#' can be performed either with the base R function `svd` or preferably by the much faster
-#' pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
-#' principal coordinates should only computed when needed to save computational time.
-#'
-#' @return
-#' Returns a named list of class "cacomp" with components
-#' U, V and D: The results from the SVD.
-#' row_masses and col_masses: Row and columns masses.
-#' top_rows: How many of the most variable rows were retained for the analysis.
-#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
-#' @references
-#' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
-
-#' @param obj A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
-#' Should contain row and column names.
-#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
-#' Default 1.
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default NULL.
-#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
+#' @rdname cacomp
 #' @export
 cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
 
@@ -296,38 +239,20 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
 #' Correspondance Analysis for Seurat objects
 #'
 #' @description
-#' `cacomp.seurat` performs correspondence analysis on a matrix and stores the standard coordinates
+#' `cacomp.seurat` performs correspondence analysis on a assay from a Seurat container and stores the standard coordinates
 #'  of the columns (= cells) and the principal coordinates of the rows (= genes) as a DimReduc Object in the Seurat container.
 #'
-#' @details
-#' The calculation is performed according to Greenacre. Singular value decomposition
-#' can be performed either with the base R function `svd` or preferably by the much faster
-#' pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
-#' principal coordinates should only computed when needed to save computational time.
-#'
 #' @return
-#' Returns seurat_obj with a new Dimensional Reduction Object named "CA".
+#' If return_imput = TRUE with Seurat container: Returns input obj of class "Seurat" with a new Dimensional Reduction Object named "CA".
 #' Standard coordinates of the cells are saved as embeddings,
 #' the principal coordinates of the genes as loadings and
 #' the singular values (= square root of principal intertias/eigenvalues)
 #' are stored as stdev.
-#' To recompute a regular "cacomp" object without rerunning cacomp use `ca_from_seurat()`.
-#'
-#' @references
-#' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
-
-#' @param obj A Seurat object.
-#' @param assay Character string. The assay from which extract the count matrix for SVD. Default DefaultAssay of obj.
-#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
-#' Default 1.
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default NULL.
-#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
-#' @param return_input Logical. If TRUE returns the input (Seurat object) with the CA saved in the DimReduc slot "CA". Otherwise returns a "cacomp". Default FALSE.
+#' To recompute a regular "cacomp" object without rerunning cacomp use `as.cacomp()`.
+#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' @param return_input Logical. If TRUE returns the input (SingleCellExperiment/Seurat object) with the CA results saved in the reducedDim/DimReduc slot "CA".
+#'  Otherwise returns a "cacomp". Default FALSE.
+#' @rdname cacomp
 #' @export
 cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, return_input = FALSE, ...){
 
@@ -367,46 +292,21 @@ cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coo
 
 
 
-#' Correspondance Analysis for SingleCellExperiment objects
 #' @description
-#' `cacomp.SingleCellExperiment` performs correspondence analysis on a matrix and stores the standard coordinates
+#' `cacomp.SingleCellExperiment` performs correspondence analysis on an assay from a SingleCellExperiment and stores the standard coordinates
 #'  of the columns (= cells) and the principal coordinates of the rows (= genes) as a matrix in the SingleCellExperiment container.
 #'
-#' @details
-#' The calculation is performed according to Greenacre. Singular value decomposition
-#' can be performed either with the base R function `svd` or preferably by the much faster
-#' pytorch implementation (python = TRUE, requires a working python installation with numpy and pytorch). When working on large matrices, CA coordinates and
-#' principal coordinates should only computed when needed to save computational time.
-#'
 #' @return
-#' If return_input is FALSE returns a cacomp object with components
-#' U, V and D: The results from the SVD.
-#' row_masses and col_masses: Row and columns masses.
-#' top_rows: How many of the most variable rows were retained for the analysis.
-#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
-#' If return_input is TRUE returns a SingleCellExperiment object with a matrix of standard coordinates of the columns in
+#' If return_input =TRUE for SingleCellExperiment input returns a SingleCellExperiment object with a matrix of standard coordinates of the columns in
 #' reducedDim(obj, "CA"). Additionally, the matrix contains the following attributes:
 #' "prin_coords_rows": Principal coordinates of the rows.
 #' "singval": Singular values. For the explained inertia of each principal axis calculate singval^2.
 #' "percInertia": Percent explained inertia of each principal axis.
-#'
-#' To recompute a regular "cacomp" object without rerunning cacomp use `ca_from_sce()`.
-#'
-#' @references
-#' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
-
-#' @param obj A SingleCellExperiment object.
-#' @param assay Character string. The assay from which extract the count matrix for SVD. Default "counts".
-#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
-#' Default 1.
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default NULL.
-#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
-#' @param return_input Logical. If TRUE returns the input (SingleCellExperiment object) with the CA saved in the reducedDim slot "CA". Otherwise returns a "cacomp". Default FALSE.
+#' To recompute a regular "cacomp" object from a SingleCellExperiment without rerunning cacomp use `as.cacomp()`.
+#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' @param return_input Logical. If TRUE returns the input (SingleCellExperiment/Seurat object) with the CA results saved in the reducedDim/DimReduc slot "CA".
+#'  Otherwise returns a "cacomp". Default FALSE.
+#' @rdname cacomp
 #' @export
 cacomp.SingleCellExperiment <- function(obj, assay = "counts", coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, return_input = FALSE, ...){
 
@@ -639,7 +539,7 @@ scree_plot <- function(df){
 #'
 #' @details
 #' "avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
-#' "maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80% of the total inertia.
+#' "maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80\% of the total inertia.
 #' "scree_plot" plots a scree plot.
 #' "elbow_rule" Formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
 #'  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
@@ -649,46 +549,24 @@ scree_plot <- function(df){
 #' `scree_plot` returns a ggplot object.
 #' `elbow_rule` (for `return_plot=TRUE`) returns a list with two elements: "dims" contains the number of dimensions and "plot" a ggplot.
 #'
-#' @param obj A "cacomp" object as outputted from `cacomp()` or a Seurat/SingleCellExperimnt object.
-#' @param assay Character. The name of the assay to use for Seurat/SingleCellExperiment objects.
+#' @param obj A "cacomp" object as outputted from `cacomp()`,
+#' a "Seurat" object with a "CA" DimReduc object stored,
+#' or a "SingleCellExperiment" object with a "CA" dim. reduction stored.
 #' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
 #' @param method String. Either "scree_plot", "avg_inertia", "maj_inertia" or "elbow_rule" (see Details section). Default "scree_plot".
-#' @param reps Integer. Number of permutations to perform when choosing "elbow_rule". Default 2.
+#' @param reps Integer. Number of permutations to perform when choosing "elbow_rule". Default 3.
 #' @param return_plot TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @param ... Arguments forwarded to methods.
 #' @export
-pick_dims <- function(obj, assay, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...) UseMethod("pick_dims")
+pick_dims <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ...){
+  UseMethod("pick_dims")
+}
 
 
-#' Compute statistics to help choose the number of dimensions
-#'
-#' @description
-#' Allow the user to choose from 4 different methods ("avg_inertia", "maj_inertia", "scree_plot" and "elbow_rule")
-#' to estimate the number of dimensions that best represent the data.
-#'
-#' @details
-#' "avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
-#' "maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80% of the total inertia.
-#' "scree_plot" plots a scree plot.
-#' "elbow_rule" Formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
-#'  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
-#'
-#' @return
-#' For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) returns an integer, indicating the suggested number of dimensions to use.
-#' `scree_plot` returns a ggplot object.
-#' `elbow_rule` (for `return_plot=TRUE`) returns a list with two elements: "dims" contains the number of dimensions and "plot" a ggplot.
-#'
-#' @param obj
-#' @param assay Character. The name of the assay to use for Seurat/SingleCellExperiment objects.
-#' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
-#' Should contain row and column names.
-#' @param method String. Either "scree_plot", "avg_inertia", "maj_inertia" or "elbow_rule" (see Details section). Default "scree_plot".
-#' @param reps Integer. Number of permutations to perform when choosing "elbow_rule". Default 2.
-#' @param return_plot TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @rdname pick_dims
 #' @export
 pick_dims.default <- function(obj, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
   stop(paste0("pick_dims does not know how to handle objects of class ",
@@ -698,34 +576,10 @@ pick_dims.default <- function(obj, mat = NULL, method="scree_plot", reps=2, pyth
 
 
 
-#' Compute statistics to help choose the number of dimensions
-#'
-#' @description
-#' Allow the user to choose from 4 different methods ("avg_inertia", "maj_inertia", "scree_plot" and "elbow_rule")
-#' to estimate the number of dimensions that best represent the data.
-#'
-#' @details
-#' "avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
-#' "maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80% of the total inertia.
-#' "scree_plot" plots a scree plot.
-#' "elbow_rule" Formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
-#'  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
-#'
-#' @return
-#' For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) returns an integer, indicating the suggested number of dimensions to use.
-#' `scree_plot` returns a ggplot object.
-#' `elbow_rule` (for `return_plot=TRUE`) returns a list with two elements: "dims" contains the number of dimensions and "plot" a ggplot.
-#'
-#' @param obj A "cacomp" object as outputted from `cacomp()`.
-#' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
-#' Should contain row and column names.
-#' @param method String. Either "scree_plot", "avg_inertia", "maj_inertia" or "elbow_rule" (see Details section). Default "scree_plot".
-#' @param reps Integer. Number of permutations to perform when choosing "elbow_rule". Default 2.
-#' @param return_plot TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
+
+#' @rdname pick_dims
 #' @export
-pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
+pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ...){
 
   if (!is(obj,"cacomp")){
     stop("Not a CA object. Please run cacomp() first!")
@@ -833,31 +687,10 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=2, pytho
 }
 
 
-#' Compute statistics to help choose the number of dimensions
+
+#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #'
-#' @description
-#' Allow the user to choose from 4 different methods ("avg_inertia", "maj_inertia", "scree_plot" and "elbow_rule")
-#' to estimate the number of dimensions that best represent the data.
-#'
-#' @details
-#' "avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
-#' "maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80% of the total inertia.
-#' "scree_plot" plots a scree plot.
-#' "elbow_rule" Formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
-#'  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
-#'
-#' @return
-#' For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) returns an integer, indicating the suggested number of dimensions to use.
-#' `scree_plot` returns a ggplot object.
-#' `elbow_rule` (for `return_plot=TRUE`) returns a list with two elements: "dims" contains the number of dimensions and "plot" a ggplot.
-#'
-#' @param obj A "Seurat" object with a "CA" dim. Reduction object stored.
-#' @param assay Character. The name of the assay to use, e.g. "RNA". Default DefaultAssay(obj).
-#' @param method String. Either "scree_plot", "avg_inertia", "maj_inertia" or "elbow_rule" (see Details section). Default "scree_plot".
-#' @param reps Integer. Number of permutations to perform when choosing "elbow_rule". Default 2.
-#' @param return_plot TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @rdname pick_dims
 #' @export
 pick_dims.Seurat <- function(obj, assay, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
 
@@ -885,33 +718,12 @@ pick_dims.Seurat <- function(obj, assay, method="scree_plot", reps=2, python = T
                    python = python)
 }
 
-#' Compute statistics to help choose the number of dimensions
+
+#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #'
-#' @description
-#' Allow the user to choose from 4 different methods ("avg_inertia", "maj_inertia", "scree_plot" and "elbow_rule")
-#' to estimate the number of dimensions that best represent the data.
-#'
-#' @details
-#' "avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
-#' "maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80% of the total inertia.
-#' "scree_plot" plots a scree plot.
-#' "elbow_rule" Formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
-#'  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
-#'
-#' @return
-#' For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) returns an integer, indicating the suggested number of dimensions to use.
-#' `scree_plot` returns a ggplot object.
-#' `elbow_rule` (for `return_plot=TRUE`) returns a list with two elements: "dims" contains the number of dimensions and "plot" a ggplot.
-#'
-#' @param obj A "SingleCellExperiment" object with a "CA" dim. Reduction object stored.
-#' @param assay Character. The name of the assay to use, e.g. "counts" or "logcounts". Default "counts".
-#' @param method String. Either "scree_plot", "avg_inertia", "maj_inertia" or "elbow_rule" (see Details section). Default "scree_plot".
-#' @param reps Integer. Number of permutations to perform when choosing "elbow_rule". Default 2.
-#' @param return_plot TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @rdname pick_dims
 #' @export
-pick_dims.SingleCellExperiment <- function(obj, assay, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
+pick_dims.SingleCellExperiment <- function(obj, assay, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ...){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 

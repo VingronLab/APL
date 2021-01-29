@@ -2,14 +2,26 @@
 % Please edit documentation in R/convert.R
 \name{as.cacomp}
 \alias{as.cacomp}
+\alias{as.cacomp.default}
+\alias{as.cacomp.cacomp}
+\alias{as.cacomp.Seurat}
+\alias{as.cacomp.SingleCellExperiment}
 \title{Create cacomp object from Seurat container}
 \usage{
 as.cacomp(obj, assay, recompute = TRUE)
+
+\method{as.cacomp}{default}(obj, assay, recompute = TRUE)
+
+\method{as.cacomp}{cacomp}(obj, assay = NULL, recompute = NULL)
+
+\method{as.cacomp}{Seurat}(obj, assay = NULL, recompute = TRUE)
+
+\method{as.cacomp}{SingleCellExperiment}(obj, assay = NULL, recompute = TRUE)
 }
 \arguments{
-\item{obj}{An object of class "cacomp", "Seurat" or "SingleCellExperiment" with a DimReduc Object in the "CA" slot.}
+\item{obj}{An object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.}
 
-\item{assay}{The name of the assay to use, e.g. "RNA".}
+\item{assay}{Character. The assay from which extract the count matrix, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
 
 \item{recompute}{Should all values be recomputed (std_coords_rows, U and V as well as row and column masses)? Default TRUE.}
 }
@@ -17,6 +29,17 @@ as.cacomp(obj, assay, recompute = TRUE)
 A cacomp object.
 }
 \description{
+Converts the values stored in the Seurat/SingleCellExperiment dimensional reduction slot "CA" to a cacomp object.
+If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD (need to specify assay to work).
+
+as.cacomp.cacomp returns input without any calculations.
+
 Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
-If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD.
+
+Converts the values stored in the SingleCellExperiment reducedDim slot "CA" to an cacomp object.
+}
+\details{
+By default extracts std_coords_cols, D, prin_coords_rows, top_rows and dims from obj and outputs a cacomp object.
+If recompute = TRUE the following are additionally recalculated (doesn't run SVD):
+U, V, std_coords_rows, row_masses, col_masses.
 }
