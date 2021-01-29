@@ -327,7 +327,7 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @param ... Arguments forwarded to methods.
 #' @export
-runAPL <- function(obj, assay, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
   UseMethod("runAPL")
 }
 
