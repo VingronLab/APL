@@ -10,10 +10,9 @@
 \usage{
 runAPL(
   obj,
-  assay,
+  group,
   caobj = NULL,
   dims = NULL,
-  group,
   nrow = 10,
   top = 5000,
   score = TRUE,
@@ -95,13 +94,11 @@ runAPL(
 \item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
-\item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+\item{group}{Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.}
 
 \item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.}
 
 \item{dims}{Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).}
-
-\item{group}{Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.}
 
 \item{nrow}{Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.}
 
@@ -121,6 +118,8 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 \item{col_labs}{Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.}
 
 \item{...}{Arguments forwarded to methods.}
+
+\item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
 }
 \value{
 Association plot (plotly object).
