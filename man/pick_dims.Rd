@@ -40,22 +40,24 @@ pick_dims(
 
 \method{pick_dims}{Seurat}(
   obj,
-  assay,
-  method = "scree_plot",
-  reps = 2,
-  python = TRUE,
-  return_plot = FALSE,
-  ...
-)
-
-\method{pick_dims}{SingleCellExperiment}(
-  obj,
-  assay,
+  mat = NULL,
   method = "scree_plot",
   reps = 3,
   python = TRUE,
   return_plot = FALSE,
-  ...
+  ...,
+  assay
+)
+
+\method{pick_dims}{SingleCellExperiment}(
+  obj,
+  mat = NULL,
+  method = "scree_plot",
+  reps = 3,
+  python = TRUE,
+  return_plot = FALSE,
+  ...,
+  assay
 )
 }
 \arguments{

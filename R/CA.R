@@ -252,9 +252,10 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
 #' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #' @param return_input Logical. If TRUE returns the input (SingleCellExperiment/Seurat object) with the CA results saved in the reducedDim/DimReduc slot "CA".
 #'  Otherwise returns a "cacomp". Default FALSE.
+#' @param ... Other parameters
 #' @rdname cacomp
 #' @export
-cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, return_input = FALSE, ...){
+cacomp.Seurat <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...,assay = DefaultAssay(obj), return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -308,7 +309,7 @@ cacomp.Seurat <- function(obj, assay = DefaultAssay(obj), coords=TRUE, princ_coo
 #'  Otherwise returns a "cacomp". Default FALSE.
 #' @rdname cacomp
 #' @export
-cacomp.SingleCellExperiment <- function(obj, assay = "counts", coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, return_input = FALSE, ...){
+cacomp.SingleCellExperiment <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ..., assay = "counts", return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
   stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
@@ -692,7 +693,7 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
 #'
 #' @rdname pick_dims
 #' @export
-pick_dims.Seurat <- function(obj, assay, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
+pick_dims.Seurat <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ..., assay){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -723,7 +724,7 @@ pick_dims.Seurat <- function(obj, assay, method="scree_plot", reps=2, python = T
 #'
 #' @rdname pick_dims
 #' @export
-pick_dims.SingleCellExperiment <- function(obj, assay, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ...){
+pick_dims.SingleCellExperiment <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ..., assay){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 

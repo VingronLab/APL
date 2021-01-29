@@ -10,9 +10,9 @@
 \usage{
 as.cacomp(obj, assay, recompute = TRUE)
 
-\method{as.cacomp}{default}(obj, assay, recompute = TRUE)
+\method{as.cacomp}{default}(obj, assay = NULL, recompute = TRUE)
 
-\method{as.cacomp}{cacomp}(obj, assay = NULL, recompute = NULL)
+\method{as.cacomp}{cacomp}(obj, assay = NULL, recompute = TRUE)
 
 \method{as.cacomp}{Seurat}(obj, assay = NULL, recompute = TRUE)
 

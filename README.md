@@ -47,10 +47,10 @@ Here we demonstrate the basic functionality on a count matrix which consists of 
     set.seed(1234)
     
     # GTEx dataset included in package.
-    datmat[1:5,1:5]
+    gtex[1:5,1:5]
     
     # Filter out genes without reads
-    datmat <- datmat[rowSums(datmat) > 0,]
+    gtex <- gtex[rowSums(gtex) > 0,]
   
 
 To run Correspondence Analysis we can use the `cacomp()` function. By default it will also calculate the standard coordinates of the rows (genes) and columns (samples/cells), as well as the principal coordinates of the rows. This will be of use later for plotting, but can be turned off if undesired. Here we additionally only keep the 5000 most variable genes as determined by the  variance of the chisquare components matrix in order to filter out genes that do not vary over the samples (here tissues). Currently there are two functions available to perform singular value decomposition: the base R `svd` function and SVD as implemented in pytorch in python. The latter significantly speeds up the computation and it is therefore highly recommended to use it whenever possible (`python = TRUE`), however a working python installation with numpy and torch installed is required.
@@ -58,7 +58,7 @@ To run Correspondence Analysis we can use the `cacomp()` function. By default it
     # Change the path to your python installation
     reticulate::use_python("/usr/bin/python3", required = TRUE)
     
-    ca <- cacomp(obj = datmat,
+    ca <- cacomp(obj = gtex,
                  top = 5000,
                  python = TRUE)
                  
@@ -68,7 +68,7 @@ To run Correspondence Analysis we can use the `cacomp()` function. By default it
 A convenient way to estimate the number of dimensions that we should keep for downstream analysis is to use `pick_dims()`. Several different methods are implemented to estimate the number of interesting dimensions, but here we use a formalization of the elbow rule to find a cutoff. This relies on rerunning `cacomp` on permutations of the data, which can take long for large count matrices, in which case either the number of `reps` should be decreased or one of the other methods can be chosen.
 
     pd <- pick_dims(obj = ca,
-                    mat = datmat,
+                    mat = gtex,
                     method = "elbow_rule",
                     reps = 3,
                     return_plot = TRUE,
@@ -87,27 +87,27 @@ We can further explore the data in an assymetric biplot of the first 3 dimension
     
 In the interactive 3D plot we can see that samples derived from the Pancreas are quite different from other tissues. In order to further explore which genes are most highly associated with these samples we can use `runAPL()`. This function will calculate the coordinates of the genes and samples in the Association Plot. The further right a gene is located the more highly is it associated with the group of chosen samples. The x-Axis can be interpreted as the direction of the centroid of the chosen samples. The further up a gene is located on the y-Axis, the more it is also associated with other samples, which "pull" on the gene. Therefore a highly condition specific gene would be found far too the right with a very low y-value. By setting `score = TRUE` we can rank the genes on their association with the chosen sample group while also considering that we are not interested in genes that are too highly associated with other conditions too. By default the top 10 most highly ranked genes will be displayed. To mark specific genes, use the `mark_rows` parameter. By also submitting the previously computed `ca` we can save time, as `runAPL` would otherwise have to recompute the values.
 
-    runAPL(obj = datmat,
+    runAPL(obj = gtex,
            caobj = ca,
            dims = 29, 
-           group = grep("Pancreas", x = colnames(datmat)),
+           group = grep("Pancreas", x = colnames(gtex)),
            score = TRUE) 
            
 
 The wrapper `runAPL` makes it easy to try out different groups and explore the data quickly. If, however, we want a more fine grained control we can also call all functions seperately:
 
-    ca <- cacomp(obj = datmat,
+    ca <- cacomp(obj = gtex,
                      coords = TRUE,
                      princ_coords = 1,
                      dims = 29,
                      top = 5000,
                      python = TRUE)
     
-    group <-  grep("Pituitary", x = colnames(datmat))
+    group <-  grep("Pituitary", x = colnames(gtex))
     ca <- apl_coords(caobj = ca, 
                      group = group)
     ca <- apl_score(caobj = ca,
-                    mat = datmat,
+                    mat = gtex,
                     dims = ca$dims,
                     group = ca$group,
                     reps = 3)

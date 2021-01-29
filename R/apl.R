@@ -335,7 +335,7 @@ runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000,
 
 #' @rdname runAPL
 #' @export
-runAPL.default <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
   stop(paste0("runAPL does not know how to handle objects of class ",
               class(x),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -345,7 +345,7 @@ runAPL.default <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top
 
 #' @export
 #' @rdname runAPL
-runAPL.matrix <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
 
   if (!is(obj, "matrix")){
     obj <- as.matrix(obj)
@@ -430,7 +430,7 @@ runAPL.matrix <- function(obj, caobj = NULL, dims = NULL, group, nrow = 10, top 
 #'
 #' @rdname runAPL
 #' @export
-runAPL.SingleCellExperiment <- function(obj, group, assay = "counts", caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ..., assay = "counts"){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
@@ -463,7 +463,7 @@ runAPL.SingleCellExperiment <- function(obj, group, assay = "counts", caobj = NU
 #'
 #' @rdname runAPL
 #' @export
-runAPL.Seurat <- function(obj, group, caobj = NULL, assay = DefaultAssay(obj), dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ..., assay = DefaultAssay(obj)){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
