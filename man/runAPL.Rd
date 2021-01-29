@@ -2,6 +2,10 @@
 % Please edit documentation in R/apl.R
 \name{runAPL}
 \alias{runAPL}
+\alias{runAPL.default}
+\alias{runAPL.matrix}
+\alias{runAPL.SingleCellExperiment}
+\alias{runAPL.Seurat}
 \title{Compute and plot Association plot}
 \usage{
 runAPL(
@@ -17,12 +21,81 @@ runAPL(
   reps = 3,
   python = TRUE,
   row_labs = TRUE,
-  col_labs = TRUE
+  col_labs = TRUE,
+  ...
+)
+
+\method{runAPL}{default}(
+  obj,
+  caobj = NULL,
+  dims = NULL,
+  group,
+  nrow = 10,
+  top = 5000,
+  score = TRUE,
+  mark_rows = NULL,
+  reps = 3,
+  python = TRUE,
+  row_labs = TRUE,
+  col_labs = TRUE,
+  ...
+)
+
+\method{runAPL}{matrix}(
+  obj,
+  caobj = NULL,
+  dims = NULL,
+  group,
+  nrow = 10,
+  top = 5000,
+  score = TRUE,
+  mark_rows = NULL,
+  reps = 3,
+  python = TRUE,
+  row_labs = TRUE,
+  col_labs = TRUE,
+  ...
+)
+
+\method{runAPL}{SingleCellExperiment}(
+  obj,
+  group,
+  assay = "counts",
+  caobj = NULL,
+  dims = NULL,
+  nrow = 10,
+  top = 5000,
+  score = TRUE,
+  mark_rows = NULL,
+  reps = 3,
+  python = TRUE,
+  row_labs = TRUE,
+  col_labs = TRUE,
+  ...
+)
+
+\method{runAPL}{Seurat}(
+  obj,
+  group,
+  caobj = NULL,
+  assay = DefaultAssay(obj),
+  dims = NULL,
+  nrow = 10,
+  top = 5000,
+  score = TRUE,
+  mark_rows = NULL,
+  reps = 3,
+  python = TRUE,
+  row_labs = TRUE,
+  col_labs = TRUE,
+  ...
 )
 }
 \arguments{
 \item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
+
+\item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
 
 \item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.}
 
@@ -46,12 +119,18 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 \item{row_labs}{Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.}
 
 \item{col_labs}{Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.}
+
+\item{...}{Arguments forwarded to methods.}
 }
 \value{
 Association plot (plotly object).
 }
 \description{
 Computes singular value decomposition and coordinates for the Association plot.
+
+Computes singular value decomposition and coordinates for the Association plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
+
+Computes singular value decomposition and coordinates for the Association plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
 }
 \details{
 The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.

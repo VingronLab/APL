@@ -2,6 +2,10 @@
 % Please edit documentation in R/plot.R
 \name{ca_3Dplot}
 \alias{ca_3Dplot}
+\alias{ca_3Dplot.default}
+\alias{ca_3Dplot.cacomp}
+\alias{ca_3Dplot.Seurat}
+\alias{ca_3Dplot.SingleCellExperiment}
 \title{Plot of the first 3 CA dimensions.}
 \usage{
 ca_3Dplot(
@@ -13,9 +17,49 @@ ca_3Dplot(
   row_labels = NULL,
   col_labels = seq(ncol(obj$std_coords_cols))
 )
+
+\method{ca_3Dplot}{default}(
+  obj,
+  xdim = 1,
+  ydim = 2,
+  zdim = 3,
+  princ_coords = 1,
+  row_labels = NULL,
+  col_labels = seq(ncol(caobj$std_coords_cols))
+)
+
+\method{ca_3Dplot}{cacomp}(
+  obj,
+  xdim = 1,
+  ydim = 2,
+  zdim = 3,
+  princ_coords = 1,
+  row_labels = NULL,
+  col_labels = seq(ncol(obj$std_coords_cols))
+)
+
+\method{ca_3Dplot}{Seurat}(
+  obj,
+  xdim = 1,
+  ydim = 2,
+  zdim = 3,
+  princ_coords = 1,
+  row_labels = NULL,
+  col_labels = seq(ncol(caobj$std_coords_cols))
+)
+
+\method{ca_3Dplot}{SingleCellExperiment}(
+  obj,
+  xdim = 1,
+  ydim = 2,
+  zdim = 3,
+  princ_coords = 1,
+  row_labels = NULL,
+  col_labels = seq(ncol(caobj$std_coords_cols))
+)
 }
 \arguments{
-\item{obj}{An object of class "cacomp", "Seurat" or "SingleCellExperiment", with standard and principal coordinates calculated.}
+\item{obj}{An object of class "cacomp", or alternatively an object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved.}
 
 \item{xdim}{Integer. The dimension for the x-axis. Default 1.}
 

@@ -40,30 +40,26 @@ recompute <- function(caobj, mat){
 #' Create cacomp object from Seurat container
 #'
 #' @description
-#' Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
-#' If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD.
+#' Converts the values stored in the Seurat/SingleCellExperiment dimensional reduction slot "CA" to a cacomp object.
+#' If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD (need to specify assay to work).
+#'
+#' @details
+#' By default extracts std_coords_cols, D, prin_coords_rows, top_rows and dims from obj and outputs a cacomp object.
+#' If recompute = TRUE the following are additionally recalculated (doesn't run SVD):
+#' U, V, std_coords_rows, row_masses, col_masses.
 #'
 #' @return
 #' A cacomp object.
 #'
-#' @param obj An object of class "cacomp", "Seurat" or "SingleCellExperiment" with a DimReduc Object in the "CA" slot.
-#' @param assay The name of the assay to use, e.g. "RNA".
+#' @param obj An object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.
+#' @param assay Character. The assay from which extract the count matrix, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #' @param recompute Should all values be recomputed (std_coords_rows, U and V as well as row and column masses)? Default TRUE.
 #' @export
-as.cacomp <- function(obj, assay, recompute = TRUE) UseMethod("as.cacomp")
+as.cacomp <- function(obj, assay, recompute = TRUE) {
+  UseMethod("as.cacomp")
+  }
 
-#' Create cacomp object from Seurat container
-#'
-#' @description
-#' Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
-#' If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD.
-#'
-#' @return
-#' A cacomp object.
-#'
-#' @param obj An object of class "Seurat" with a DimReduc Object in the "CA" slot.
-#' @param assay The name of the assay to use, e.g. "RNA".
-#' @param recompute Should all values be recomputed (std_coords_rows, U and V as well as row and column masses)? Default TRUE.
+#' @rdname as.cacomp
 #' @export
 as.cacomp.default <- function(obj, assay, recompute = TRUE){
   stop(paste0("as.cacomp does not know how to handle objects of class ",
@@ -71,17 +67,9 @@ as.cacomp.default <- function(obj, assay, recompute = TRUE){
               ". Currently only objects of class 'Seurat' or 'SingleCellExperiment' can be converted to 'cacomp'."))
 }
 
-#' Convert to cacomp object
-#'
-#' @description
-#' If an object already is of class cacomp, the function simply returns the input.
-#'
-#' @return
-#' A cacomp object.
-#'
-#' @param obj An object of class "cacomp".
-#' @param assay ignored
-#' @param recompute ignored
+
+#' @description as.cacomp.cacomp returns input without any calculations.
+#' @rdname as.cacomp
 #' @export
 as.cacomp.cacomp <- function(obj, assay = NULL, recompute = NULL){
   stopifnot(is(obj, "cacomp"))
@@ -90,18 +78,11 @@ as.cacomp.cacomp <- function(obj, assay = NULL, recompute = NULL){
 
 
 
-#' Create cacomp object from Seurat container
-#'
+
 #' @description
 #' Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
-#' If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD.
 #'
-#' @return
-#' A cacomp object.
-#'
-#' @param obj An object of class "Seurat" with a DimReduc Object in the "CA" slot.
-#' @param assay The name of the assay to use, e.g. "RNA".
-#' @param recompute Should all values be recomputed (std_coords_rows, U and V as well as row and column masses)? Default TRUE.
+#' @rdname as.cacomp
 #' @export
 as.cacomp.Seurat <- function(obj, assay=NULL, recompute = TRUE){
 
@@ -154,18 +135,11 @@ as.cacomp.Seurat <- function(obj, assay=NULL, recompute = TRUE){
 
 
 
-#' Create cacomp object from SingleCellExperiment object.
-#'
+
 #' @description
 #' Converts the values stored in the SingleCellExperiment reducedDim slot "CA" to an cacomp object.
-#' If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD.
 #'
-#' @return
-#' A cacomp object.
-#'
-#' @param obj An object of class "SingleCellExperiment" with a LinearEmbeddingMatrix object in the reducedDim(sce, "CA") slot.
-#' @param assay The name of the assay to use, e.g. "RNA".
-#' @param recompute Should all values be recomputed (std_coords_rows, U and V as well as row and column masses)? Default TRUE.
+#' @rdname as.cacomp
 #' @export
 as.cacomp.SingleCellExperiment <- function(obj, assay = NULL, recompute = TRUE){
 

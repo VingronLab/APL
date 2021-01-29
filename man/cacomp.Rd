@@ -2,6 +2,10 @@
 % Please edit documentation in R/CA.R
 \name{cacomp}
 \alias{cacomp}
+\alias{cacomp.default}
+\alias{cacomp.matrix}
+\alias{cacomp.Seurat}
+\alias{cacomp.SingleCellExperiment}
 \title{Correspondance Analysis}
 \usage{
 cacomp(
@@ -9,10 +13,62 @@ cacomp(
   coords = TRUE,
   princ_coords = 1,
   python = TRUE,
-  dims = min(nrow(S), ncol(S)),
-  top = nrow(obj),
+  dims = NULL,
+  top = NULL,
   inertia = TRUE,
   rm_zeros = TRUE,
+  ...
+)
+
+\method{cacomp}{default}(
+  obj,
+  coords = TRUE,
+  princ_coords = 1,
+  python = TRUE,
+  dims = NULL,
+  top = NULL,
+  inertia = TRUE,
+  rm_zeros = TRUE,
+  ...
+)
+
+\method{cacomp}{matrix}(
+  obj,
+  coords = TRUE,
+  princ_coords = 1,
+  python = TRUE,
+  dims = NULL,
+  top = NULL,
+  inertia = TRUE,
+  rm_zeros = TRUE,
+  ...
+)
+
+\method{cacomp}{Seurat}(
+  obj,
+  assay = DefaultAssay(obj),
+  coords = TRUE,
+  princ_coords = 1,
+  python = TRUE,
+  dims = NULL,
+  top = NULL,
+  inertia = TRUE,
+  rm_zeros = TRUE,
+  return_input = FALSE,
+  ...
+)
+
+\method{cacomp}{SingleCellExperiment}(
+  obj,
+  assay = "counts",
+  coords = TRUE,
+  princ_coords = 1,
+  python = TRUE,
+  dims = NULL,
+  top = NULL,
+  inertia = TRUE,
+  rm_zeros = TRUE,
+  return_input = FALSE,
   ...
 )
 }
@@ -35,6 +91,13 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 \item{inertia}{Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.}
 
 \item{rm_zeros}{Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.}
+
+\item{...}{Arguments forwarded to methods.}
+
+\item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+
+\item{return_input}{Logical. If TRUE returns the input (SingleCellExperiment/Seurat object) with the CA results saved in the reducedDim/DimReduc slot "CA".
+Otherwise returns a "cacomp". Default FALSE.}
 }
 \value{
 Returns a named list of class "cacomp" with components
@@ -42,9 +105,29 @@ U, V and D: The results from the SVD.
 row_masses and col_masses: Row and columns masses.
 top_rows: How many of the most variable rows were retained for the analysis.
 tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
+
+If return_imput = TRUE with Seurat container: Returns input obj of class "Seurat" with a new Dimensional Reduction Object named "CA".
+Standard coordinates of the cells are saved as embeddings,
+the principal coordinates of the genes as loadings and
+the singular values (= square root of principal intertias/eigenvalues)
+are stored as stdev.
+To recompute a regular "cacomp" object without rerunning cacomp use `as.cacomp()`.
+
+If return_input =TRUE for SingleCellExperiment input returns a SingleCellExperiment object with a matrix of standard coordinates of the columns in
+reducedDim(obj, "CA"). Additionally, the matrix contains the following attributes:
+"prin_coords_rows": Principal coordinates of the rows.
+"singval": Singular values. For the explained inertia of each principal axis calculate singval^2.
+"percInertia": Percent explained inertia of each principal axis.
+To recompute a regular "cacomp" object from a SingleCellExperiment without rerunning cacomp use `as.cacomp()`.
 }
 \description{
-`cacomp` performs correspondence analysis on a matrix and returns the transformed data.
+`cacomp` performs correspondence analysis on a matrix or Seurat/SingleCellExperiment object and returns the transformed data.
+
+`cacomp.seurat` performs correspondence analysis on a assay from a Seurat container and stores the standard coordinates
+ of the columns (= cells) and the principal coordinates of the rows (= genes) as a DimReduc Object in the Seurat container.
+
+`cacomp.SingleCellExperiment` performs correspondence analysis on an assay from a SingleCellExperiment and stores the standard coordinates
+ of the columns (= cells) and the principal coordinates of the rows (= genes) as a matrix in the SingleCellExperiment container.
 }
 \details{
 The calculation is performed according to Greenacre. Singular value decomposition

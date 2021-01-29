@@ -2,11 +2,24 @@
 % Please edit documentation in R/CA.R
 \name{pick_dims}
 \alias{pick_dims}
+\alias{pick_dims.default}
+\alias{pick_dims.cacomp}
+\alias{pick_dims.Seurat}
+\alias{pick_dims.SingleCellExperiment}
 \title{Compute statistics to help choose the number of dimensions}
 \usage{
 pick_dims(
   obj,
-  assay,
+  mat = NULL,
+  method = "scree_plot",
+  reps = 3,
+  python = TRUE,
+  return_plot = FALSE,
+  ...
+)
+
+\method{pick_dims}{default}(
+  obj,
   mat = NULL,
   method = "scree_plot",
   reps = 2,
@@ -14,23 +27,57 @@ pick_dims(
   return_plot = FALSE,
   ...
 )
+
+\method{pick_dims}{cacomp}(
+  obj,
+  mat = NULL,
+  method = "scree_plot",
+  reps = 3,
+  python = TRUE,
+  return_plot = FALSE,
+  ...
+)
+
+\method{pick_dims}{Seurat}(
+  obj,
+  assay,
+  method = "scree_plot",
+  reps = 2,
+  python = TRUE,
+  return_plot = FALSE,
+  ...
+)
+
+\method{pick_dims}{SingleCellExperiment}(
+  obj,
+  assay,
+  method = "scree_plot",
+  reps = 3,
+  python = TRUE,
+  return_plot = FALSE,
+  ...
+)
 }
 \arguments{
-\item{obj}{A "cacomp" object as outputted from `cacomp()` or a Seurat/SingleCellExperimnt object.}
-
-\item{assay}{Character. The name of the assay to use for Seurat/SingleCellExperiment objects.}
+\item{obj}{A "cacomp" object as outputted from `cacomp()`,
+a "Seurat" object with a "CA" DimReduc object stored,
+or a "SingleCellExperiment" object with a "CA" dim. reduction stored.}
 
 \item{mat}{A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
 \item{method}{String. Either "scree_plot", "avg_inertia", "maj_inertia" or "elbow_rule" (see Details section). Default "scree_plot".}
 
-\item{reps}{Integer. Number of permutations to perform when choosing "elbow_rule". Default 2.}
+\item{reps}{Integer. Number of permutations to perform when choosing "elbow_rule". Default 3.}
 
 \item{python}{A logical value indicating whether to use singular-value decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to `svd()` in R.}
 
 \item{return_plot}{TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.}
+
+\item{...}{Arguments forwarded to methods.}
+
+\item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
 }
 \value{
 For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) returns an integer, indicating the suggested number of dimensions to use.
@@ -43,7 +90,7 @@ to estimate the number of dimensions that best represent the data.
 }
 \details{
 "avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
-"maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80% of the total inertia.
+"maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80\% of the total inertia.
 "scree_plot" plots a scree plot.
 "elbow_rule" Formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
