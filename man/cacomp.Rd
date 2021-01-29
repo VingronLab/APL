@@ -46,7 +46,6 @@ cacomp(
 
 \method{cacomp}{Seurat}(
   obj,
-  assay = DefaultAssay(obj),
   coords = TRUE,
   princ_coords = 1,
   python = TRUE,
@@ -54,13 +53,13 @@ cacomp(
   top = NULL,
   inertia = TRUE,
   rm_zeros = TRUE,
-  return_input = FALSE,
-  ...
+  ...,
+  assay = DefaultAssay(obj),
+  return_input = FALSE
 )
 
 \method{cacomp}{SingleCellExperiment}(
   obj,
-  assay = "counts",
   coords = TRUE,
   princ_coords = 1,
   python = TRUE,
@@ -68,8 +67,9 @@ cacomp(
   top = NULL,
   inertia = TRUE,
   rm_zeros = TRUE,
-  return_input = FALSE,
-  ...
+  ...,
+  assay = "counts",
+  return_input = FALSE
 )
 }
 \arguments{
@@ -92,7 +92,7 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 
 \item{rm_zeros}{Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.}
 
-\item{...}{Arguments forwarded to methods.}
+\item{...}{Other parameters}
 
 \item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
 

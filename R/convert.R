@@ -61,7 +61,7 @@ as.cacomp <- function(obj, assay, recompute = TRUE) {
 
 #' @rdname as.cacomp
 #' @export
-as.cacomp.default <- function(obj, assay, recompute = TRUE){
+as.cacomp.default <- function(obj, assay = NULL, recompute = TRUE){
   stop(paste0("as.cacomp does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'Seurat' or 'SingleCellExperiment' can be converted to 'cacomp'."))
@@ -71,7 +71,7 @@ as.cacomp.default <- function(obj, assay, recompute = TRUE){
 #' @description as.cacomp.cacomp returns input without any calculations.
 #' @rdname as.cacomp
 #' @export
-as.cacomp.cacomp <- function(obj, assay = NULL, recompute = NULL){
+as.cacomp.cacomp <- function(obj, assay = NULL, recompute = TRUE){
   stopifnot(is(obj, "cacomp"))
   return(obj)
 }
@@ -84,7 +84,7 @@ as.cacomp.cacomp <- function(obj, assay = NULL, recompute = NULL){
 #'
 #' @rdname as.cacomp
 #' @export
-as.cacomp.Seurat <- function(obj, assay=NULL, recompute = TRUE){
+as.cacomp.Seurat <- function(obj, assay = NULL, recompute = TRUE){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
   stopifnot("obj doesn't contain a DimReduc object named 'CA'. Try running cacomp()." = "CA" %in% Reductions(pbmc_small))

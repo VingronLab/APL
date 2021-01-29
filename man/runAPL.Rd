@@ -26,9 +26,9 @@ runAPL(
 
 \method{runAPL}{default}(
   obj,
+  group,
   caobj = NULL,
   dims = NULL,
-  group,
   nrow = 10,
   top = 5000,
   score = TRUE,
@@ -42,9 +42,9 @@ runAPL(
 
 \method{runAPL}{matrix}(
   obj,
+  group,
   caobj = NULL,
   dims = NULL,
-  group,
   nrow = 10,
   top = 5000,
   score = TRUE,
@@ -59,7 +59,6 @@ runAPL(
 \method{runAPL}{SingleCellExperiment}(
   obj,
   group,
-  assay = "counts",
   caobj = NULL,
   dims = NULL,
   nrow = 10,
@@ -70,14 +69,14 @@ runAPL(
   python = TRUE,
   row_labs = TRUE,
   col_labs = TRUE,
-  ...
+  ...,
+  assay = "counts"
 )
 
 \method{runAPL}{Seurat}(
   obj,
   group,
   caobj = NULL,
-  assay = DefaultAssay(obj),
   dims = NULL,
   nrow = 10,
   top = 5000,
@@ -87,7 +86,8 @@ runAPL(
   python = TRUE,
   row_labs = TRUE,
   col_labs = TRUE,
-  ...
+  ...,
+  assay = DefaultAssay(obj)
 )
 }
 \arguments{
