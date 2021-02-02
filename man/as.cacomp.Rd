@@ -6,7 +6,7 @@
 \alias{as.cacomp.cacomp}
 \alias{as.cacomp.Seurat}
 \alias{as.cacomp.SingleCellExperiment}
-\title{Create cacomp object from Seurat container}
+\title{Create cacomp object from Seurat/SingleCellExperiment container}
 \usage{
 as.cacomp(obj, assay, recompute = TRUE)
 

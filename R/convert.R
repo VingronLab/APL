@@ -37,7 +37,7 @@ recompute <- function(caobj, mat){
 }
 
 
-#' Create cacomp object from Seurat container
+#' Create cacomp object from Seurat/SingleCellExperiment container
 #'
 #' @description
 #' Converts the values stored in the Seurat/SingleCellExperiment dimensional reduction slot "CA" to a cacomp object.
@@ -80,7 +80,7 @@ as.cacomp.cacomp <- function(obj, assay = NULL, recompute = TRUE){
 
 
 #' @description
-#' Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
+#' as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
 #'
 #' @rdname as.cacomp
 #' @export
@@ -102,28 +102,8 @@ as.cacomp.Seurat <- function(obj, assay = NULL, recompute = TRUE){
 
     seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
     seu <- as.matrix(seu)
-    # res <-  comp_std_residuals(mat=seu)
 
     ca_obj <- recompute(caobj = ca_obj, mat = seu)
-    # seu <- var_rows(mat = seu,
-    #                    top = ca_obj$top_rows)
-    #
-    #
-    # res <-  comp_std_residuals(mat=seu)
-    # S <- res$S
-    # tot <- res$tot
-    # rowm <- res$rowm
-    # colm <- res$colm
-    #
-    # ordidx <- match(rownames(ca_obj$prin_coords_rows), names(rowm))
-    # ca_obj$row_masses <- rowm[ordidx]
-    #
-    # ordidx <- match(rownames(ca_obj$std_coords_cols), names(colm))
-    # ca_obj$col_masses <- colm[ordidx]
-    #
-    # ca_obj$std_coords_rows <- sweep(ca_obj$prin_coords_rows, 2, ca_obj$D, "/")
-    # ca_obj$U <- sweep(ca_obj$std_coords_rows, 1, sqrt(ca_obj$row_masses), "*")
-    # ca_obj$V <- sweep(ca_obj$std_coords_cols, 1, sqrt(ca_obj$col_masses), "*")
   }
   return(ca_obj)
 }
@@ -137,7 +117,7 @@ as.cacomp.Seurat <- function(obj, assay = NULL, recompute = TRUE){
 
 
 #' @description
-#' Converts the values stored in the SingleCellExperiment reducedDim slot "CA" to an cacomp object.
+#' as.cacomp.SingleCellExperiment: Converts the values stored in the SingleCellExperiment reducedDim slot "CA" to an cacomp object.
 #'
 #' @rdname as.cacomp
 #' @export
@@ -166,29 +146,9 @@ as.cacomp.SingleCellExperiment <- function(obj, assay = NULL, recompute = TRUE){
     stopifnot("Assay is needed to recompute cacomp." = !is.null(assay))
     scemat <- SingleCellExperiment::assay(sce, assay)
     scemat
-    # res <-  comp_std_residuals(mat=scemat)
 
     ca_obj <- recompute(caobj = ca_obj, mat = scemat)
 
-    # scemat <- var_rows(mat = scemat,
-    #                    top =  ca_obj$top_rows)
-    #
-    # res <-  comp_std_residuals(mat=scemat)
-    # S <- res$S
-    # tot <- res$tot
-    # rowm <- res$rowm
-    # colm <- res$colm
-    #
-    #
-    # ordidx <- match(rownames(ca_obj$prin_coords_rows), names(rowm))
-    # ca_obj$row_masses <- rowm[ordidx]
-    #
-    # ordidx <- match(rownames(ca_obj$std_coords_cols), names(colm))
-    # ca_obj$col_masses <- colm[ordidx]
-    #
-    # ca_obj$std_coords_rows <- sweep(ca_obj$prin_coords_rows, 2, ca_obj$D, "/")
-    # ca_obj$U <- sweep(ca_obj$std_coords_rows, 1, sqrt(ca_obj$row_masses), "*")
-    # ca_obj$V <- sweep(ca_obj$std_coords_cols, 1, sqrt(ca_obj$col_masses), "*")
   }
 
   return(ca_obj)

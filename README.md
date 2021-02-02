@@ -20,16 +20,13 @@ The package is then installed as follows:
 Additionally, python with the libraries torch and numpy have to be installed if you want to use the pytorch SVD implementation.
 One way to do this is with the R package reticulate:
 
-    # TODO: DOES NOT WORK CURRENTLY DO NOT RUN! 
-    # cant import/find pytorch for some reason after install.
-    
+    # worked on the server 🤷 
+
     library(reticulate)
     install_miniconda() # Installs Miniconda
-    conda_create("APLpy") # Creates a new environment
-    conda_install("APLpy", c("numpy", "pytorch")) # Installs numpy and pytorch to the newly created env.
+    conda_install(envname = "r-reticulate", packages = "numpy")
+    conda_install(envname = "r-reticulate", packages = "torch") # Installs numpy and pytorch to the default env.
 
-    # Call before running the code below
-    use_condaenv("APLpy")
 
 ## Feature overview
 
@@ -189,7 +186,8 @@ A biplot of the data can be generated similarly to the 3D plot by running:
 ## TODO
 
 - S3 Constructor function! https://adv-r.hadley.nz/s3.html#s3-constructor
-- document datasets
-- Different (?) Documentation for S3 methods.
+- document how gtex was processed.
 - Implement print.cacomp() method for nicer printing of cacomp objects.
+- Ensure that input matrix doesnt have columns containing only 0s.
+- replace for loops with map/apply. --> Tested with map. not faster.
 

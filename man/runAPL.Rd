@@ -127,9 +127,9 @@ Association plot (plotly object).
 \description{
 Computes singular value decomposition and coordinates for the Association plot.
 
-Computes singular value decomposition and coordinates for the Association plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
+runAPL.SingleCellExperiment: Computes singular value decomposition and coordinates for the Association plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
 
-Computes singular value decomposition and coordinates for the Association plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
+runAPL.Seurat: Computes singular value decomposition and coordinates for the Association plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
 }
 \details{
 The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.

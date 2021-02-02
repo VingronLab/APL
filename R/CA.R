@@ -1,12 +1,4 @@
 
-# library(torch)
-# library(reticulate)
-# library(ggrepel)
-# library(ggplot2)
-# library(dplyr)
-# library(plotly)
-# reticulate::use_python("/usr/bin/python3", required = TRUE)
-
 
 #' Compute Standard Residuals
 #'
@@ -629,7 +621,7 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
 
     matrix_expl_inertia_perm <- matrix(0, nrow = max_num_dims , ncol = reps)
 
-    for (k in 1:reps) {
+    for (k in seq(reps)) {
       message("Running permutation ", k, " out of ", reps, " for elbow rule ...")
       mat <- as.matrix(mat)
       mat_perm <- apply(mat, 2, FUN=sample)
@@ -657,7 +649,7 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
 
         colnm <- paste0("perm",k)
         screeplot <- screeplot +
-          ggplot2::geom_line(data = df, aes(x=dims, y=.data[[colnm]]), color="black", alpha=0.8, linetype=2)
+          ggplot2::geom_line(data = df, ggplot2::aes(x=dims, y=.data[[colnm]]), color="black", alpha=0.8, linetype=2)
 
       }
     }

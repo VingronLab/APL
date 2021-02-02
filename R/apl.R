@@ -69,8 +69,6 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
   caobj$group <- group
 
-  if (!is(caobj,"APL")) class(caobj) <- c(class(caobj), "APL")
-
   return(caobj)
 }
 
@@ -104,7 +102,7 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
 
-  if (!is(caobj,"APL")){
+  if (!"apl_rows" %in% names(caobj) || !"apl_cols" %in% names(caobj)){
     stop("Please run apl_coords() first!")
   }
 
@@ -182,7 +180,7 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
 
-  if (!is(caobj,"APL")){
+  if (!"apl_rows" %in% names(caobj) || !"apl_cols" %in% names(caobj)){
     stop("Please run apl_coords() first!")
   }
 
@@ -380,7 +378,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
     }
   }
 
-  if (!"apl_coords_rows" %in% names(caobj) || !"apl_coords_cols" %in% names(caobj)){
+  if (!"apl_rows" %in% names(caobj) || !"apl_cols" %in% names(caobj)){
     caobj <- apl_coords(caobj = caobj, group = group)
   }
 
@@ -424,7 +422,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
 
 
 #' @description
-#' Computes singular value decomposition and coordinates for the Association plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
+#' runAPL.SingleCellExperiment: Computes singular value decomposition and coordinates for the Association plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
 #'
 #' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #'
@@ -457,7 +455,7 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
 
 
 #' @description
-#' Computes singular value decomposition and coordinates for the Association plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
+#' runAPL.Seurat: Computes singular value decomposition and coordinates for the Association plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
 #'
 #' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #'
