@@ -25,7 +25,7 @@ One way to do this is with the R package reticulate:
     library(reticulate)
     install_miniconda() # Installs Miniconda
     conda_install(envname = "r-reticulate", packages = "numpy")
-    conda_install(envname = "r-reticulate", packages = "torch") # Installs numpy and pytorch to the default env.
+    conda_install(envname = "r-reticulate", packages = "pytorch") # Installs numpy and pytorch to the default env.
 
 
 ## Feature overview
