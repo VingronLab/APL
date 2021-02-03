@@ -43,13 +43,13 @@ ca_3Dplot.cacomp <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1
 
   if (princ_coords == 1){
 
-    if(!sum(c("prin_coords_rows", "std_coords_cols") %in% names(obj))==2){
+    if(sum(!is.null(obj$prin_coords_rows), !is.null(obj$std_coords_cols)) != 2){
       stop("Principal and/or standard coordinates not found, please run ca_coords() first!")
     }
     rows <- obj$prin_coords_rows
     cols <- obj$std_coords_cols
   } else if (princ_coords == 2){
-    if(!sum(c("prin_coords_cols", "std_coords_rows") %in% names(obj))==2){
+    if(sum(!is.null(obj$prin_coords_cols), !is.null(obj$std_coords_rows)) != 2){
       stop("Principal and/or standard coordinates not found, please run ca_coords() first!")
     }
     rows <- obj$std_coords_rows
@@ -218,13 +218,13 @@ ca_biplot.cacomp <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labe
 
   if (princ_coords == 1){
 
-    if(!sum(c("prin_coords_rows", "std_coords_cols") %in% names(obj))==2){
+    if(sum(!is.null(obj$prin_coords_rows), !is.null(obj$std_coords_cols)) != 2){
       stop("Principal and/or standard coordinates not found, please run ca_coords() first!")
     }
     rows <- obj$prin_coords_rows
     cols <- obj$std_coords_cols
   } else if (princ_coords == 2){
-    if(!sum(c("prin_coords_cols", "std_coords_rows") %in% names(obj))==2){
+    if(sum(!is.null(obj$prin_coords_cols), !is.null(obj$std_coords_rows)) != 2){
       stop("Principal and/or standard coordinates not found, please run ca_coords() first!")
     }
     rows <- obj$std_coords_rows

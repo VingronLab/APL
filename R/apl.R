@@ -102,7 +102,7 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
 
-  if (!"apl_rows" %in% names(caobj) || !"apl_cols" %in% names(caobj)){
+  if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
     stop("Please run apl_coords() first!")
   }
 
@@ -180,7 +180,7 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
 
-  if (!"apl_rows" %in% names(caobj) || !"apl_cols" %in% names(caobj)){
+  if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
     stop("Please run apl_coords() first!")
   }
 
@@ -359,9 +359,9 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
                     python = TRUE)
 
   } else {
-    if("dims" %in% names(caobj) && is.null(dims)){
+    if(!is.null(caobj$dims) && is.null(dims)){
       dims <- caobj$dims
-    } else if ("dims" %in% names(caobj) && !is.null(dims)) {
+    } else if (!is.null(caobj$dims) && !is.null(dims)) {
         # warning("The caobj was previously already subsetted to ", caobj$dims, " dimensions. Subsetting again!")
       if (dims < caobj$dims){
         # caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = FALSE, princ_coords = 1)
@@ -371,14 +371,14 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
       }
     }
 
-    if (!"prin_coords_rows" %in% names(caobj) && "std_coords_rows" %in% names(caobj)){
+    if (is.null(caobj$prin_coords_rows) && !is.null(caobj$std_coords_rows)){
       caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = TRUE, princ_coords = 1)
-    } else if (!"prin_coords_rows" %in% names(caobj) || !"std_coords_cols" %in% names(caobj)){
+    } else if (is.null(caobj$prin_coords_rows) || is.null(caobj$std_coords_cols)){
       caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = FALSE, princ_coords = 1)
     }
   }
 
-  if (!"apl_rows" %in% names(caobj) || !"apl_cols" %in% names(caobj)){
+  if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
     caobj <- apl_coords(caobj = caobj, group = group)
   }
 
@@ -432,7 +432,7 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
-  mat <- SingleCellExperiment::assay(obj, assay)
+  mat <- SummarizedExperiment::assay(obj, assay)
 
   if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
     caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)

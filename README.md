@@ -59,7 +59,7 @@ To run Correspondence Analysis we can use the `cacomp()` function. By default it
                  top = 5000,
                  python = TRUE)
                  
-    names(ca)
+    ca
 
 
 A convenient way to estimate the number of dimensions that we should keep for downstream analysis is to use `pick_dims()`. Several different methods are implemented to estimate the number of interesting dimensions, but here we use a formalization of the elbow rule to find a cutoff. This relies on rerunning `cacomp` on permutations of the data, which can take long for large count matrices, in which case either the number of `reps` should be decreased or one of the other methods can be chosen.
@@ -185,9 +185,7 @@ A biplot of the data can be generated similarly to the 3D plot by running:
 
 ## TODO
 
-- S3 Constructor function! https://adv-r.hadley.nz/s3.html#s3-constructor
 - document how gtex was processed.
-- Implement print.cacomp() method for nicer printing of cacomp objects.
 - Ensure that input matrix doesnt have columns containing only 0s.
 - replace for loops with map/apply. --> Tested with map. not faster.
 

@@ -95,7 +95,8 @@ as.cacomp.Seurat <- function(obj, assay = NULL, recompute = TRUE){
   ca_obj$top_rows <- nrow(ca_obj$prin_coords_rows)
   ca_obj$dims <- length(ca_obj$D)
 
-  class(ca_obj) <- "cacomp"
+  ca_obj <- new_cacomp(ca_obj)
+  # class(ca_obj) <- "cacomp"
 
   if (recompute == TRUE){
     stopifnot("Assay is needed to recompute cacomp." = !is.null(assay))
@@ -139,12 +140,13 @@ as.cacomp.SingleCellExperiment <- function(obj, assay = NULL, recompute = TRUE){
   ca_obj$top_rows <- nrow(ca_obj$prin_coords_rows)
   ca_obj$dims <- length(ca_obj$D)
 
-  class(ca_obj) <- "cacomp"
+  ca_obj <- new_cacomp(ca_obj)
+  # class(ca_obj) <- "cacomp"
 
   if (recompute == TRUE){
 
     stopifnot("Assay is needed to recompute cacomp." = !is.null(assay))
-    scemat <- SingleCellExperiment::assay(sce, assay)
+    scemat <- SummarizedExperiment::assay(sce, assay)
     scemat
 
     ca_obj <- recompute(caobj = ca_obj, mat = scemat)
