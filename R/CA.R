@@ -190,7 +190,9 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
   SVD$row_masses <- rowm
   SVD$col_masses <- colm
   SVD$top_rows <- toptmp
-  class(SVD) <- "cacomp"
+
+  SVD <- new_cacomp(SVD)
+  # class(SVD) <- "cacomp"
 
   if (coords == TRUE){
     message("Calculating coordinates ...")
@@ -306,7 +308,7 @@ cacomp.SingleCellExperiment <- function(obj, coords=TRUE, princ_coords = 1, pyth
   stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
   stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
 
-  mat <- SingleCellExperiment::assay(obj, assay)
+  mat <- SummarizedExperiment::assay(obj, assay)
   mat <- as.matrix(mat)
 
   top <- min(nrow(mat), top)
@@ -374,17 +376,17 @@ subset_dims <- function(caobj, dims){
   caobj$V <- caobj$V[,dims]
   caobj$D <- caobj$D[dims]
 
-  if ("std_coords_cols" %in% names(caobj)){
+  if (is.null(caobj$std_coords_cols)){
     caobj$std_coords_cols <- caobj$std_coords_cols[,dims]
-    if ("prin_coords_cols" %in% names(caobj)){
+    if (is.null(caobj$prin_coords_cols)){
       caobj$prin_coords_cols <- caobj$prin_coords_cols[,dims]
 
     }
   }
 
-  if ("std_coords_rows" %in% names(caobj)){
+  if (is.null(caobj$std_coords_rows)){
     caobj$std_coords_rows <- caobj$std_coords_rows[,dims]
-    if ("prin_coords_rows" %in% names(caobj)){
+    if (is.null(caobj$prin_coords_rows)){
       caobj$prin_coords_rows <- caobj$prin_coords_rows[,dims]
     }
   }
@@ -721,7 +723,7 @@ pick_dims.SingleCellExperiment <- function(obj, mat = NULL, method="scree_plot",
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
   if (method == "elbow_rule") {
-    mat <- SingleCellExperiment::assay(obj, assay)
+    mat <- SummarizedExperiment::assay(obj, assay)
   } else {
     mat <- NULL
   }
