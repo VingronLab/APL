@@ -90,7 +90,7 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 
 \item{inertia}{Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.}
 
-\item{rm_zeros}{Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.}
+\item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.}
 
 \item{...}{Other parameters}
 
