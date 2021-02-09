@@ -93,7 +93,7 @@ var_rows <- function(mat, top = 5000){
 #' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
 #' @param top Integer. Number of most variable rows to retain. Default NULL.
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows containing only 0s should be removed. Keeping zero only rows might lead to unexpected results.Default TRUE.
+#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
 #' @param ... Arguments forwarded to methods.
 #' @export
 cacomp <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
@@ -119,12 +119,17 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
   stopifnot("Input matrix does not have any colnames!" = !is.null(colnames(obj)))
 
   if (rm_zeros == TRUE){
-    no_zeros <- rowSums(obj) > 0
-
-    if (sum(!no_zeros) != 0){
+    no_zeros_rows <- rowSums(obj) > 0
+    no_zeros_cols <- colSums(obj) > 0
+    if (sum(!no_zeros_rows) != 0){
       ## Delete genes with only with only zero values across all conditions
       warning("Matrix contains rows with only 0s. These rows were removed. If undesired set rm_zeros = FALSE.")
-      obj <- obj[no_zeros,]
+      obj <- obj[no_zeros_cols,]
+    }
+    if (sum(!no_zeros_cols) != 0){
+      ## Delete genes with only with only zero values across all conditions
+      warning("Matrix contains columns with only 0s. These columns were removed. If undesired set rm_zeros = FALSE.")
+      obj <- obj[,no_zeros_cols]
     }
   }
 

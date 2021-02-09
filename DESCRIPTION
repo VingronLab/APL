@@ -17,6 +17,7 @@ Imports:
     plotly,
     Seurat,
     SingleCellExperiment,
-    magrittr
+    magrittr,
+    SummarizedExperiment
 Depends: 
     R (>= 2.10)
