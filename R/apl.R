@@ -58,6 +58,11 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     # pythagoras, y(r)=b²=c²-a²
     rowy <- sqrt(length_vector_rows^2 - rowx^2)
 
+    rowx[is.na(rowx)] <- 0
+    rowy[is.na(rowy)] <- 0
+    # rowx[is.infinite(rowx)] <- 0
+    # rowy[is.infinite(rowy)] <- 0
+
     caobj$apl_rows <- cbind("x"=rowx, "y"=rowy)
   }
 
@@ -68,10 +73,21 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     colx <- drop(t(cols) %*% avg_group_coords)/length_vector_group
     coly <- sqrt(length_vector_cols^2 - colx^2)
 
+    colx[is.na(colx)] <- 0
+    coly[is.na(coly)] <- 0
+    # colx[is.infinite(colx)] <- 0
+    # coly[is.infinite(coly)] <- 0
+
     caobj$apl_cols <- cbind("x"=colx, "y"=coly)
   }
 
-  caobj$group <- group
+  if (is(group, "numeric")){
+    caobj$group <- group
+  } else if (is(group, "character")){
+    idx <- match(group, colnames(cols))
+    idx <- na.omit(idx)
+    caobj$group <- idx
+  }
 
   return(caobj)
 }
@@ -110,7 +126,17 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     stop("Please run apl_coords() first!")
   }
 
-  row_num <- nrow(caobj$prin_coords_rows)
+  if (is(group, "character")){
+    idx <- match(group, colnames(mat))
+    idx <- na.omit(idx)
+    group <- idx
+  }
+
+  if (caobj$dims == 1 && !is.null(caobj$dims)){
+    row_num <- 1
+  } else {
+    row_num <- nrow(caobj$prin_coords_rows)
+  }
   apl_rows_perm <- data.frame("x" = rep(0, row_num*reps), "y" = rep(0, row_num*reps)) #init. data frame
 
   for (k in seq(reps)){
@@ -360,7 +386,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
                     top = top,
                     princ_coords = 1,
                     dims = dims,
-                    python = TRUE)
+                    python = python)
 
   } else {
     if(!is.null(caobj$dims) && is.null(dims)){
@@ -393,7 +419,8 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
                          mat = obj,
                          dims = caobj$dims,
                          group = caobj$group,
-                         reps= reps)
+                         reps= reps,
+                         python = python)
 
       mark_rows <- head(caobj$APL_score$Row_num, nrow)
     } else {
