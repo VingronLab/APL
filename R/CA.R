@@ -457,8 +457,14 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
   if(princ_only == FALSE){
 
     #standard coordinates
-    caobj$std_coords_rows <- sweep(caobj$U, 1, sqrt(caobj$row_masses), "/")
-    caobj$std_coords_cols <- sweep(caobj$V, 1, sqrt(caobj$col_masses), "/")
+    if(dims == 1 && !is.null(dims)){
+      caobj$std_coords_rows <- caobj$U/sqrt(caobj$row_masses)
+      caobj$std_coords_cols <- caobj$V/sqrt(caobj$col_masses)
+    } else {
+      caobj$std_coords_rows <- sweep(x = caobj$U, MARGIN = 1, STAT = sqrt(caobj$row_masses), FUN = "/")
+      caobj$std_coords_cols <- sweep(x = caobj$V, MARGIN = 1, STAT = sqrt(caobj$col_masses), FUN = "/")
+    }
+
 
     # Ensure no NA/Inf after dividing by 0.
     caobj$std_coords_rows[is.na(caobj$std_coords_rows)] <- 0
@@ -477,15 +483,33 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
 
       if (princ_coords == 1){
         #principal coordinates for rows
-        caobj$prin_coords_rows <- sweep(caobj$std_coords_rows, 2, caobj$D, "*")
+        if (dims == 1 && !is.null(dims)){
+          caobj$prin_coords_rows <- caobj$std_coords_rows*caobj$D
+        } else {
+          caobj$prin_coords_rows <- sweep(caobj$std_coords_rows, 2, caobj$D, "*")
+        }
+
       } else if (princ_coords == 2) {
         #principal coordinates for columns
-        caobj$prin_coords_cols <- sweep(caobj$std_coords_cols, 2, caobj$D, "*")
+        if (dims == 1 && !is.null(dims)){
+          caobj$prin_coords_cols <- caobj$std_coords_cols*caobj$D
+        } else {
+          caobj$prin_coords_cols <- sweep(caobj$std_coords_cols, 2, caobj$D, "*")
+        }
       } else if (princ_coords  == 3) {
-        #principal coordinates for rows
-        caobj$prin_coords_rows <- sweep(caobj$std_coords_rows, 2, caobj$D, "*")
-        #principal coordinates for columns
-        caobj$prin_coords_cols <- sweep(caobj$std_coords_cols, 2, caobj$D, "*")
+
+        if (dims == 1 && !is.null(dims)){
+          #principal coordinates for rows
+          caobj$prin_coords_rows <- caobj$std_coords_rows*caobj$D
+          #principal coordinates for columns
+          caobj$prin_coords_cols <- caobj$std_coords_cols*caobj$D
+        } else {
+          #principal coordinates for rows
+          caobj$prin_coords_rows <- sweep(caobj$std_coords_rows, 2, caobj$D, "*")
+          #principal coordinates for columns
+          caobj$prin_coords_cols <- sweep(caobj$std_coords_cols, 2, caobj$D, "*")
+        }
+
       }
 
   }
