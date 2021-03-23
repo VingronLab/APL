@@ -21,6 +21,7 @@ runAPL(
   python = TRUE,
   row_labs = TRUE,
   col_labs = TRUE,
+  type = "plotly",
   ...
 )
 
@@ -37,6 +38,7 @@ runAPL(
   python = TRUE,
   row_labs = TRUE,
   col_labs = TRUE,
+  type = "plotly",
   ...
 )
 
@@ -53,6 +55,7 @@ runAPL(
   python = TRUE,
   row_labs = TRUE,
   col_labs = TRUE,
+  type = "plotly",
   ...
 )
 
@@ -69,6 +72,7 @@ runAPL(
   python = TRUE,
   row_labs = TRUE,
   col_labs = TRUE,
+  type = "plotly",
   ...,
   assay = "counts"
 )
@@ -86,6 +90,7 @@ runAPL(
   python = TRUE,
   row_labs = TRUE,
   col_labs = TRUE,
+  type = "plotly",
   ...,
   assay = DefaultAssay(obj)
 )
@@ -116,6 +121,8 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 \item{row_labs}{Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.}
 
 \item{col_labs}{Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.}
+
+\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".}
 
 \item{...}{Arguments forwarded to methods.}
 

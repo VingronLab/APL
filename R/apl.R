@@ -353,9 +353,10 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".
 #' @param ... Arguments forwarded to methods.
 #' @export
-runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
   UseMethod("runAPL")
 }
 
@@ -363,7 +364,7 @@ runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000,
 
 #' @rdname runAPL
 #' @export
-runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
   stop(paste0("runAPL does not know how to handle objects of class ",
               class(x),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -373,7 +374,7 @@ runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top
 
 #' @export
 #' @rdname runAPL
-runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ...){
+runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
 
   if (!is(obj, "matrix")){
     obj <- as.matrix(obj)
@@ -439,7 +440,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
   }
 
   p <- apl(caobj = caobj,
-           type = "plotly",
+           type = type,
            rowlabels = TRUE,
            collabels = TRUE,
            rows_idx = mark_rows,
@@ -459,7 +460,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
 #'
 #' @rdname runAPL
 #' @export
-runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ..., assay = "counts"){
+runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ..., assay = "counts"){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
@@ -480,7 +481,8 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
                 reps = reps,
                 python = python,
                 row_labs = row_labs,
-                col_labs = col_labs)
+                col_labs = col_labs,
+                type = type)
 
 }
 
@@ -492,7 +494,7 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
 #'
 #' @rdname runAPL
 #' @export
-runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, ..., assay = DefaultAssay(obj)){
+runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ..., assay = DefaultAssay(obj)){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -513,6 +515,7 @@ runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
                 mark_rows = mark_rows,
                 nrow = nrow,
                 row_labs = row_labs,
-                col_labs = col_labs)
+                col_labs = col_labs,
+                type = type)
 }
 
