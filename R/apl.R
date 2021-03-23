@@ -41,7 +41,11 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     stop("Parameter group hast to be either of type 'numeric' or 'character'.")
   }
 
-  avg_group_coords <- rowMeans(subgroup) # centroid vector.
+  if (length(group) == 1){
+    avg_group_coords <- subgroup # single sample
+  } else {
+    avg_group_coords <- rowMeans(subgroup) # centroid vector.
+  }
   length_vector_group <- sqrt(drop(avg_group_coords %*% avg_group_coords))
   length_vector_rows <- sqrt(colSums(rows^2))
   length_vector_cols <- sqrt(colSums(cols^2))
