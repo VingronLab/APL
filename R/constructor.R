@@ -23,7 +23,8 @@ new_cacomp <- function(x){
                   "top_rows",
                   "tot_inertia",
                   "row_inertia",
-                  "col_inertia")
+                  "col_inertia",
+                  "row_centroid")
 
   check_names(x, canames = cacomp_nms)
   x <- fill_names(x, canames = cacomp_nms)
