@@ -4,7 +4,16 @@
 \alias{apl_score}
 \title{Find rows most highly associated with a condition}
 \usage{
-apl_score(caobj, mat, dims, group, reps = 10, quant = 0.99, python = TRUE)
+apl_score(
+  caobj,
+  mat,
+  dims,
+  group,
+  reps = 10,
+  quant = 0.99,
+  python = TRUE,
+  row_centroid = FALSE
+)
 }
 \arguments{
 \item{caobj}{A "cacomp" object with principal row coordinates and standard column coordinates calculated.}
@@ -22,6 +31,8 @@ Should contain row and column names.}
 
 \item{python}{A logical value indicating whether to use singular-value decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to `svd()` in R.}
+
+\item{row_centroid}{TRUE/FALSE. Whether the the columns should be scored instead of the rows. Default FALSE.}
 }
 \value{
 Returns the input "cacomp" object with "APL_score" component added.

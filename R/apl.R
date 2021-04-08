@@ -19,20 +19,33 @@
 #' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
 #' @param calc_rows TRUE/FALSE. Whether apl row coordinates should be calculated. Default TRUE.
 #' @param calc_cols TRUE/FALSE. Whether apl column coordinates should be calculated. Default TRUE.
+#' @param row_centroid TRUE/FALSE. Whether the centroid should be calculated for the rows (group is then row indices). Default FALSE.
 #' @export
-apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
+apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE, row_centroid = FALSE){
 
   stopifnot(is(caobj, "cacomp"))
 
-  rows <- t(caobj$prin_coords_rows)
-  cols <- t(caobj$std_coords_cols)
+
+
+  if (row_centroid == FALSE){
+    rows <- t(caobj$prin_coords_rows)
+    cols <- t(caobj$std_coords_cols)
+    cent <- cols
+
+  } else if (row_centroid == TRUE){
+    rows <- t(caobj$std_coords_rows)
+    cols <- t(caobj$prin_coords_cols)
+    cent <- rows
+  } else {
+    stop("row_centroid has to be either TRUE or FALSE.")
+  }
 
   if (is(group, "numeric")){
-    subgroup <- cols[,group]
+    subgroup <- cent[,group]
   } else if (is(group, "character")){
-    idx <- match(group, colnames(cols))
+    idx <- match(group, colnames(cent))
     idx <- na.omit(idx)
-    subgroup <- cols[,idx]
+    subgroup <- cent[,idx]
 
     if (anyNA(idx)){
       warning("Not all names in 'group' are contained in the column names. Non-matching values were ignored.")
@@ -89,6 +102,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     caobj$group <- idx
   }
 
+  caobj$row_centroid <- row_centroid
   return(caobj)
 }
 
@@ -115,8 +129,9 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' @param quant Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @param row_centroid TRUE/FALSE. Whether the the columns should be scored instead of the rows. Default FALSE.
 #' @export
-apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = TRUE){
+apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = TRUE, row_centroid = FALSE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -126,53 +141,91 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     stop("Please run apl_coords() first!")
   }
 
+  if (row_centroid == FALSE) {
+    names <- colnames(mat)
+    row_num <- nrow(caobj$apl_rows)
+    margin <- 1
+    pc <- 1
+    cc <- FALSE
+    cr <- TRUE
+
+  } else if (row_centroid == TRUE) {
+    names <- rownames(mat)
+    row_num <- nrow(caobj$apl_cols)
+    margin <- 2
+    pc <- 2
+    cc <- TRUE
+    cr <- FALSE
+  }
+
   if (is(group, "character")){
-    idx <- match(group, colnames(mat))
+    idx <- match(group, names)
     idx <- na.omit(idx)
     group <- idx
   }
 
   if (caobj$dims == 1 && !is.null(caobj$dims)){
     row_num <- 1
-  } else {
-    row_num <- nrow(caobj$prin_coords_rows)
   }
-  apl_rows_perm <- data.frame("x" = rep(0, row_num*reps), "y" = rep(0, row_num*reps)) #init. data frame
+
+  apl_perm <- data.frame("x" = rep(0, row_num*reps), "y" = rep(0, row_num*reps)) #init. data frame
 
   for (k in seq(reps)){
-    message("\nRunning permutation ", k, " out of ", reps, " to calculate row scores ...")
+    message("\nRunning permutation ", k, " out of ", reps, " to calculate row/column scores ...")
 
     #permute rows and rerun cacomp
-    mat_perm <- t(apply(mat, 1, FUN=sample))
-    colnames(mat_perm) <- colnames(mat)
+
+    if (row_centroid == FALSE){
+      mat_perm <- t(apply(mat, margin, FUN=sample))
+      colnames(mat_perm) <- colnames(mat)
+    } else if (row_centroid == TRUE) {
+      mat_perm <- apply(mat, margin, FUN=sample)
+      rownames(mat_perm) <- rownames(mat)
+    }
 
     caobjp <- cacomp(obj = mat_perm,
                      python = python,
                      coords = TRUE,
-                     princ_coords = 1,
+                     princ_coords = pc,
                      dims = dims,
                      top = caobj$top_rows,
                      inertia = FALSE)
 
-    caobjp <- apl_coords(caobj = caobjp, group = group, calc_cols = FALSE)
+    caobjp <- apl_coords(caobj = caobjp, group = group, calc_cols = cc, calc_rows = cr, row_centroid = row_centroid)
     idx <- ((1:row_num)+((k-1)*row_num))
-    apl_rows_perm[idx,] <- caobjp$apl_rows
+
+    if (row_centroid == FALSE){
+      apl_perm[idx,] <- caobjp$apl_rows
+    } else if (row_centroid == TRUE) {
+      apl_perm[idx,] <- caobjp$apl_cols
+    }
+
   }
 
-  apl_rows_perm[,3] <- apl_rows_perm[,1]/apl_rows_perm[,2] # cotan between row and x axis
-  apl_rows_perm[,3][is.na(apl_rows_perm[,3])] <- 0
+  apl_perm[,3] <- apl_perm[,1]/apl_perm[,2] # cotan between row and x axis
+  apl_perm[,3][is.na(apl_perm[,3])] <- 0
 
   # cutoff from original code from Ela
-  # angles_vector <- sort(apl_rows_perm[,3], decreasing = TRUE)
+  # angles_vector <- sort(apl_perm[,3], decreasing = TRUE)
   # cutoff_cotan <- angles_vector[ceiling(0.01 * length(angles_vector))]
 
   # With 99% quantile, gives different results though!
-  cutoff_cotan <- quantile(apl_rows_perm[,3], quant)
+  cutoff_cotan <- quantile(apl_perm[,3], quant)
 
-  score <- caobj$apl_rows[,1] - (caobj$apl_rows[,2] * cutoff_cotan)
-  ranking <- data.frame("Rowname" = rownames(caobj$apl_rows),
-                        "Score" = score,
-                        "Row_num" = 1:nrow(caobj$apl_rows))
+  if (row_centroid == FALSE){
+
+    score <- caobj$apl_rows[,1] - (caobj$apl_rows[,2] * cutoff_cotan)
+    ranking <- data.frame("Rowname" = rownames(caobj$apl_rows),
+                          "Score" = score,
+                          "Row_num" = 1:nrow(caobj$apl_rows))
+  } else if (row_centroid == TRUE) {
+
+    score <- caobj$apl_cols[,1] - (caobj$apl_cols[,2] * cutoff_cotan)
+    ranking <- data.frame("Columnnames" = rownames(caobj$apl_cols),
+                          "Score" = score,
+                          "Col_num" = 1:nrow(caobj$apl_cols))
+  }
+
 
   ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
   ranking$Rank <- 1:nrow(ranking)
@@ -347,16 +400,18 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
 #' @param nrow Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.
 #' @param top Integer. Number of most variable rows to retain. Default 5000.
 #' @param score Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.
-#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.
+#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL and row_centroid = FALSE, score is ignored. Default NULL.
+#' @param mark_cols Character vector. Names of cols that should be highlighted in the plot. If not NULL and row_centroid = TRUE, score is ignored. Default NULL.
 #' @param reps Integer. Number of permutations during scoring. Default 3.
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".
+#' @param row_centroid TRUE/FALSE. Whether the centroid should be calculated for the rows (group is then row indices). Default FALSE.
 #' @param ... Arguments forwarded to methods.
 #' @export
-runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
+runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = caobj$group, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ...){
   UseMethod("runAPL")
 }
 
@@ -364,7 +419,7 @@ runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000,
 
 #' @rdname runAPL
 #' @export
-runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
+runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ...){
   stop(paste0("runAPL does not know how to handle objects of class ",
               class(x),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -374,7 +429,7 @@ runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top
 
 #' @export
 #' @rdname runAPL
-runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
+runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ...){
 
   if (!is(obj, "matrix")){
     obj <- as.matrix(obj)
@@ -385,7 +440,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
     caobj <- cacomp(obj = obj,
                     coords = TRUE,
                     top = top,
-                    princ_coords = 1,
+                    princ_coords = 3,
                     dims = dims,
                     python = python)
 
@@ -410,23 +465,46 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
   }
 
   if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
-    caobj <- apl_coords(caobj = caobj, group = group)
+    caobj <- apl_coords(caobj = caobj, group = group, row_centroid = row_centroid)
   }
 
 
-  if (is.null(mark_rows)){
+  if ((is.null(mark_rows) && row_centroid == FALSE) || (is.null(mark_cols) && row_centroid == TRUE)){
     if (score == TRUE){
       caobj <- apl_score(caobj = caobj,
                          mat = obj,
                          dims = caobj$dims,
                          group = caobj$group,
                          reps= reps,
-                         python = python)
+                         python = python,
+                         row_centroid = row_centroid)
 
-      mark_rows <- head(caobj$APL_score$Row_num, nrow)
-    } else {
-      mark_rows <- NULL
-    }
+      if (row_centroid == FALSE) {
+        mark_rows <- head(caobj$APL_score$Row_num, nrow)
+
+        if (is(mark_cols, "character")){
+          mark_cols <- match(mark_cols, rownames(caobj$apl_cols))
+          mark_cols <- na.omit(mark_cols)
+          if (anyNA(mark_cols)){
+            warning("Not all names in 'mark_cols' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
+          }
+        } else  {
+          stop("Parameter mark_cols hast to be of type 'character'.")
+        }
+
+      } else if (row_centroid == TRUE) {
+        mark_cols <- head(caobj$APL_score$Col_num, nrow)
+
+        if (is(mark_rows, "character")){
+          mark_rows <- match(mark_rows, rownames(caobj$apl_rows))
+          mark_rows <- na.omit(mark_rows)
+          if (anyNA(mark_rows)){
+            warning("Not all names in 'mark_rows' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
+          }
+        } else  {
+          stop("Parameter mark_rows hast to be of type 'character'.")
+        }
+     }}
   } else{
     if (is(mark_rows, "character")){
       mark_rows <- match(mark_rows, rownames(caobj$apl_rows))
@@ -434,17 +512,26 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
       if (anyNA(mark_rows)){
         warning("Not all names in 'mark_rows' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
       }
-    } else  {
-      stop("Parameter mark_rows hast to be of type 'character'.")
+    }
+
+    if (is(mark_cols, "character")){
+      mark_cols <- match(mark_cols, rownames(caobj$apl_cols))
+      mark_cols <- na.omit(mark_cols)
+      if (anyNA(mark_cols)){
+        warning("Not all names in 'mark_cols' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
+      }
     }
   }
+
+  if(!is(mark_rows, "character")) stop("Parameter mark_rows hast to be of type 'character'.")
+  if(!is(mark_cols, "character")) stop("Parameter mark_cols hast to be of type 'character'.")
 
   p <- apl(caobj = caobj,
            type = type,
            rowlabels = TRUE,
            collabels = TRUE,
            rows_idx = mark_rows,
-           cols_idx = caobj$group,
+           cols_idx = mark_cols,
            row_labs = row_labs,
            col_labs = col_labs)
 
@@ -460,7 +547,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
 #'
 #' @rdname runAPL
 #' @export
-runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ..., assay = "counts"){
+runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL,  reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ..., assay = "counts"){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
@@ -475,6 +562,7 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
                 dims = dims,
                 group = group,
                 mark_rows = mark_rows,
+                mark_cols = mark_cols,
                 nrow = nrow,
                 top = top,
                 score = score,
@@ -482,7 +570,8 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
                 python = python,
                 row_labs = row_labs,
                 col_labs = col_labs,
-                type = type)
+                type = type,
+                row_centroid = row_centroid)
 
 }
 
@@ -494,7 +583,7 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
 #'
 #' @rdname runAPL
 #' @export
-runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ..., assay = DefaultAssay(obj)){
+runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ..., assay = DefaultAssay(obj)){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -513,9 +602,11 @@ runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
                 reps = reps,
                 python = python,
                 mark_rows = mark_rows,
+                mark_cols = mark_cols,
                 nrow = nrow,
                 row_labs = row_labs,
                 col_labs = col_labs,
-                type = type)
+                type = type,
+                row_centroid = row_centroid)
 }
 
