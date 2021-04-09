@@ -258,7 +258,7 @@ ca_biplot.cacomp <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labe
     if (!is.null(col_labels)){
       p <- p +
         ggplot2::geom_point(data=cols[col_labels,], ggplot2::aes_(x = as.name(cnmx), y = as.name(cnmy)), colour = "#990000", shape = 1) +
-        ggrepel::geom_text_repel(data=cols[col_labels,], ggplot2::aes_(x = as.name(cnmx), y = as.name(cnmy), label=rownames(cols[col_labels,])), colour = "#990000", max.overlaps = 20)
+        ggrepel::geom_text_repel(data=cols[col_labels,], ggplot2::aes_(x = as.name(cnmx), y = as.name(cnmy), label=rownames(cols[col_labels,])), colour = "#990000", max.overlaps = Inf)
     }
   } else if (type == "plotly"){
     p <- plotly::plot_ly(type='scatter', source='plot2D', mode='markers') %>%
