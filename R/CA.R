@@ -124,7 +124,7 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
     if (sum(!no_zeros_rows) != 0){
       ## Delete genes with only with only zero values across all conditions
       warning("Matrix contains rows with only 0s. These rows were removed. If undesired set rm_zeros = FALSE.")
-      obj <- obj[no_zeros_cols,]
+      obj <- obj[no_zeros_rows,]
     }
     if (sum(!no_zeros_cols) != 0){
       ## Delete genes with only with only zero values across all conditions
