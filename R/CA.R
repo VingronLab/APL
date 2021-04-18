@@ -47,7 +47,7 @@ comp_std_residuals <- function(mat){
 #' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
 #' @param top Integer. Number of most variable rows to retain. Default 5000.
-#'
+#' @export
 var_rows <- function(mat, top = 5000){
 
   res <-  comp_std_residuals(mat=mat)
