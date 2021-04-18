@@ -295,7 +295,7 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
 
 
     p <- ggplot2::ggplot() +
-      ggplot2::geom_point(data=apl_cols.tmp, ggplot2::aes(x=x, y=y), color = "#990000", shape = 4) +
+      ggplot2::geom_point(data=apl_cols.tmp, ggplot2::aes(x=x, y=y), color = "#006400", shape = 4) +
       ggplot2::geom_point(data=apl_cols.tmp[caobj$group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 1)+
       ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.5, shape = 1) +
       ggplot2::labs(title="Association Plot") +
