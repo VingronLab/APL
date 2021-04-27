@@ -250,14 +250,12 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
 #'
 #' @param caobj  An object of class "cacomp" and "APL" with apl coordinates calculated.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".
-#' @param rowlabels TRUE/FALSE. Logical whether rows should be labelled. Default TRUE.
-#' @param collabels TRUE/FALSE. Logical whether columns should be labelled. Default TRUE.
 #' @param rows_idx numeric vector. Indices of the rows that should be labelled. Default all rows: 1:nrow(caobj$apl_rows).
 #' @param cols_idx numeric vector. Indices of the columns that should be labelled. Default is only to label columns making up the centroid: caobj$group.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @export
-apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_idx = 1:nrow(caobj$apl_rows), cols_idx = caobj$group, row_labs = TRUE, col_labs = TRUE){
+apl <- function(caobj, type="ggplot", rows_idx = 1:nrow(caobj$apl_rows), cols_idx = caobj$group, row_labs = TRUE, col_labs = TRUE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -301,10 +299,10 @@ apl <- function(caobj, type="ggplot", rowlabels = TRUE, collabels = TRUE, rows_i
       ggplot2::labs(title="Association Plot") +
       ggplot2::theme_bw()
 
-    if(collabels == TRUE){
+    if(col_labs == TRUE){
       p <- p +
         ggrepel::geom_text_repel(data=group_cols, ggplot2::aes(x=x, y=y, label=rownms), color = "#990000")}
-    if (rowlabels == TRUE){
+    if (row_labs == TRUE){
       p <- p +
         ggplot2::geom_point(data=group_rows, ggplot2::aes(x=x, y=y), color="#FF0000", shape = 16) +
         ggrepel::geom_text_repel(data = group_rows, ggplot2::aes(x=x, y=y, label=rownms), color = "#FF0000")}
@@ -528,8 +526,6 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
 
   p <- apl(caobj = caobj,
            type = type,
-           rowlabels = TRUE,
-           collabels = TRUE,
            rows_idx = mark_rows,
            cols_idx = mark_cols,
            row_labs = row_labs,

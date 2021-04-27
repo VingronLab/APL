@@ -7,8 +7,6 @@
 apl(
   caobj,
   type = "ggplot",
-  rowlabels = TRUE,
-  collabels = TRUE,
   rows_idx = 1:nrow(caobj$apl_rows),
   cols_idx = caobj$group,
   row_labs = TRUE,
@@ -19,10 +17,6 @@ apl(
 \item{caobj}{An object of class "cacomp" and "APL" with apl coordinates calculated.}
 
 \item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".}
-
-\item{rowlabels}{TRUE/FALSE. Logical whether rows should be labelled. Default TRUE.}
-
-\item{collabels}{TRUE/FALSE. Logical whether columns should be labelled. Default TRUE.}
 
 \item{rows_idx}{numeric vector. Indices of the rows that should be labelled. Default all rows: 1:nrow(caobj$apl_rows).}
 
