@@ -294,7 +294,7 @@ apl <- function(caobj, type="ggplot", rows_idx = 1:nrow(caobj$apl_rows), cols_id
 
     p <- ggplot2::ggplot() +
       ggplot2::geom_point(data=apl_cols.tmp, ggplot2::aes(x=x, y=y), color = "#006400", shape = 4) +
-      ggplot2::geom_point(data=apl_cols.tmp[caobj$group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 1)+
+      ggplot2::geom_point(data=apl_cols.tmp[caobj$group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 4)+
       ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.5, shape = 1) +
       ggplot2::labs(title="Association Plot") +
       ggplot2::theme_bw()
@@ -305,7 +305,7 @@ apl <- function(caobj, type="ggplot", rows_idx = 1:nrow(caobj$apl_rows), cols_id
     if (row_labs == TRUE){
       p <- p +
         ggplot2::geom_point(data=group_rows, ggplot2::aes(x=x, y=y), color="#FF0000", shape = 16) +
-        ggrepel::geom_text_repel(data = group_rows, ggplot2::aes(x=x, y=y, label=rownms), color = "#FF0000")}
+        ggrepel::geom_text_repel(data = group_rows, ggplot2::aes(x=x, y=y, label=rownms), color = "#FF0000", max.overlaps = Inf)}
     rm(apl_rows.tmp, apl_cols.tmp)
 
     return(p)
