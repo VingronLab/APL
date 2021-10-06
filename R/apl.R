@@ -19,26 +19,17 @@
 #' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
 #' @param calc_rows TRUE/FALSE. Whether apl row coordinates should be calculated. Default TRUE.
 #' @param calc_cols TRUE/FALSE. Whether apl column coordinates should be calculated. Default TRUE.
-#' @param row_centroid TRUE/FALSE. Whether the centroid should be calculated for the rows (group is then row indices). Default FALSE.
 #' @export
-apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE, row_centroid = FALSE){
+apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
   stopifnot(is(caobj, "cacomp"))
 
 
 
-  if (row_centroid == FALSE){
-    rows <- t(caobj$prin_coords_rows)
-    cols <- t(caobj$std_coords_cols)
-    cent <- cols
+  rows <- t(caobj$prin_coords_rows)
+  cols <- t(caobj$std_coords_cols)
+  cent <- cols
 
-  } else if (row_centroid == TRUE){
-    rows <- t(caobj$std_coords_rows)
-    cols <- t(caobj$prin_coords_cols)
-    cent <- rows
-  } else {
-    stop("row_centroid has to be either TRUE or FALSE.")
-  }
 
   if (is(group, "numeric")){
     subgroup <- cent[,group]
@@ -64,7 +55,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE, row_cen
   length_vector_cols <- sqrt(colSums(cols^2))
 
   if (calc_rows == TRUE){
-    message("Calculating APL row coordinates ...")
+    # message("Calculating APL row coordinates ...")
     # r⋅X = |r|*|X|*cosθ
     # x(r) = (r⋅X)/|X| = |r|*cosθ
     rowx <- drop(t(rows) %*% avg_group_coords)/length_vector_group
@@ -81,7 +72,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE, row_cen
 
 
   if (calc_cols == TRUE){
-    message("Calculating APL column coordinates ...")
+    # message("Calculating APL column coordinates ...")
 
     colx <- drop(t(cols) %*% avg_group_coords)/length_vector_group
     coly <- sqrt(length_vector_cols^2 - colx^2)
@@ -102,7 +93,6 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE, row_cen
     caobj$group <- idx
   }
 
-  caobj$row_centroid <- row_centroid
   return(caobj)
 }
 
@@ -115,7 +105,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE, row_cen
 #' The score is calculated by permuting the values of each row to determine the cutoff angle of the 99% quantile.
 #' \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
 #' By default the permutation is repeated 10 times, but for very large matrices this can be reduced.
-#'
+#' If store_perm is TRUE the permuted data is stored in the cacomp object and can be used for future scoring.
 #' @return
 #' Returns the input "cacomp" object with "APL_score" component added.
 #' APL_score contains a data frame with ranked rows, their score and their original row number.
@@ -128,10 +118,10 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE, row_cen
 #' @param reps Integer. Number of permutations to perform. Default = 10.
 #' @param quant Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
+#' @param store_perm Logical. Whether permuted data should be stored in the CA object.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param row_centroid TRUE/FALSE. Whether the the columns should be scored instead of the rows. Default FALSE.
 #' @export
-apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = TRUE, row_centroid = FALSE){
+apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = TRUE, store_perm = TRUE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -141,22 +131,12 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     stop("Please run apl_coords() first!")
   }
 
-  if (row_centroid == FALSE) {
-    names <- colnames(mat)
-    row_num <- nrow(caobj$apl_rows)
-    margin <- 1
-    pc <- 1
-    cc <- FALSE
-    cr <- TRUE
-
-  } else if (row_centroid == TRUE) {
-    names <- rownames(mat)
-    row_num <- nrow(caobj$apl_cols)
-    margin <- 2
-    pc <- 2
-    cc <- TRUE
-    cr <- FALSE
-  }
+  names <- colnames(mat)
+  row_num <- nrow(caobj$apl_rows)
+  margin <- 1
+  pc <- 1
+  cc <- FALSE
+  cr <- TRUE
 
   if (is(group, "character")){
     idx <- match(group, names)
@@ -169,38 +149,52 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
   }
 
   apl_perm <- data.frame("x" = rep(0, row_num*reps), "y" = rep(0, row_num*reps)) #init. data frame
+  saved_ca <- list()
+  pb <- txtProgressBar(min = 0, max = reps, style = 3)
 
   for (k in seq(reps)){
-    message("\nRunning permutation ", k, " out of ", reps, " to calculate row/column scores ...")
+    # message("\nRunning permutation ", k, " out of ", reps, " to calculate row/column scores ...")
 
     #permute rows and rerun cacomp
 
-    if (row_centroid == FALSE){
+    if(isTRUE(store_perm) & identical(reps, attr(caobj$permuted_data,'reps'))){
+
+      caobjp <- caobj$permuted_data[[k]]
+
+    } else {
       mat_perm <- t(apply(mat, margin, FUN=sample))
       colnames(mat_perm) <- colnames(mat)
-    } else if (row_centroid == TRUE) {
-      mat_perm <- apply(mat, margin, FUN=sample)
-      rownames(mat_perm) <- rownames(mat)
+
+
+      suppressWarnings(caobjp <- cacomp(obj = mat_perm,
+                                         python = python,
+                                         coords = TRUE,
+                                         princ_coords = pc,
+                                         dims = dims,
+                                         top = caobj$top_rows,
+                                         inertia = FALSE))
+
+      if(isTRUE(store_perm)){
+        x <- list("std_coords_cols" = caobjp$std_coords_cols,
+                  "prin_coords_rows" = caobjp$prin_coords_rows)
+
+        saved_ca[[k]] <- new_cacomp(x)
+      }
     }
 
-    caobjp <- cacomp(obj = mat_perm,
-                     python = python,
-                     coords = TRUE,
-                     princ_coords = pc,
-                     dims = dims,
-                     top = caobj$top_rows,
-                     inertia = FALSE)
 
-    caobjp <- apl_coords(caobj = caobjp, group = group, calc_cols = cc, calc_rows = cr, row_centroid = row_centroid)
+
+
+    caobjp <- apl_coords(caobj = caobjp, group = group, calc_cols = cc, calc_rows = cr)
     idx <- ((1:row_num)+((k-1)*row_num))
 
-    if (row_centroid == FALSE){
-      apl_perm[idx,] <- caobjp$apl_rows
-    } else if (row_centroid == TRUE) {
-      apl_perm[idx,] <- caobjp$apl_cols
-    }
+    apl_perm[idx,] <- caobjp$apl_rows
+
+    setTxtProgressBar(pb, k)
 
   }
+
+  close(pb)
 
   apl_perm[,3] <- apl_perm[,1]/apl_perm[,2] # cotan between row and x axis
   apl_perm[,3][is.na(apl_perm[,3])] <- 0
@@ -212,29 +206,143 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
   # With 99% quantile, gives different results though!
   cutoff_cotan <- quantile(apl_perm[,3], quant)
 
-  if (row_centroid == FALSE){
-
-    score <- caobj$apl_rows[,1] - (caobj$apl_rows[,2] * cutoff_cotan)
-    ranking <- data.frame("Rowname" = rownames(caobj$apl_rows),
-                          "Score" = score,
-                          "Row_num" = 1:nrow(caobj$apl_rows))
-  } else if (row_centroid == TRUE) {
-
-    score <- caobj$apl_cols[,1] - (caobj$apl_cols[,2] * cutoff_cotan)
-    ranking <- data.frame("Columnnames" = rownames(caobj$apl_cols),
-                          "Score" = score,
-                          "Col_num" = 1:nrow(caobj$apl_cols))
-  }
-
+  score <- caobj$apl_rows[,1] - (caobj$apl_rows[,2] * cutoff_cotan)
+  ranking <- data.frame("Rowname" = rownames(caobj$apl_rows),
+                        "Score" = score,
+                        "Row_num" = 1:nrow(caobj$apl_rows))
 
   ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
   ranking$Rank <- 1:nrow(ranking)
 
   caobj$APL_score <- ranking
 
+  if(isTRUE(store_perm) & !identical(reps, attr(caobj$permuted_data,'reps'))){
+    caobj$permuted_data <- saved_ca
+    attr(caobj$permuted_data,'cutoff') <- cutoff_cotan
+    attr(caobj$permuted_data,'reps') <- reps
+  }
+
   return(caobj)
 
 }
+
+
+#' Find rows most highly associated with a condition through random APLs.
+#'
+#' @description
+#' Ranks rows by a calculated score which balances the association of the row with the condition and how associated it is with other conditions.
+#'
+#' @details
+#' The score is calculated by choosing random directions in space to calculate APLs for the rows.
+#' \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
+#' By default the permutation is repeated 10 times, but for very large matrices this can be reduced.
+#' If store_perm is TRUE the permuted data is stored in the cacomp object and can be used for future scoring.
+#' @return
+#' Returns the input "cacomp" object with "APL_score" component added.
+#' APL_score contains a data frame with ranked rows, their score and their original row number.
+#'
+#' @param caobj A "cacomp" object with principal row coordinates and standard column coordinates calculated.
+#' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' Should contain row and column names.
+#' @param dims Integer. Number of CA dimensions to retain. Needs to be the same as in caobj!
+#' @param group Vector of indices of the columns to calculate centroid/x-axis direction.
+#' @param reps Integer. Number of permutations to perform. Default = 10.
+#' @param quant Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.
+#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
+#' @param store_perm Logical. Whether permuted data should be stored in the CA object.
+#' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @export
+apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, store_perm = TRUE){
+
+  if (!is(caobj,"cacomp")){
+    stop("Not a CA object. Please run cacomp() and apl_coords() first!")
+  }
+
+  if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
+    stop("Please run apl_coords() first!")
+  }
+
+  row_num <- nrow(caobj$apl_rows)
+  margin <- 1
+  pc <- 1
+  cc <- FALSE
+  cr <- TRUE
+
+  if (caobj$dims == 1 && !is.null(caobj$dims)){
+    row_num <- 1
+  }
+
+  apl_perm <- data.frame("x" = rep(0, row_num*reps), "y" = rep(0, row_num*reps)) #init. data frame
+
+  if(isTRUE(store_perm) & identical(reps, attr(caobj$permuted_data,'reps'))){
+
+    cutoff_cotan <- attr(caobj$permuted_data,'cutoff')
+
+
+  } else {
+    pb <- txtProgressBar(min = 0, max = reps, style = 3)
+
+    rows <- t(caobj$prin_coords_rows)
+    cols <- t(caobj$std_coords_cols)
+
+    for (k in seq(reps)){
+
+      # avg_group_coords <- rowMeans(subgroup) # centroid vector.
+      avg_group_coords <- runif(n=dims, min=0, max = quantile(cols, 0.99))
+      length_vector_group <- sqrt(drop(avg_group_coords %*% avg_group_coords))
+      length_vector_rows <- sqrt(colSums(rows^2))
+
+      rowx <- drop(t(rows) %*% avg_group_coords)/length_vector_group
+      # pythagoras, y(r)=b²=c²-a²
+      rowy <- sqrt(length_vector_rows^2 - rowx^2)
+
+      rowx[is.na(rowx)] <- 0
+      rowy[is.na(rowy)] <- 0
+
+      idx <- ((1:row_num)+((k-1)*row_num))
+      apl_perm[idx,] <- cbind("x"=rowx, "y"=rowy)
+
+      setTxtProgressBar(pb, k)
+
+    }
+
+    close(pb)
+
+    apl_perm[,3] <- apl_perm[,1]/apl_perm[,2] # cotan between row and x axis
+    apl_perm[,3][is.na(apl_perm[,3])] <- 0
+
+    # cutoff from original code from Ela
+    # angles_vector <- sort(apl_perm[,3], decreasing = TRUE)
+    # cutoff_cotan <- angles_vector[ceiling(0.01 * length(angles_vector))]
+
+    # With 99% quantile, gives different results though!
+    cutoff_cotan <- quantile(apl_perm[,3], quant)
+
+  }
+
+  score <- caobj$apl_rows[,1] - (caobj$apl_rows[,2] * cutoff_cotan)
+  ranking <- data.frame("Rowname" = rownames(caobj$apl_rows),
+                        "Score" = score,
+                        "Row_num" = 1:nrow(caobj$apl_rows))
+
+  ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
+  ranking$Rank <- 1:nrow(ranking)
+
+  caobj$APL_score <- ranking
+
+  if(isTRUE(store_perm) & !identical(reps, attr(caobj$permuted_data,'reps'))){
+
+    if(is.null(caobj$permuted_data))  caobj$permuted_data <- list()
+
+    attr(caobj$permuted_data,'cutoff') <- cutoff_cotan
+    attr(caobj$permuted_data,'reps') <- reps
+  }
+
+  return(caobj)
+
+}
+
+
 
 #' Association Plot
 #'
@@ -250,12 +358,13 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
 #'
 #' @param caobj  An object of class "cacomp" and "APL" with apl coordinates calculated.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".
-#' @param rows_idx numeric vector. Indices of the rows that should be labelled. Default all rows: 1:nrow(caobj$apl_rows).
+#' @param rows_idx numeric vector. Indices of the rows that should be labelled. Default NULL.
 #' @param cols_idx numeric vector. Indices of the columns that should be labelled. Default is only to label columns making up the centroid: caobj$group.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+#' @param show_score Logical. Wheter the S-alpha score should be shown in the plot.
 #' @export
-apl <- function(caobj, type="ggplot", rows_idx = 1:nrow(caobj$apl_rows), cols_idx = caobj$group, row_labs = TRUE, col_labs = TRUE){
+apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, row_labs = FALSE, col_labs = TRUE, show_score = FALSE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -265,8 +374,12 @@ apl <- function(caobj, type="ggplot", rows_idx = 1:nrow(caobj$apl_rows), cols_id
     stop("Please run apl_coords() first!")
   }
 
+  if (is.numeric(cols_idx)){
   group_cols <- data.frame(rownms = rownames(caobj$apl_cols)[cols_idx], x = caobj$apl_cols[cols_idx,"x"], y = caobj$apl_cols[cols_idx,"y"], row.names = NULL)
+  }
+  if(is.numeric(rows_idx)){
   group_rows <- data.frame(rownms = rownames(caobj$apl_rows)[rows_idx], x = caobj$apl_rows[rows_idx,"x"], y = caobj$apl_rows[rows_idx,"y"], row.names = NULL)
+  }
 
   if (row_labs == FALSE){
     rlabs <- 'markers'
@@ -285,32 +398,55 @@ apl <- function(caobj, type="ggplot", rows_idx = 1:nrow(caobj$apl_rows), cols_id
     colfont <- list(color='#000000')
 
   }
-
-  apl_rows.tmp <- data.frame(rownms = rownames(caobj$apl_rows), caobj$apl_rows)
+  apl_scores <- caobj$APL_score$Score[order(caobj$APL_score$Row_num)]
+  apl_rows.tmp <- data.frame(rownms = rownames(caobj$apl_rows), caobj$apl_rows, Score = apl_scores)
   apl_cols.tmp <- data.frame(rownms = rownames(caobj$apl_cols), caobj$apl_cols)
 
   if (type == "ggplot"){
 
 
     p <- ggplot2::ggplot() +
-      ggplot2::geom_point(data=apl_cols.tmp, ggplot2::aes(x=x, y=y), color = "#006400", shape = 4) +
-      ggplot2::geom_point(data=apl_cols.tmp[caobj$group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 4)+
-      ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.5, shape = 1) +
-      ggplot2::labs(title="Association Plot") +
-      ggplot2::theme_bw()
+      ggplot2::geom_point(data=apl_cols.tmp, ggplot2::aes(x=x, y=y), color = "#006400", shape = 4)
+
+
+      if (isTRUE(show_score)){
+        p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y, fill = Score), alpha = 0.7, shape = 21) +
+                # scico::  scale_fill_scico(palette = 'batlow')
+                ggplot2::scale_fill_viridis_c(option = "D")
+      } else {
+        p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.5, shape = 16)
+      }
+      p <- p +  ggplot2::geom_point(data=apl_cols.tmp[caobj$group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 4) +
+                ggplot2::labs(title="Association Plot") +
+                ggplot2::theme_bw()
 
     if(col_labs == TRUE){
       p <- p +
-        ggrepel::geom_text_repel(data=group_cols, ggplot2::aes(x=x, y=y, label=rownms), color = "#990000")}
-    if (row_labs == TRUE){
+        ggrepel::geom_text_repel(data=group_cols, ggplot2::aes(x=x, y=y, label=rownms), color = "#990000")
+      }
+    if (is.numeric(rows_idx)){
       p <- p +
-        ggplot2::geom_point(data=group_rows, ggplot2::aes(x=x, y=y), color="#FF0000", shape = 16) +
-        ggrepel::geom_text_repel(data = group_rows, ggplot2::aes(x=x, y=y, label=rownms), color = "#FF0000", max.overlaps = Inf)}
+        ggplot2::geom_point(data=group_rows, ggplot2::aes(x=x, y=y), color="#FF0000", shape = 16)
+
+      if(isTRUE(row_labs)){
+        p <- p +
+          ggrepel::geom_text_repel(data = group_rows, ggplot2::aes(x=x, y=y, label=rownms), color = "#FF0000", max.overlaps = Inf)
+      }
+    }
     rm(apl_rows.tmp, apl_cols.tmp)
 
     return(p)
 
   } else if (type == "plotly"){
+
+    if (isTRUE(show_score)){
+      colors_fun <- viridisLite::viridis()
+      color_fix <- as.formula("~Score")
+    } else {
+      color_fix <- '#0066FF'
+      colors_fun <- NULL
+    }
+
     p <- plotly::plot_ly() %>%
       plotly::add_trace(data=apl_cols.tmp,
                 x = ~x,
@@ -331,39 +467,47 @@ apl <- function(caobj, type="ggplot", rows_idx = 1:nrow(caobj$apl_rows), cols_id
                 text = apl_rows.tmp$rownms,
                 opacity = 0.7,
                 textposition = "left",
-                marker = list(color ='#0066FF',
+                marker = list(color = color_fix, # '#0066FF'
+                              colors = colors_fun,
                               symbol = 'circle-open',
                               size = 5),
                 name = 'genes',
                 hoverinfo = 'text',
-                type = 'scatter') %>%
-      plotly::add_trace(data = group_rows,
-                x = ~x,
-                y = ~y,
-                mode = rlabs,
-                text = group_rows$rownms,
-                textposition = "left",
-                textfont=rowfont,
-                marker = list(symbol = 'circle',
-                              color = '#FF0000',
-                              size = 5),
-                name = 'marked genes',
-                hoverinfo = 'text',
-                type = 'scatter') %>%
-      plotly::add_trace(data = group_cols,
-                x = ~x,
-                y = ~y,
-                mode = clabs,
-                text = group_cols$rownms,
-                textposition = "left",
-                textfont=colfont,
-                marker = list(symbol = 'x',
-                              color = '#990000',
-                              size = 5),
-                name = 'marked samples',
-                hoverinfo = 'text',
-                type = 'scatter') %>%
-      plotly::layout(title = paste('Association Plot \n', ncol(caobj$U), ' first dimensions, ', length(caobj$group),' samples.\n'),
+                type = 'scatter')
+
+    if (is.numeric(rows_idx)){
+
+      p <- p %>% plotly::add_trace(data = group_rows,
+                                   x = ~x,
+                                   y = ~y,
+                                   mode = rlabs,
+                                   text = group_rows$rownms,
+                                   textposition = "left",
+                                   textfont=rowfont,
+                                   marker = list(symbol = 'circle',
+                                                 color = '#FF0000',
+                                                 size = 5),
+                                   name = 'marked genes',
+                                   hoverinfo = 'text',
+                                   type = 'scatter')
+    }
+   if (is.numeric(cols_idx)){
+     p <- p %>% plotly::add_trace(data = group_cols,
+                                  x = ~x,
+                                  y = ~y,
+                                  mode = clabs,
+                                  text = group_cols$rownms,
+                                  textposition = "left",
+                                  textfont=colfont,
+                                  marker = list(symbol = 'x',
+                                                color = '#990000',
+                                                size = 5),
+                                  name = 'marked samples',
+                                  hoverinfo = 'text',
+                                  type = 'scatter')
+    }
+
+    p <- p %>% plotly::layout(title = paste('Association Plot \n', ncol(caobj$U), ' first dimensions, ', length(caobj$group),' samples.\n'),
              xaxis = list(title = 'Distance from origin (x)', rangemode = "tozero"),
              yaxis = list(title = 'Distance from gene to sample line (y)', rangemode = "tozero"),showlegend = TRUE)
 
@@ -398,18 +542,17 @@ apl <- function(caobj, type="ggplot", rows_idx = 1:nrow(caobj$apl_rows), cols_id
 #' @param nrow Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.
 #' @param top Integer. Number of most variable rows to retain. Default 5000.
 #' @param score Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.
-#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL and row_centroid = FALSE, score is ignored. Default NULL.
-#' @param mark_cols Character vector. Names of cols that should be highlighted in the plot. If not NULL and row_centroid = TRUE, score is ignored. Default NULL.
+#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.
+#' @param mark_cols Character vector. Names of cols that should be highlighted in the plot.
 #' @param reps Integer. Number of permutations during scoring. Default 3.
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".
-#' @param row_centroid TRUE/FALSE. Whether the centroid should be calculated for the rows (group is then row indices). Default FALSE.
 #' @param ... Arguments forwarded to methods.
 #' @export
-runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = caobj$group, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ...){
+runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = caobj$group, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
   UseMethod("runAPL")
 }
 
@@ -417,7 +560,7 @@ runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000,
 
 #' @rdname runAPL
 #' @export
-runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ...){
+runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
   stop(paste0("runAPL does not know how to handle objects of class ",
               class(x),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -427,7 +570,7 @@ runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top
 
 #' @export
 #' @rdname runAPL
-runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ...){
+runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
 
   if (!is(obj, "matrix")){
     obj <- as.matrix(obj)
@@ -463,46 +606,29 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
   }
 
   if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
-    caobj <- apl_coords(caobj = caobj, group = group, row_centroid = row_centroid)
+    caobj <- apl_coords(caobj = caobj, group = group)
   }
 
 
-  if ((is.null(mark_rows) && row_centroid == FALSE) || (is.null(mark_cols) && row_centroid == TRUE)){
+  if (is.null(mark_rows)){
     if (score == TRUE){
       caobj <- apl_score(caobj = caobj,
                          mat = obj,
                          dims = caobj$dims,
                          group = caobj$group,
                          reps= reps,
-                         python = python,
-                         row_centroid = row_centroid)
+                         python = python)
 
-      if (row_centroid == FALSE) {
-        mark_rows <- head(caobj$APL_score$Row_num, nrow)
+      mark_rows <- head(caobj$APL_score$Row_num, nrow)
 
-        if (is(mark_cols, "character")){
-          mark_cols <- match(mark_cols, rownames(caobj$apl_cols))
-          mark_cols <- na.omit(mark_cols)
-          if (anyNA(mark_cols)){
-            warning("Not all names in 'mark_cols' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
-          }
-        } else  {
-          stop("Parameter mark_cols hast to be of type 'character'.")
+      if (is(mark_cols, "character")){
+        mark_cols <- match(mark_cols, rownames(caobj$apl_cols))
+        mark_cols <- na.omit(mark_cols)
+        if (anyNA(mark_cols)){
+          warning("Not all names in 'mark_cols' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
         }
-
-      } else if (row_centroid == TRUE) {
-        mark_cols <- head(caobj$APL_score$Col_num, nrow)
-
-        if (is(mark_rows, "character")){
-          mark_rows <- match(mark_rows, rownames(caobj$apl_rows))
-          mark_rows <- na.omit(mark_rows)
-          if (anyNA(mark_rows)){
-            warning("Not all names in 'mark_rows' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
-          }
-        } else  {
-          stop("Parameter mark_rows hast to be of type 'character'.")
-        }
-     }}
+      }
+    }
   } else{
     if (is(mark_rows, "character")){
       mark_rows <- match(mark_rows, rownames(caobj$apl_rows))
@@ -521,8 +647,8 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
     }
   }
 
-  if(!is(mark_rows, "character")) stop("Parameter mark_rows hast to be of type 'character'.")
-  if(!is(mark_cols, "character")) stop("Parameter mark_cols hast to be of type 'character'.")
+  # if(!is(mark_rows, "character")) stop("Parameter mark_rows hast to be of type 'character'.")
+  # if(!is(mark_cols, "character")) stop("Parameter mark_cols hast to be of type 'character'.")
 
   p <- apl(caobj = caobj,
            type = type,
@@ -543,7 +669,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
 #'
 #' @rdname runAPL
 #' @export
-runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL,  reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ..., assay = "counts"){
+runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL,  reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ..., assay = "counts"){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
@@ -566,8 +692,7 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
                 python = python,
                 row_labs = row_labs,
                 col_labs = col_labs,
-                type = type,
-                row_centroid = row_centroid)
+                type = type)
 
 }
 
@@ -579,7 +704,7 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
 #'
 #' @rdname runAPL
 #' @export
-runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", row_centroid = FALSE, ..., assay = DefaultAssay(obj)){
+runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ..., assay = DefaultAssay(obj)){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -602,7 +727,6 @@ runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
                 nrow = nrow,
                 row_labs = row_labs,
                 col_labs = col_labs,
-                type = type,
-                row_centroid = row_centroid)
+                type = type)
 }
 

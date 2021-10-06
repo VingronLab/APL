@@ -24,7 +24,7 @@ new_cacomp <- function(x){
                   "tot_inertia",
                   "row_inertia",
                   "col_inertia",
-                  "row_centroid")
+                  "permuted_data")
 
   check_names(x, canames = cacomp_nms)
   x <- fill_names(x, canames = cacomp_nms)
