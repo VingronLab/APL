@@ -235,8 +235,8 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
 #' @details
 #' The score is calculated by choosing random directions in space to calculate APLs for the rows.
 #' \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
-#' By default the permutation is repeated 10 times, but for very large matrices this can be reduced.
-#' If store_perm is TRUE the permuted data is stored in the cacomp object and can be used for future scoring.
+#' By default the permutation is repeated 300 times, and is independent of group size, so the same cutoff is applicable to all groups.
+#' If store_perm is TRUE the calculated cutoff is stored as an attribute to ca$permuted_data to prevent recalculation when running with identical parameters.
 #' @return
 #' Returns the input "cacomp" object with "APL_score" component added.
 #' APL_score contains a data frame with ranked rows, their score and their original row number.
@@ -249,7 +249,7 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
 #' @param reps Integer. Number of permutations to perform. Default = 10.
 #' @param quant Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' @param store_perm Logical. Whether permuted data should be stored in the CA object.
+#' @param store_perm Logical. Whether calculated cutoff should be stored. Default TRUE.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
 apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, store_perm = TRUE){
@@ -342,7 +342,82 @@ apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, s
 
 }
 
+apl_topGO <- function(caobj, ontology, organism="hs", ngenes = 1000, top_res = 10, use_coords = FALSE, return_plot = TRUE){
 
+  if (ngenes > nrow(caobj$apl_rows)){
+    stop("ngenes is larger than the total number of genes.")
+  } else if (ngenes == nrow(caobj$apl_rows)){
+    warning("You have selected all available genes. Gene enrichment results might not be meaningful.")
+  }
+
+  if(!is(gene_sets, "list")){
+    stop("gene_sets should be a list of gene sets, each gene set containing the gene symbols.")
+  }
+
+
+  if(!is.null(caobj$APL_score) & !isTRUE(use_coords)){
+
+
+    Score_ord <- caobj$APL_score[order(caobj$APL_score$Score),]
+    ranked_genes <- Score_ord$Score
+    names(ranked_genes) <- Score_ord$Rowname
+
+  } else if (isTRUE(use_coords) | is.null(caobj$APL_score)) {
+
+    if(is.null(caobj$apl_rows)){
+      stop("No APL coordinates found for rows. Please first run apl_coords.")
+    }
+
+    ranked_genes <- 1:nrow(apl_rows)
+    names(ranked_genes) <- rownames(caobj$apl_rows)[order(caobj$apl_rows[,2]),]
+
+  } else {
+    stop("APL scores not present but use_coords set to FALSE")
+  }
+
+  if (organism == "hs"){
+    organism <- "org.Hs.eg.db"
+  } else if (organism == "mm"){
+    organism <- "org.Mm.eg.db"
+  } else {
+    Warning("Custom organism chosen.")
+    organism <- organism
+  }
+
+  if (!ontology %in% c("BP", "CP", "MF")){
+    stop("Please choose one of the following ontologies: 'BP', 'CP' or 'MF'.")
+  }
+
+  rankedGenes <- ranked_genes[1:ngenes]
+
+  gene_sets <- topGO::annFUN.org(whichOnto=ontology, feasibleGenes=NULL, mapping= organism, ID="symbol")
+
+  GOdata <- new("topGOdata",
+                ontology = ontology,
+                allGenes = rankedGenes,
+                annot = annFUN.GO2genes,
+                GO2genes = gene_sets,
+                geneSelectionFun = \(x) TRUE,
+                nodeSize=5)
+
+
+  results.ks <- topGO::runTest(GOdata, algorithm="classic", statistic="ks")
+
+  if(top_res > length(results.ks@score)){
+    warning("More top nodes selected via top_res than available. Returning max. number of nodes instead.")
+  }
+
+  top_res <- min(top_res, length(results.ks@score))
+  goEnrichment <- topGO::GenTable(GOdata, KS=results.ks, orderBy="KS", topNodes = top_res)
+  # goEnrichment <- goEnrichment[,c("GO.ID","Term","KS")]
+
+  if (isTRUE(return_plot)){
+    showSigOfNodes(GOdata, score(results.ks), firstSigNodes = top_res, useInfo = 'def')
+  }
+
+  return(goEnrichment)
+
+}
 
 #' Association Plot
 #'
@@ -358,8 +433,8 @@ apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, s
 #'
 #' @param caobj  An object of class "cacomp" and "APL" with apl coordinates calculated.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".
-#' @param rows_idx numeric vector. Indices of the rows that should be labelled. Default NULL.
-#' @param cols_idx numeric vector. Indices of the columns that should be labelled. Default is only to label columns making up the centroid: caobj$group.
+#' @param rows_idx numeric/character vector. Indices or names of the rows that should be labelled. Default NULL.
+#' @param cols_idx numeric/character vector. Indices or names of the columns that should be labelled. Default is only to label columns making up the centroid: caobj$group.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @param show_score Logical. Wheter the S-alpha score should be shown in the plot.
@@ -372,6 +447,20 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
 
   if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
     stop("Please run apl_coords() first!")
+  }
+
+  if (is(rows_idx, "character")){
+    names <- rownames(caobj$apl_rows)
+    idx <- match(rows_idx, names)
+    idx <- na.omit(idx)
+    rows_idx <- idx
+  }
+
+  if (is(cols_idx, "character")){
+    names <- rownames(caobj$apl_cols)
+    idx <- match(cols_idx, names)
+    idx <- na.omit(idx)
+    cols_idx <- idx
   }
 
   if (is.numeric(cols_idx)){
@@ -410,11 +499,11 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
 
 
       if (isTRUE(show_score)){
-        p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y, fill = Score), alpha = 0.7, shape = 21) +
+        p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y, color = Score), alpha = 0.7, shape = 16) +
                 # scico::  scale_fill_scico(palette = 'batlow')
-                ggplot2::scale_fill_viridis_c(option = "D")
+                ggplot2::scale_color_viridis_c(option = "D")
       } else {
-        p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.5, shape = 16)
+        p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.7, shape = 16)
       }
       p <- p +  ggplot2::geom_point(data=apl_cols.tmp[caobj$group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 4) +
                 ggplot2::labs(title="Association Plot") +
@@ -440,11 +529,14 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
   } else if (type == "plotly"){
 
     if (isTRUE(show_score)){
-      colors_fun <- viridisLite::viridis()
+      colors_fun <- 'Viridis' #"YlGnBu"
       color_fix <- as.formula("~Score")
+      sym <- "cyrcle"
     } else {
       color_fix <- '#0066FF'
       colors_fun <- NULL
+      sym <- "cyrcle-open"
+
     }
 
     p <- plotly::plot_ly() %>%
@@ -468,8 +560,9 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
                 opacity = 0.7,
                 textposition = "left",
                 marker = list(color = color_fix, # '#0066FF'
-                              colors = colors_fun,
-                              symbol = 'circle-open',
+                              colorscale = colors_fun,
+                              symbol = sym,
+                              colorbar=list(title = "Score", len=0.5),
                               size = 5),
                 name = 'genes',
                 hoverinfo = 'text',
@@ -509,7 +602,7 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
 
     p <- p %>% plotly::layout(title = paste('Association Plot \n', ncol(caobj$U), ' first dimensions, ', length(caobj$group),' samples.\n'),
              xaxis = list(title = 'Distance from origin (x)', rangemode = "tozero"),
-             yaxis = list(title = 'Distance from gene to sample line (y)', rangemode = "tozero"),showlegend = TRUE)
+             yaxis = list(title = 'Distance from gene to sample line (y)', rangemode = "tozero"), showlegend = TRUE)
 
     rm(apl_rows.tmp, apl_cols.tmp)
 
