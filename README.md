@@ -111,7 +111,7 @@ The wrapper `runAPL` makes it easy to try out different groups and explore the d
     apl(caobj = ca,
         type = "plotly",
         row_labs = TRUE,
-        coll_labs = TRUE,
+        col_labs = TRUE,
         rows_idx = head(ca$APL_score$Row_num,10),
         cols_idx = ca$group)
         

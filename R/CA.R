@@ -164,7 +164,7 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
   k <- min(n,p)
 
   # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
-  message("Running singular value decomposition ...")
+  # message("Running singular value decomposition ...")
 
   if (python == TRUE){
     # require(reticulate)
@@ -200,7 +200,7 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
   # class(SVD) <- "cacomp"
 
   if (coords == TRUE){
-    message("Calculating coordinates ...")
+    # message("Calculating coordinates ...")
 
     SVD <- ca_coords(caobj = SVD,
                     dims = dims,
@@ -652,8 +652,11 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
 
     matrix_expl_inertia_perm <- matrix(0, nrow = max_num_dims , ncol = reps)
 
+    pb <- txtProgressBar(min = 0, max = reps, style = 3)
+
     for (k in seq(reps)) {
-      message("Running permutation ", k, " out of ", reps, " for elbow rule ...")
+      # message("Running permutation ", k, " out of ", reps, " for elbow rule ...")
+
       mat <- as.matrix(mat)
       mat_perm <- apply(mat, 2, FUN=sample)
       colnames(mat_perm) <- colnames(mat)
@@ -666,7 +669,12 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
 
       matrix_expl_inertia_perm[,k] <- expl_inertia_perm
       colnames(matrix_expl_inertia_perm) <- paste0("perm",1:reps)
+
+      setTxtProgressBar(pb, k)
+
     }
+    close(pb)
+
 
     if (return_plot == TRUE){
       df <- data.frame(dims = 1:max_num_dims,
