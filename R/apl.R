@@ -342,37 +342,64 @@ apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, s
 
 }
 
-apl_topGO <- function(caobj, ontology, organism="hs", ngenes = 1000, top_res = 10, use_coords = FALSE, return_plot = TRUE){
+
+#' Run Gene overrepresentation analysis with topGO
+#'
+#' @description
+#' This function uses the Kolmogorov-Smirnov test as implemented by the package topGO to test for overrepresentation in Gene Ontology gene sets.
+#'
+#' @details
+#'
+#' @return
+#' A data.frame containing the gene sets with the highest overrepresentation.
+#'
+#' @param caobj A "cacomp" object with principal row coordinates and standard column coordinates calculated.
+#' @param ontology Character string. Chooses GO sets for 'BP' (biological processes), 'CC' (cell compartment) or 'MF' (molecular function).
+#' @param organism Character string. Either 'hs' (homo sapiens), 'mm' (mus musculus) or the name of the organism package such as 'org.*.eg.db'.
+#' @param ngenes Numeric. Number of top ranked genes to test for overrepresentation.
+#' @param top_res Numeric. Number of most significant gene sets to return.
+#' @param use_coords Logical. Whether the x-coordinates of the row APL coordinates should be used for ranking.
+#' Only recommended when no S-alpha score (see apl_score()) can be calculated.
+#' @param return_plot Logical. Whether a plot of significant gene sets should be additionally returned.
+#'
+#' @export
+apl_topGO <- function(caobj,
+                      ontology,
+                      organism="hs",
+                      ngenes = 1000,
+                      top_res = 10,
+                      use_coords = FALSE,
+                      return_plot = FALSE){
 
   if (ngenes > nrow(caobj$apl_rows)){
-    stop("ngenes is larger than the total number of genes.")
+    stop("ngenes is larger than the total number of genes.\n")
   } else if (ngenes == nrow(caobj$apl_rows)){
-    warning("You have selected all available genes. Gene enrichment results might not be meaningful.")
+    warning("You have selected all available genes.\n")
   }
 
-  if(!is(gene_sets, "list")){
-    stop("gene_sets should be a list of gene sets, each gene set containing the gene symbols.")
-  }
+  # if(!is(gene_sets, "list")){
+  #   stop("gene_sets should be a list of gene sets, each gene set containing the gene symbols.")
+  # }
 
 
   if(!is.null(caobj$APL_score) & !isTRUE(use_coords)){
 
 
-    Score_ord <- caobj$APL_score[order(caobj$APL_score$Score),]
+    Score_ord <- caobj$APL_score[order(caobj$APL_score$Score, decreasing=TRUE),]
     ranked_genes <- Score_ord$Score
     names(ranked_genes) <- Score_ord$Rowname
 
   } else if (isTRUE(use_coords) | is.null(caobj$APL_score)) {
 
     if(is.null(caobj$apl_rows)){
-      stop("No APL coordinates found for rows. Please first run apl_coords.")
+      stop("No APL coordinates found for rows. Please first run apl_coords.\n")
     }
 
-    ranked_genes <- 1:nrow(apl_rows)
-    names(ranked_genes) <- rownames(caobj$apl_rows)[order(caobj$apl_rows[,2]),]
+    ranked_genes <- 1:nrow(caobj$apl_rows)
+    names(ranked_genes) <- rownames(caobj$apl_rows)[order(caobj$apl_rows[,1], decreasing = TRUE)]
 
   } else {
-    stop("APL scores not present but use_coords set to FALSE")
+    stop("APL scores not present but use_coords set to FALSE.\n")
   }
 
   if (organism == "hs"){
@@ -380,12 +407,12 @@ apl_topGO <- function(caobj, ontology, organism="hs", ngenes = 1000, top_res = 1
   } else if (organism == "mm"){
     organism <- "org.Mm.eg.db"
   } else {
-    Warning("Custom organism chosen.")
+    Warning("Custom organism chosen.\n")
     organism <- organism
   }
 
-  if (!ontology %in% c("BP", "CP", "MF")){
-    stop("Please choose one of the following ontologies: 'BP', 'CP' or 'MF'.")
+  if (!ontology %in% c("BP", "CC", "MF")){
+    stop("Please choose one of the following ontologies: 'BP', 'CC' or 'MF'.\n")
   }
 
   rankedGenes <- ranked_genes[1:ngenes]
@@ -395,16 +422,16 @@ apl_topGO <- function(caobj, ontology, organism="hs", ngenes = 1000, top_res = 1
   GOdata <- new("topGOdata",
                 ontology = ontology,
                 allGenes = rankedGenes,
-                annot = annFUN.GO2genes,
+                annot = topGO::annFUN.GO2genes,
                 GO2genes = gene_sets,
-                geneSelectionFun = \(x) TRUE,
+                geneSelectionFun = function(x) TRUE,
                 nodeSize=5)
 
 
   results.ks <- topGO::runTest(GOdata, algorithm="classic", statistic="ks")
 
   if(top_res > length(results.ks@score)){
-    warning("More top nodes selected via top_res than available. Returning max. number of nodes instead.")
+    warning("More top nodes selected via top_res than available. Returning max. number of nodes instead.\n")
   }
 
   top_res <- min(top_res, length(results.ks@score))
@@ -418,6 +445,7 @@ apl_topGO <- function(caobj, ontology, organism="hs", ngenes = 1000, top_res = 1
   return(goEnrichment)
 
 }
+
 
 #' Association Plot
 #'
