@@ -381,17 +381,17 @@ subset_dims <- function(caobj, dims){
   caobj$V <- caobj$V[,dims]
   caobj$D <- caobj$D[dims]
 
-  if (is.null(caobj$std_coords_cols)){
+  if (!is.null(caobj$std_coords_cols)){
     caobj$std_coords_cols <- caobj$std_coords_cols[,dims]
-    if (is.null(caobj$prin_coords_cols)){
+    if (!is.null(caobj$prin_coords_cols)){
       caobj$prin_coords_cols <- caobj$prin_coords_cols[,dims]
 
     }
   }
 
-  if (is.null(caobj$std_coords_rows)){
+  if (!is.null(caobj$std_coords_rows)){
     caobj$std_coords_rows <- caobj$std_coords_rows[,dims]
-    if (is.null(caobj$prin_coords_rows)){
+    if (!is.null(caobj$prin_coords_rows)){
       caobj$prin_coords_rows <- caobj$prin_coords_rows[,dims]
     }
   }
