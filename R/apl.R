@@ -127,7 +127,7 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
 
-  if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
+  if (is.null(caobj$apl_rows)){
     stop("Please run apl_coords() first!")
   }
 
@@ -850,4 +850,3 @@ runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
                 col_labs = col_labs,
                 type = type)
 }
-
