@@ -8,22 +8,20 @@
 \alias{as.cacomp.SingleCellExperiment}
 \title{Create cacomp object from Seurat/SingleCellExperiment container}
 \usage{
-as.cacomp(obj, assay, recompute = TRUE)
+as.cacomp(obj, assay)
 
-\method{as.cacomp}{default}(obj, assay = NULL, recompute = TRUE)
+as.cacomp.default(obj, assay = NULL)
 
-\method{as.cacomp}{cacomp}(obj, assay = NULL, recompute = TRUE)
+as.cacomp.cacomp(obj, assay = NULL)
 
-\method{as.cacomp}{Seurat}(obj, assay = NULL, recompute = TRUE)
+as.cacomp.Seurat(obj, assay = "RNA")
 
-\method{as.cacomp}{SingleCellExperiment}(obj, assay = NULL, recompute = TRUE)
+as.cacomp.SingleCellExperiment(obj, assay = NULL)
 }
 \arguments{
 \item{obj}{An object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.}
 
 \item{assay}{Character. The assay from which extract the count matrix, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
-
-\item{recompute}{Should all values be recomputed (std_coords_rows, U and V as well as row and column masses)? Default TRUE.}
 }
 \value{
 A cacomp object.

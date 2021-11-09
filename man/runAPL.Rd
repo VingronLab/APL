@@ -17,13 +17,12 @@ runAPL(
   top = 5000,
   score = TRUE,
   mark_rows = NULL,
-  mark_cols = caobj$group,
+  mark_cols = caobj@group,
   reps = 3,
   python = TRUE,
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  row_centroid = FALSE,
   ...
 )
 
@@ -42,7 +41,6 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  row_centroid = FALSE,
   ...
 )
 
@@ -61,7 +59,6 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  row_centroid = FALSE,
   ...
 )
 
@@ -80,7 +77,6 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  row_centroid = FALSE,
   ...,
   assay = "counts"
 )
@@ -100,7 +96,6 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  row_centroid = FALSE,
   ...,
   assay = DefaultAssay(obj)
 )
@@ -121,9 +116,9 @@ Should contain row and column names.}
 
 \item{score}{Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.}
 
-\item{mark_rows}{Character vector. Names of rows that should be highlighted in the plot. If not NULL and row_centroid = FALSE, score is ignored. Default NULL.}
+\item{mark_rows}{Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.}
 
-\item{mark_cols}{Character vector. Names of cols that should be highlighted in the plot. If not NULL and row_centroid = TRUE, score is ignored. Default NULL.}
+\item{mark_cols}{Character vector. Names of cols that should be highlighted in the plot.}
 
 \item{reps}{Integer. Number of permutations during scoring. Default 3.}
 
@@ -135,8 +130,6 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 \item{col_labs}{Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.}
 
 \item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".}
-
-\item{row_centroid}{TRUE/FALSE. Whether the centroid should be calculated for the rows (group is then row indices). Default FALSE.}
 
 \item{...}{Arguments forwarded to methods.}
 

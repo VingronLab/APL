@@ -14,7 +14,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj$std_coords_cols)),
+  col_labels = seq(ncol(obj@std_coords_cols)),
   type = "plotly"
 )
 
@@ -24,7 +24,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj$std_coords_cols)),
+  col_labels = seq(ncol(obj@std_coords_cols)),
   type = "plotly"
 )
 
@@ -34,7 +34,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj$std_coords_cols)),
+  col_labels = seq(ncol(obj@std_coords_cols)),
   type = "plotly"
 )
 
@@ -44,7 +44,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj$std_coords_cols)),
+  col_labels = seq(ncol(caobj@std_coords_cols)),
   type = "plotly"
 )
 
@@ -54,7 +54,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj$std_coords_cols)),
+  col_labels = seq(ncol(caobj@std_coords_cols)),
   type = "plotly"
 )
 }
@@ -71,7 +71,7 @@ or alternatively an object of class "Seurat" or "SingleCellExperiment" with a di
 \item{row_labels}{Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.}
 
 \item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-Default seq(ncol(obj$std_coords_cols)) (all columns).}
+Default seq(ncol(obj@std_coords_cols)) (all columns).}
 
 \item{type}{String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".}
 }

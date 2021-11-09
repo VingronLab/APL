@@ -7,10 +7,11 @@
 apl(
   caobj,
   type = "ggplot",
-  rows_idx = 1:nrow(caobj$apl_rows),
-  cols_idx = caobj$group,
-  row_labs = TRUE,
-  col_labs = TRUE
+  rows_idx = NULL,
+  cols_idx = caobj@group,
+  row_labs = FALSE,
+  col_labs = TRUE,
+  show_score = FALSE
 )
 }
 \arguments{
@@ -18,13 +19,15 @@ apl(
 
 \item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".}
 
-\item{rows_idx}{numeric vector. Indices of the rows that should be labelled. Default all rows: 1:nrow(caobj$apl_rows).}
+\item{rows_idx}{numeric/character vector. Indices or names of the rows that should be labelled. Default NULL.}
 
-\item{cols_idx}{numeric vector. Indices of the columns that should be labelled. Default is only to label columns making up the centroid: caobj$group.}
+\item{cols_idx}{numeric/character vector. Indices or names of the columns that should be labelled. Default is only to label columns making up the centroid: caobj@group.}
 
 \item{row_labs}{Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.}
 
 \item{col_labs}{Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.}
+
+\item{show_score}{Logical. Wheter the S-alpha score should be shown in the plot.}
 }
 \value{
 Either a ggplot or plotly object.

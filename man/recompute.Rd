@@ -4,10 +4,10 @@
 \alias{recompute}
 \title{Recompute missing values of cacomp object.}
 \usage{
-recompute(caobj, mat)
+recompute(calist, mat)
 }
 \arguments{
-\item{caobj}{A cacomp object with std_coords_cols, the prin_coords_rows and D.}
+\item{calist}{A list with std_coords_cols, the prin_coords_rows and D.}
 
 \item{mat}{A matrix from which the cacomp object derives from.}
 }

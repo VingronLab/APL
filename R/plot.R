@@ -18,15 +18,15 @@
 #' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
 #' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
 #' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj$std_coords_cols)) (all columns).
+#' Default seq(ncol(obj@std_coords_cols)) (all columns).
 #' @export
-ca_3Dplot <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj$std_coords_cols))){
+ca_3Dplot <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj@std_coords_cols))){
   UseMethod("ca_3Dplot")
 }
 
 #' @rdname ca_3Dplot
 #' @export
-ca_3Dplot.default <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(caobj$std_coords_cols))){
+ca_3Dplot.default <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, row_labels=NULL, col_labels=seq(ncol(caobj@std_coords_cols))){
   stop(paste0("ca_3Dplot does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'cacomp', 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -35,7 +35,7 @@ ca_3Dplot.default <- function(obj, xdim=1, ydim=2, zdim = 3, princ_coords = 1, r
 
 #' @rdname ca_3Dplot
 #' @export
-ca_3Dplot.cacomp <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj$std_coords_cols))){
+ca_3Dplot.cacomp <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj@std_coords_cols))){
 
   if (!is(obj,"cacomp")){
     stop("Not a CA object. Please run cacomp() first!")
@@ -43,17 +43,17 @@ ca_3Dplot.cacomp <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1
 
   if (princ_coords == 1){
 
-    if(sum(!is.null(obj$prin_coords_rows), !is.null(obj$std_coords_cols)) != 2){
+    if(sum(!is.null(obj@prin_coords_rows), !is.null(obj@std_coords_cols)) != 2){
       stop("Principal and/or standard coordinates not found, please run ca_coords() first!")
     }
-    rows <- obj$prin_coords_rows
-    cols <- obj$std_coords_cols
+    rows <- obj@prin_coords_rows
+    cols <- obj@std_coords_cols
   } else if (princ_coords == 2){
-    if(sum(!is.null(obj$prin_coords_cols), !is.null(obj$std_coords_rows)) != 2){
+    if(sum(!is.null(obj@prin_coords_cols), !is.null(obj@std_coords_rows)) != 2){
       stop("Principal and/or standard coordinates not found, please run ca_coords() first!")
     }
-    rows <- obj$std_coords_rows
-    cols <- obj$prin_coords_cols
+    rows <- obj@std_coords_rows
+    cols <- obj@prin_coords_cols
   } else {
     cat("princ_coords must be either 1 for rows or 2 for columns.")
     stop()
@@ -130,11 +130,11 @@ ca_3Dplot.cacomp <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1
 
 #' @rdname ca_3Dplot
 #' @export
-ca_3Dplot.Seurat <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(caobj$std_coords_cols))){
+ca_3Dplot.Seurat <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(caobj@std_coords_cols))){
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
   if ("CA" %in% Reductions(obj)){
-    caobj <- as.cacomp.Seurat(obj, recompute = FALSE)
+    caobj <- as.cacomp.Seurat(obj)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(seurat_obj, assay) first.")
   }
@@ -153,11 +153,11 @@ ca_3Dplot.Seurat <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1
 
 #' @rdname ca_3Dplot
 #' @export
-ca_3Dplot.SingleCellExperiment <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(caobj$std_coords_cols))){
+ca_3Dplot.SingleCellExperiment <- function(obj, xdim = 1, ydim = 2, zdim = 3, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(caobj@std_coords_cols))){
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
   if ("CA" %in% reducedDimNames(obj)){
-    caobj <- as.cacomp.SingleCellExperiment(obj,  recompute = FALSE)
+    caobj <- as.cacomp.SingleCellExperiment(obj)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(sce, top, coords = FALSE, return_input=TRUE) first.")
   }
@@ -192,16 +192,16 @@ ca_3Dplot.SingleCellExperiment <- function(obj, xdim = 1, ydim = 2, zdim = 3, pr
 #' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
 #' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
 #' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj$std_coords_cols)) (all columns).
+#' Default seq(ncol(obj@std_coords_cols)) (all columns).
 #' @param type String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".
 #' @export
-ca_biplot <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj$std_coords_cols)), type = "plotly"){
+ca_biplot <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj@std_coords_cols)), type = "plotly"){
   UseMethod("ca_biplot")
 }
 
 #' @rdname ca_biplot
 #' @export
-ca_biplot.default <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj$std_coords_cols)), type = "plotly"){
+ca_biplot.default <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj@std_coords_cols)), type = "plotly"){
   stop(paste0("ca_biplot does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'cacomp', 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -210,7 +210,7 @@ ca_biplot.default <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_lab
 
 #' @rdname ca_biplot
 #' @export
-ca_biplot.cacomp <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj$std_coords_cols)), type = "plotly"){
+ca_biplot.cacomp <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(obj@std_coords_cols)), type = "plotly"){
 
   if (!is(obj,"cacomp")){
     stop("Not a CA object. Please run cacomp() first!")
@@ -218,17 +218,17 @@ ca_biplot.cacomp <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labe
 
   if (princ_coords == 1){
 
-    if(sum(!is.null(obj$prin_coords_rows), !is.null(obj$std_coords_cols)) != 2){
+    if(sum(!is.null(obj@prin_coords_rows), !is.null(obj@std_coords_cols)) != 2){
       stop("Principal and/or standard coordinates not found, please run ca_coords() first!")
     }
-    rows <- obj$prin_coords_rows
-    cols <- obj$std_coords_cols
+    rows <- obj@prin_coords_rows
+    cols <- obj@std_coords_cols
   } else if (princ_coords == 2){
-    if(sum(!is.null(obj$prin_coords_cols), !is.null(obj$std_coords_rows)) != 2){
+    if(sum(!is.null(obj@prin_coords_cols), !is.null(obj@std_coords_rows)) != 2){
       stop("Principal and/or standard coordinates not found, please run ca_coords() first!")
     }
-    rows <- obj$std_coords_rows
-    cols <- obj$prin_coords_cols
+    rows <- obj@std_coords_rows
+    cols <- obj@prin_coords_cols
   } else {
     stop("princ_coords must be either 1 for rows or 2 for columns.")
   }
@@ -326,12 +326,12 @@ ca_biplot.cacomp <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labe
 
 #' @rdname ca_biplot
 #' @export
-ca_biplot.Seurat <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(caobj$std_coords_cols)), type = "plotly"){
+ca_biplot.Seurat <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(caobj@std_coords_cols)), type = "plotly"){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
   if ("CA" %in% Reductions(obj)){
-    caobj <- as.cacomp.Seurat(obj, recompute = FALSE)
+    caobj <- as.cacomp.Seurat(obj)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(seurat_obj, assay) first.")
   }
@@ -350,12 +350,12 @@ ca_biplot.Seurat <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labe
 
 #' @rdname ca_biplot
 #' @export
-ca_biplot.SingleCellExperiment <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(caobj$std_coords_cols)), type = "plotly"){
+ca_biplot.SingleCellExperiment <- function(obj, xdim = 1, ydim = 2, princ_coords = 1, row_labels = NULL, col_labels = seq(ncol(caobj@std_coords_cols)), type = "plotly"){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
   if ("CA" %in% reducedDimNames(obj)){
-    caobj <- as.cacomp.SingleCellExperiment(obj,  recompute = FALSE)
+    caobj <- as.cacomp.SingleCellExperiment(obj)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(sce, top, coords = FALSE, return_input=TRUE) first.")
   }

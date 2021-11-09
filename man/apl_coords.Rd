@@ -4,13 +4,7 @@
 \alias{apl_coords}
 \title{Calculate Association Plot coordinates}
 \usage{
-apl_coords(
-  caobj,
-  group,
-  calc_rows = TRUE,
-  calc_cols = TRUE,
-  row_centroid = FALSE
-)
+apl_coords(caobj, group, calc_rows = TRUE, calc_cols = TRUE)
 }
 \arguments{
 \item{caobj}{A "cacomp" object with principal row coordinates and standard column coordinates calculated.}
@@ -20,8 +14,6 @@ apl_coords(
 \item{calc_rows}{TRUE/FALSE. Whether apl row coordinates should be calculated. Default TRUE.}
 
 \item{calc_cols}{TRUE/FALSE. Whether apl column coordinates should be calculated. Default TRUE.}
-
-\item{row_centroid}{TRUE/FALSE. Whether the centroid should be calculated for the rows (group is then row indices). Default FALSE.}
 }
 \value{
 Returns input "cacomp" object and adds components "apl_rows" and/or "apl_cols" for row and column coordinates.
