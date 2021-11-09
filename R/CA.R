@@ -159,10 +159,13 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
   colm <- res$colm
   rm(res)
 
-  n <- nrow(S)
-  p <- ncol(S)
-  k <- min(n,p)
+  # n <- nrow(S)
+  # p <- ncol(S)
 
+  k <- min(dim(S))-1
+
+  if (is.null(dims)) dims <- k
+  if (dims > k) dims <- k
   # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
   # message("Running singular value decomposition ...")
 
@@ -171,18 +174,21 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
     # source_python('./python_svd.py')
     reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
     SVD <- svd_torch(S)
+    # SVD <- svd_linalg_torch(S)
     names(SVD) <- c("U", "D", "V")
     SVD$D <- as.vector(SVD$D)
 
   } else {
-    SVD <- svd(S, nu = k, nv = k)
+
+    SVD <- svd(S, nu = dims, nv = dims)
     names(SVD) <- c("D", "U", "V")
     SVD <- SVD[c(2, 1, 3)]
+    if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
   }
 
-  j <- seq_len(k)
-  dimnames(SVD$V) <- list(colnames(S), paste0("Dim", j))
-  dimnames(SVD$U) <- list(rownames(S), paste0("Dim", j))
+  # j <- seq_len(length(SVD$D))
+  dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ncol(SVD$V))))
+  dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ncol(SVD$U))))
 
 
   if(inertia == TRUE){
@@ -196,7 +202,8 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
   SVD$col_masses <- colm
   SVD$top_rows <- toptmp
 
-  SVD <- new_cacomp(SVD)
+  SVD <- do.call(new_cacomp, SVD)
+  SVD <- subset_dims(SVD, dims)
   # class(SVD) <- "cacomp"
 
   if (coords == TRUE){
@@ -208,28 +215,28 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
                     princ_only = FALSE)
   } else {
     if(!is.null(dims)){
-      if (dims >= length(SVD$D)){
-        if (dims > length(SVD$D)){
+      if (dims >= length(SVD@D)){
+        if (dims > length(SVD@D)){
           warning("Chosen dimensions are larger than the number of dimensions obtained from the singular value decomposition. Argument ignored.")
         }
-        SVD$dims <- length(SVD$D)
+        SVD@dims <- length(SVD@D)
       } else {
-        dims <- min(dims, length(SVD$D))
-        SVD$dims <- dims
+        dims <- min(dims, length(SVD@D))
+        SVD@dims <- dims
 
         dims <- seq(dims)
 
         # subset to number of dimensions
-        SVD$U <- SVD$U[,dims]
-        SVD$V <- SVD$V[,dims]
-        SVD$D <- SVD$D[dims]
+        SVD@U <- SVD@U[,dims]
+        SVD@V <- SVD@V[,dims]
+        SVD@D <- SVD@D[dims]
       }
     } else {
-      SVD$dims <- length(SVD$D)
+      SVD@dims <- length(SVD@D)
     }
   }
 
-
+  stopifnot(validObject(SVD))
   return(SVD)
 
 }
@@ -274,12 +281,12 @@ cacomp.Seurat <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
                   inertia = inertia)
 
   if (return_input == TRUE){
-    colnames(caobj$V) <- paste0("DIM_", seq(ncol(caobj$V)))
-    colnames(caobj$U) <- paste0("DIM_", seq(ncol(caobj$U)))
+    colnames(caobj@V) <- paste0("DIM_", seq(ncol(caobj@V)))
+    colnames(caobj@U) <- paste0("DIM_", seq(ncol(caobj@U)))
 
-    obj[["CA"]] <- Seurat::CreateDimReducObject(embeddings = caobj$std_coords_cols,
-                                               loadings = caobj$prin_coords_rows,
-                                               stdev = caobj$D,
+    obj[["CA"]] <- Seurat::CreateDimReducObject(embeddings = caobj@std_coords_cols,
+                                               loadings = caobj@prin_coords_rows,
+                                               stdev = caobj@D,
                                                key = "DIM_",
                                                assay = assay)
 
@@ -328,13 +335,13 @@ cacomp.SingleCellExperiment <- function(obj, coords=TRUE, princ_coords = 1, pyth
                          inertia = inertia)
 
   if (return_input == TRUE){
-    prinInertia <- caobj$D^2
+    prinInertia <- caobj@D^2
     percentInertia <- prinInertia / sum(prinInertia) * 100 #TODO IS THIS CORRECT ??
 
     # Saving the results
-    ca <- caobj$std_coords_cols
-    attr(ca, "prin_coords_rows") <- caobj$prin_coords_rows
-    attr(ca, "singval") <- caobj$D
+    ca <- caobj@std_coords_cols
+    attr(ca, "prin_coords_rows") <- caobj@prin_coords_rows
+    attr(ca, "singval") <- caobj@D
     attr(ca, "percInertia") <- percentInertia
 
     SingleCellExperiment::reducedDim(obj, "CA") <- ca
@@ -367,35 +374,35 @@ subset_dims <- function(caobj, dims){
 
   stopifnot(is(caobj, "cacomp"))
 
-  if(dims > length(caobj$D)){
+  if(dims > length(caobj@D)){
     warning("dims is larger than the number of available dimensions. Argument ignored")
-  } else if (dims == length(caobj$D)){
-    caobj$dims <- dims
+  } else if (dims == length(caobj@D)){
+    caobj@dims <- dims
     return(caobj)
   }
 
-  dims <- min(dims, length(caobj$D))
-  caobj$dims <- dims
+  dims <- min(dims, length(caobj@D))
+  caobj@dims <- dims
   dims <- seq(dims)
-  caobj$U <- caobj$U[,dims]
-  caobj$V <- caobj$V[,dims]
-  caobj$D <- caobj$D[dims]
+  caobj@U <- caobj@U[,dims]
+  caobj@V <- caobj@V[,dims]
+  caobj@D <- caobj@D[dims]
 
-  if (!is.null(caobj$std_coords_cols)){
-    caobj$std_coords_cols <- caobj$std_coords_cols[,dims]
-    if (!is.null(caobj$prin_coords_cols)){
-      caobj$prin_coords_cols <- caobj$prin_coords_cols[,dims]
-
-    }
+  if (!is.empty(caobj@std_coords_cols)){
+    caobj@std_coords_cols <- caobj@std_coords_cols[,dims]
+  }
+  if (!is.empty(caobj@prin_coords_cols)){
+    caobj@prin_coords_cols <- caobj@prin_coords_cols[,dims]
   }
 
-  if (!is.null(caobj$std_coords_rows)){
-    caobj$std_coords_rows <- caobj$std_coords_rows[,dims]
-    if (!is.null(caobj$prin_coords_rows)){
-      caobj$prin_coords_rows <- caobj$prin_coords_rows[,dims]
-    }
+  if (!is.empty(caobj@std_coords_rows)){
+    caobj@std_coords_rows <- caobj@std_coords_rows[,dims]
+  }
+  if (!is.empty(caobj@prin_coords_rows)){
+    caobj@prin_coords_rows <- caobj@prin_coords_rows[,dims]
   }
 
+  stopifnot(validObject(caobj))
   return(caobj)
 }
 
@@ -424,30 +431,30 @@ subset_dims <- function(caobj, dims){
 ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
 
   stopifnot(is(caobj, "cacomp"))
-  stopifnot(dims <= length(caobj$D))
+  stopifnot(dims <= length(caobj@D))
 
   if(!is.null(dims)){
-    if (dims > length(caobj$D)){
+    if (dims > length(caobj@D)){
       warning("Chosen dimensions are larger than the number of dimensions obtained from the singular value decomposition. Argument ignored.")
      } #else {
     #   if ("dims" %in% names(caobj)) {
-    #     warning("The caobj was previously already subsetted to ", caobj$dims, " dimensions. Subsetting again!")
+    #     warning("The caobj was previously already subsetted to ", caobj@dims, " dimensions. Subsetting again!")
     #   }
       caobj <- subset_dims(caobj = caobj, dims = dims)
-      # dims <- min(dims, length(caobj$D))
-      # caobj$dims <- dims
+      # dims <- min(dims, length(caobj@D))
+      # caobj@dims <- dims
       # dims <- seq(dims)
       # # subset to number of dimensions
-      # caobj$U <- caobj$U[,dims]
-      # caobj$V <- caobj$V[,dims]
-      # caobj$D <- caobj$D[dims]
+      # caobj@U <- caobj@U[,dims]
+      # caobj@V <- caobj@V[,dims]
+      # caobj@D <- caobj@D[dims]
       #
       # if (princ_only == TRUE){
-      #   stopifnot(!is.null(caobj$std_coords_rows))
-      #   stopifnot(!is.null(caobj$std_coords_cols))
+      #   stopifnot(!is.null(caobj@std_coords_rows))
+      #   stopifnot(!is.null(caobj@std_coords_cols))
       #
-      #   caobj$std_coords_rows <- caobj$std_coords_rows[,dims]
-      #   caobj$std_coords_cols <- caobj$std_coords_cols[,dims]
+      #   caobj@std_coords_rows <- caobj@std_coords_rows[,dims]
+      #   caobj@std_coords_cols <- caobj@std_coords_cols[,dims]
       # }
     }
 
@@ -458,19 +465,19 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
 
     #standard coordinates
     if(dims == 1 && !is.null(dims)){
-      caobj$std_coords_rows <- caobj$U/sqrt(caobj$row_masses)
-      caobj$std_coords_cols <- caobj$V/sqrt(caobj$col_masses)
+      caobj@std_coords_rows <- caobj@U/sqrt(caobj@row_masses)
+      caobj@std_coords_cols <- caobj@V/sqrt(caobj@col_masses)
     } else {
-      caobj$std_coords_rows <- sweep(x = caobj$U, MARGIN = 1, STAT = sqrt(caobj$row_masses), FUN = "/")
-      caobj$std_coords_cols <- sweep(x = caobj$V, MARGIN = 1, STAT = sqrt(caobj$col_masses), FUN = "/")
+      caobj@std_coords_rows <- sweep(x = caobj@U, MARGIN = 1, STAT = sqrt(caobj@row_masses), FUN = "/")
+      caobj@std_coords_cols <- sweep(x = caobj@V, MARGIN = 1, STAT = sqrt(caobj@col_masses), FUN = "/")
     }
 
 
     # Ensure no NA/Inf after dividing by 0.
-    caobj$std_coords_rows[is.na(caobj$std_coords_rows)] <- 0
-    caobj$std_coords_cols[is.na(caobj$std_coords_cols)] <- 0
-    caobj$std_coords_rows[is.infinite(caobj$std_coords_rows)] <- 0
-    caobj$std_coords_cols[is.infinite(caobj$std_coords_cols)] <- 0
+    caobj@std_coords_rows[is.na(caobj@std_coords_rows)] <- 0
+    caobj@std_coords_cols[is.na(caobj@std_coords_cols)] <- 0
+    caobj@std_coords_rows[is.infinite(caobj@std_coords_rows)] <- 0
+    caobj@std_coords_cols[is.infinite(caobj@std_coords_cols)] <- 0
 
   }
 
@@ -478,42 +485,43 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
   stopifnot("princ_coords must be either 0, 1, 2 or 3" = (princ_coords == 0 || princ_coords == 1 || princ_coords == 2 || princ_coords == 3))
 
   if(princ_coords != 0){
-    stopifnot(!is.null(caobj$std_coords_rows))
-    stopifnot(!is.null(caobj$std_coords_cols))
+    stopifnot(!is.empty(caobj@std_coords_rows))
+    stopifnot(!is.empty(caobj@std_coords_cols))
 
       if (princ_coords == 1){
         #principal coordinates for rows
         if (dims == 1 && !is.null(dims)){
-          caobj$prin_coords_rows <- caobj$std_coords_rows*caobj$D
+          caobj@prin_coords_rows <- caobj@std_coords_rows*caobj@D
         } else {
-          caobj$prin_coords_rows <- sweep(caobj$std_coords_rows, 2, caobj$D, "*")
+          caobj@prin_coords_rows <- sweep(caobj@std_coords_rows, 2, caobj@D, "*")
         }
 
       } else if (princ_coords == 2) {
         #principal coordinates for columns
         if (dims == 1 && !is.null(dims)){
-          caobj$prin_coords_cols <- caobj$std_coords_cols*caobj$D
+          caobj@prin_coords_cols <- caobj@std_coords_cols*caobj@D
         } else {
-          caobj$prin_coords_cols <- sweep(caobj$std_coords_cols, 2, caobj$D, "*")
+          caobj@prin_coords_cols <- sweep(caobj@std_coords_cols, 2, caobj@D, "*")
         }
       } else if (princ_coords  == 3) {
 
         if (dims == 1 && !is.null(dims)){
           #principal coordinates for rows
-          caobj$prin_coords_rows <- caobj$std_coords_rows*caobj$D
+          caobj@prin_coords_rows <- caobj@std_coords_rows*caobj@D
           #principal coordinates for columns
-          caobj$prin_coords_cols <- caobj$std_coords_cols*caobj$D
+          caobj@prin_coords_cols <- caobj@std_coords_cols*caobj@D
         } else {
           #principal coordinates for rows
-          caobj$prin_coords_rows <- sweep(caobj$std_coords_rows, 2, caobj$D, "*")
+          caobj@prin_coords_rows <- sweep(caobj@std_coords_rows, 2, caobj@D, "*")
           #principal coordinates for columns
-          caobj$prin_coords_cols <- sweep(caobj$std_coords_cols, 2, caobj$D, "*")
+          caobj@prin_coords_cols <- sweep(caobj@std_coords_cols, 2, caobj@D, "*")
         }
 
       }
 
   }
 
+  stopifnot(validObject(caobj))
   return(caobj)
 }
 
@@ -609,9 +617,9 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
     stop("Not a CA object. Please run cacomp() first!")
   }
 
-  ev <- obj$D^2
+  ev <- obj@D^2
   expl_inertia <- (ev/sum(ev)) *100
-  max_num_dims <- length(obj$D)
+  max_num_dims <- length(obj@D)
 
   if (method == "avg_inertia"){
     # Method 1: Dim's > average inertia
@@ -662,9 +670,9 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
       colnames(mat_perm) <- colnames(mat)
       rownames(mat_perm) <- 1:nrow(mat_perm)
 
-      obj_perm <- cacomp(obj=mat_perm, top = obj$top_rows, dims = obj$dims, coords = FALSE, python = python)
+      obj_perm <- cacomp(obj=mat_perm, top = obj@top_rows, dims = obj@dims, coords = FALSE, python = python)
 
-      ev_perm <- obj_perm$D^2
+      ev_perm <- obj_perm@D^2
       expl_inertia_perm <- (ev_perm/sum(ev_perm))*100
 
       matrix_expl_inertia_perm[,k] <- expl_inertia_perm
@@ -736,7 +744,7 @@ pick_dims.Seurat <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
   }
 
   if ("CA" %in% Seurat::Reductions(obj)){
-    caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
+    caobj <- as.cacomp(obj, assay = assay)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(seurat_obj, top, coords = FALSE, return_input=TRUE) first.")
   }
@@ -766,7 +774,7 @@ pick_dims.SingleCellExperiment <- function(obj, mat = NULL, method="scree_plot",
   }
 
   if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
-    caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
+    caobj <- as.cacomp(obj, assay = assay)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(sce, top, coords = FALSE, return_input=TRUE) first.")
   }

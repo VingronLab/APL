@@ -26,8 +26,8 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
 
 
-  rows <- t(caobj$prin_coords_rows)
-  cols <- t(caobj$std_coords_cols)
+  rows <- t(caobj@prin_coords_rows)
+  cols <- t(caobj@std_coords_cols)
   cent <- cols
 
 
@@ -67,7 +67,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     # rowx[is.infinite(rowx)] <- 0
     # rowy[is.infinite(rowy)] <- 0
 
-    caobj$apl_rows <- cbind("x"=rowx, "y"=rowy)
+    caobj@apl_rows <- cbind("x"=rowx, "y"=rowy)
   }
 
 
@@ -82,17 +82,18 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     # colx[is.infinite(colx)] <- 0
     # coly[is.infinite(coly)] <- 0
 
-    caobj$apl_cols <- cbind("x"=colx, "y"=coly)
+    caobj@apl_cols <- cbind("x"=colx, "y"=coly)
   }
 
   if (is(group, "numeric")){
-    caobj$group <- group
+    caobj@group <- group
   } else if (is(group, "character")){
     idx <- match(group, colnames(cols))
     idx <- na.omit(idx)
-    caobj$group <- idx
+    caobj@group <- idx
   }
 
+  stopifnot(validObject(caobj))
   return(caobj)
 }
 
@@ -127,12 +128,12 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
 
-  if (is.null(caobj$apl_rows)){
+  if (is.empty(caobj@apl_rows)){
     stop("Please run apl_coords() first!")
   }
 
   names <- colnames(mat)
-  row_num <- nrow(caobj$apl_rows)
+  row_num <- nrow(caobj@apl_rows)
   margin <- 1
   pc <- 1
   cc <- FALSE
@@ -144,7 +145,7 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     group <- idx
   }
 
-  if (caobj$dims == 1 && !is.null(caobj$dims)){
+  if (caobj@dims == 1 && !is.empty(caobj@dims)){
     row_num <- 1
   }
 
@@ -157,9 +158,9 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
 
     #permute rows and rerun cacomp
 
-    if(isTRUE(store_perm) & identical(reps, attr(caobj$permuted_data,'reps'))){
+    if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
 
-      caobjp <- caobj$permuted_data[[k]]
+      caobjp <- caobj@permuted_data[[k]]
 
     } else {
       mat_perm <- t(apply(mat, margin, FUN=sample))
@@ -171,14 +172,17 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
                                          coords = TRUE,
                                          princ_coords = pc,
                                          dims = dims,
-                                         top = caobj$top_rows,
+                                         top = caobj@top_rows,
                                          inertia = FALSE))
 
       if(isTRUE(store_perm)){
-        x <- list("std_coords_cols" = caobjp$std_coords_cols,
-                  "prin_coords_rows" = caobjp$prin_coords_rows)
+        # x <- list("std_coords_cols" = caobjp@std_coords_cols,
+        #           "prin_coords_rows" = caobjp@prin_coords_rows,
+        #           "D" = caobjp$
+        #           "top_rows" = caobjp@top_rows)
+        # x <- recompute(x, mat_perm)
 
-        saved_ca[[k]] <- new_cacomp(x)
+        saved_ca[[k]] <- caobjp
       }
     }
 
@@ -188,7 +192,7 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     caobjp <- apl_coords(caobj = caobjp, group = group, calc_cols = cc, calc_rows = cr)
     idx <- ((1:row_num)+((k-1)*row_num))
 
-    apl_perm[idx,] <- caobjp$apl_rows
+    apl_perm[idx,] <- caobjp@apl_rows
 
     setTxtProgressBar(pb, k)
 
@@ -206,22 +210,23 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
   # With 99% quantile, gives different results though!
   cutoff_cotan <- quantile(apl_perm[,3], quant)
 
-  score <- caobj$apl_rows[,1] - (caobj$apl_rows[,2] * cutoff_cotan)
-  ranking <- data.frame("Rowname" = rownames(caobj$apl_rows),
+  score <- caobj@apl_rows[,1] - (caobj@apl_rows[,2] * cutoff_cotan)
+  ranking <- data.frame("Rowname" = rownames(caobj@apl_rows),
                         "Score" = score,
-                        "Row_num" = 1:nrow(caobj$apl_rows))
+                        "Row_num" = 1:nrow(caobj@apl_rows))
 
   ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
   ranking$Rank <- 1:nrow(ranking)
 
-  caobj$APL_score <- ranking
+  caobj@APL_score <- ranking
 
-  if(isTRUE(store_perm) & !identical(reps, attr(caobj$permuted_data,'reps'))){
-    caobj$permuted_data <- saved_ca
-    attr(caobj$permuted_data,'cutoff') <- cutoff_cotan
-    attr(caobj$permuted_data,'reps') <- reps
+  if(isTRUE(store_perm) & !identical(reps, attr(caobj@permuted_data,'reps'))){
+    caobj@permuted_data <- saved_ca
+    attr(caobj@permuted_data,'cutoff') <- cutoff_cotan
+    attr(caobj@permuted_data,'reps') <- reps
   }
 
+  stopifnot(validObject(caobj))
   return(caobj)
 
 }
@@ -258,32 +263,32 @@ apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, s
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
 
-  if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
+  if (is.empty(caobj@apl_rows) || is.empty(caobj@apl_cols)){
     stop("Please run apl_coords() first!")
   }
 
-  row_num <- nrow(caobj$apl_rows)
+  row_num <- nrow(caobj@apl_rows)
   margin <- 1
   pc <- 1
   cc <- FALSE
   cr <- TRUE
 
-  if (caobj$dims == 1 && !is.null(caobj$dims)){
+  if (caobj@dims == 1 && !is.empty(caobj@dims)){
     row_num <- 1
   }
 
   apl_perm <- data.frame("x" = rep(0, row_num*reps), "y" = rep(0, row_num*reps)) #init. data frame
 
-  if(isTRUE(store_perm) & identical(reps, attr(caobj$permuted_data,'reps'))){
+  if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
 
-    cutoff_cotan <- attr(caobj$permuted_data,'cutoff')
+    cutoff_cotan <- attr(caobj@permuted_data,'cutoff')
 
 
   } else {
     pb <- txtProgressBar(min = 0, max = reps, style = 3)
 
-    rows <- t(caobj$prin_coords_rows)
-    cols <- t(caobj$std_coords_cols)
+    rows <- t(caobj@prin_coords_rows)
+    cols <- t(caobj@std_coords_cols)
 
     for (k in seq(reps)){
 
@@ -320,24 +325,25 @@ apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, s
 
   }
 
-  score <- caobj$apl_rows[,1] - (caobj$apl_rows[,2] * cutoff_cotan)
-  ranking <- data.frame("Rowname" = rownames(caobj$apl_rows),
+  score <- caobj@apl_rows[,1] - (caobj@apl_rows[,2] * cutoff_cotan)
+  ranking <- data.frame("Rowname" = rownames(caobj@apl_rows),
                         "Score" = score,
-                        "Row_num" = 1:nrow(caobj$apl_rows))
+                        "Row_num" = 1:nrow(caobj@apl_rows))
 
   ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
   ranking$Rank <- 1:nrow(ranking)
 
-  caobj$APL_score <- ranking
+  caobj@APL_score <- ranking
 
-  if(isTRUE(store_perm) & !identical(reps, attr(caobj$permuted_data,'reps'))){
+  if(isTRUE(store_perm) & !identical(reps, attr(caobj@permuted_data,'reps'))){
 
-    if(is.null(caobj$permuted_data))  caobj$permuted_data <- list()
+    if(is.empty(caobj@permuted_data))  caobj@permuted_data <- list()
 
-    attr(caobj$permuted_data,'cutoff') <- cutoff_cotan
-    attr(caobj$permuted_data,'reps') <- reps
+    attr(caobj@permuted_data,'cutoff') <- cutoff_cotan
+    attr(caobj@permuted_data,'reps') <- reps
   }
 
+  stopifnot(validObject(caobj))
   return(caobj)
 
 }
@@ -371,9 +377,10 @@ apl_topGO <- function(caobj,
                       use_coords = FALSE,
                       return_plot = FALSE){
 
-  if (ngenes > nrow(caobj$apl_rows)){
+  require(topGO)
+  if (ngenes > nrow(caobj@apl_rows)){
     stop("ngenes is larger than the total number of genes.\n")
-  } else if (ngenes == nrow(caobj$apl_rows)){
+  } else if (ngenes == nrow(caobj@apl_rows)){
     warning("You have selected all available genes.\n")
   }
 
@@ -382,21 +389,21 @@ apl_topGO <- function(caobj,
   # }
 
 
-  if(!is.null(caobj$APL_score) & !isTRUE(use_coords)){
+  if(!is.empty(caobj@APL_score) & !isTRUE(use_coords)){
 
 
-    Score_ord <- caobj$APL_score[order(caobj$APL_score$Score, decreasing=TRUE),]
+    Score_ord <- caobj@APL_score[order(caobj@APL_score$Score, decreasing=TRUE),]
     ranked_genes <- Score_ord$Score
     names(ranked_genes) <- Score_ord$Rowname
 
-  } else if (isTRUE(use_coords) | is.null(caobj$APL_score)) {
+  } else if (isTRUE(use_coords) | is.empty(caobj@APL_score)) {
 
-    if(is.null(caobj$apl_rows)){
+    if(is.empty(caobj@apl_rows)){
       stop("No APL coordinates found for rows. Please first run apl_coords.\n")
     }
 
-    ranked_genes <- 1:nrow(caobj$apl_rows)
-    names(ranked_genes) <- rownames(caobj$apl_rows)[order(caobj$apl_rows[,1], decreasing = TRUE)]
+    ranked_genes <- 1:nrow(caobj@apl_rows)
+    names(ranked_genes) <- rownames(caobj@apl_rows)[order(caobj@apl_rows[,1], decreasing = TRUE)]
 
   } else {
     stop("APL scores not present but use_coords set to FALSE.\n")
@@ -462,40 +469,40 @@ apl_topGO <- function(caobj,
 #' @param caobj  An object of class "cacomp" and "APL" with apl coordinates calculated.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".
 #' @param rows_idx numeric/character vector. Indices or names of the rows that should be labelled. Default NULL.
-#' @param cols_idx numeric/character vector. Indices or names of the columns that should be labelled. Default is only to label columns making up the centroid: caobj$group.
+#' @param cols_idx numeric/character vector. Indices or names of the columns that should be labelled. Default is only to label columns making up the centroid: caobj@group.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @param show_score Logical. Wheter the S-alpha score should be shown in the plot.
 #' @export
-apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, row_labs = FALSE, col_labs = TRUE, show_score = FALSE){
+apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj@group, row_labs = FALSE, col_labs = TRUE, show_score = FALSE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
 
-  if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
+  if (is.empty(caobj@apl_rows) || is.empty(caobj@apl_cols)){
     stop("Please run apl_coords() first!")
   }
 
   if (is(rows_idx, "character")){
-    names <- rownames(caobj$apl_rows)
+    names <- rownames(caobj@apl_rows)
     idx <- match(rows_idx, names)
     idx <- na.omit(idx)
     rows_idx <- idx
   }
 
   if (is(cols_idx, "character")){
-    names <- rownames(caobj$apl_cols)
+    names <- rownames(caobj@apl_cols)
     idx <- match(cols_idx, names)
     idx <- na.omit(idx)
     cols_idx <- idx
   }
 
   if (is.numeric(cols_idx)){
-  group_cols <- data.frame(rownms = rownames(caobj$apl_cols)[cols_idx], x = caobj$apl_cols[cols_idx,"x"], y = caobj$apl_cols[cols_idx,"y"], row.names = NULL)
+  group_cols <- data.frame(rownms = rownames(caobj@apl_cols)[cols_idx], x = caobj@apl_cols[cols_idx,"x"], y = caobj@apl_cols[cols_idx,"y"], row.names = NULL)
   }
   if(is.numeric(rows_idx)){
-  group_rows <- data.frame(rownms = rownames(caobj$apl_rows)[rows_idx], x = caobj$apl_rows[rows_idx,"x"], y = caobj$apl_rows[rows_idx,"y"], row.names = NULL)
+  group_rows <- data.frame(rownms = rownames(caobj@apl_rows)[rows_idx], x = caobj@apl_rows[rows_idx,"x"], y = caobj@apl_rows[rows_idx,"y"], row.names = NULL)
   }
 
   if (row_labs == FALSE){
@@ -515,9 +522,9 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
     colfont <- list(color='#000000')
 
   }
-  apl_scores <- caobj$APL_score$Score[order(caobj$APL_score$Row_num)]
-  apl_rows.tmp <- data.frame(rownms = rownames(caobj$apl_rows), caobj$apl_rows, Score = apl_scores)
-  apl_cols.tmp <- data.frame(rownms = rownames(caobj$apl_cols), caobj$apl_cols)
+  apl_scores <- caobj@APL_score$Score[order(caobj@APL_score$Row_num)]
+  apl_rows.tmp <- data.frame(rownms = rownames(caobj@apl_rows), caobj@apl_rows, Score = apl_scores)
+  apl_cols.tmp <- data.frame(rownms = rownames(caobj@apl_cols), caobj@apl_cols)
 
   if (type == "ggplot"){
 
@@ -533,7 +540,7 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
       } else {
         p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.7, shape = 16)
       }
-      p <- p +  ggplot2::geom_point(data=apl_cols.tmp[caobj$group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 4) +
+      p <- p +  ggplot2::geom_point(data=apl_cols.tmp[caobj@group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 4) +
                 ggplot2::labs(title="Association Plot") +
                 ggplot2::theme_bw()
 
@@ -559,11 +566,13 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
     if (isTRUE(show_score)){
       colors_fun <- 'Viridis' #"YlGnBu"
       color_fix <- as.formula("~Score")
-      sym <- "cyrcle"
+      color_bar <- list(title = "Score", len=0.5)
+      sym <- "circle"
     } else {
       color_fix <- '#0066FF'
       colors_fun <- NULL
-      sym <- "cyrcle-open"
+      color_bar <- NULL
+      sym <- "circle-open"
 
     }
 
@@ -590,7 +599,7 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
                 marker = list(color = color_fix, # '#0066FF'
                               colorscale = colors_fun,
                               symbol = sym,
-                              colorbar=list(title = "Score", len=0.5),
+                              colorbar = color_bar,
                               size = 5),
                 name = 'genes',
                 hoverinfo = 'text',
@@ -628,7 +637,7 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
                                   type = 'scatter')
     }
 
-    p <- p %>% plotly::layout(title = paste('Association Plot \n', ncol(caobj$U), ' first dimensions, ', length(caobj$group),' samples.\n'),
+    p <- p %>% plotly::layout(title = paste('Association Plot \n', ncol(caobj@U), ' first dimensions, ', length(caobj@group),' samples.\n'),
              xaxis = list(title = 'Distance from origin (x)', rangemode = "tozero"),
              yaxis = list(title = 'Distance from gene to sample line (y)', rangemode = "tozero"), showlegend = TRUE)
 
@@ -673,7 +682,7 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj$group, r
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".
 #' @param ... Arguments forwarded to methods.
 #' @export
-runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = caobj$group, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
+runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = caobj@group, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
   UseMethod("runAPL")
 }
 
@@ -707,26 +716,26 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
                     python = python)
 
   } else {
-    if(!is.null(caobj$dims) && is.null(dims)){
-      dims <- caobj$dims
-    } else if (!is.null(caobj$dims) && !is.null(dims)) {
-        # warning("The caobj was previously already subsetted to ", caobj$dims, " dimensions. Subsetting again!")
-      if (dims < caobj$dims){
+    if(!is.empty(caobj@dims) && is.null(dims)){
+      dims <- caobj@dims
+    } else if (!is.empty(caobj@dims) && !is.null(dims)) {
+        # warning("The caobj was previously already subsetted to ", caobj@dims, " dimensions. Subsetting again!")
+      if (dims < caobj@dims){
         # caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = FALSE, princ_coords = 1)
         caobj <- subset_dims(caobj, dims = dims)
-      } else if(dims > length(caobj$D)){
+      } else if(dims > length(caobj@D)){
         warning("dims is larger than the number of available dimensions. Argument ignored")
       }
     }
 
-    if (is.null(caobj$prin_coords_rows) && !is.null(caobj$std_coords_rows)){
+    if (is.empty(caobj@prin_coords_rows) && !is.empty(caobj@std_coords_rows)){
       caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = TRUE, princ_coords = 1)
-    } else if (is.null(caobj$prin_coords_rows) || is.null(caobj$std_coords_cols)){
+    } else if (is.empty(caobj@prin_coords_rows) || is.empty(caobj@std_coords_cols)){
       caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = FALSE, princ_coords = 1)
     }
   }
 
-  if (is.null(caobj$apl_rows) || is.null(caobj$apl_cols)){
+  if (is.empty(caobj@apl_rows) || is.empty(caobj@apl_cols)){
     caobj <- apl_coords(caobj = caobj, group = group)
   }
 
@@ -735,15 +744,15 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
     if (score == TRUE){
       caobj <- apl_score(caobj = caobj,
                          mat = obj,
-                         dims = caobj$dims,
-                         group = caobj$group,
+                         dims = caobj@dims,
+                         group = caobj@group,
                          reps= reps,
                          python = python)
 
-      mark_rows <- head(caobj$APL_score$Row_num, nrow)
+      mark_rows <- head(caobj@APL_score$Row_num, nrow)
 
       if (is(mark_cols, "character")){
-        mark_cols <- match(mark_cols, rownames(caobj$apl_cols))
+        mark_cols <- match(mark_cols, rownames(caobj@apl_cols))
         mark_cols <- na.omit(mark_cols)
         if (anyNA(mark_cols)){
           warning("Not all names in 'mark_cols' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
@@ -752,7 +761,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
     }
   } else{
     if (is(mark_rows, "character")){
-      mark_rows <- match(mark_rows, rownames(caobj$apl_rows))
+      mark_rows <- match(mark_rows, rownames(caobj@apl_rows))
       mark_rows <- na.omit(mark_rows)
       if (anyNA(mark_rows)){
         warning("Not all names in 'mark_rows' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
@@ -760,7 +769,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
     }
 
     if (is(mark_cols, "character")){
-      mark_cols <- match(mark_cols, rownames(caobj$apl_cols))
+      mark_cols <- match(mark_cols, rownames(caobj@apl_cols))
       mark_cols <- na.omit(mark_cols)
       if (anyNA(mark_cols)){
         warning("Not all names in 'mark_cols' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
@@ -776,7 +785,8 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
            rows_idx = mark_rows,
            cols_idx = mark_cols,
            row_labs = row_labs,
-           col_labs = col_labs)
+           col_labs = col_labs,
+           show_score = score)
 
   return(p)
 }

@@ -15,7 +15,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj$std_coords_cols))
+  col_labels = seq(ncol(obj@std_coords_cols))
 )
 
 \method{ca_3Dplot}{default}(
@@ -25,7 +25,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj$std_coords_cols))
+  col_labels = seq(ncol(caobj@std_coords_cols))
 )
 
 \method{ca_3Dplot}{cacomp}(
@@ -35,7 +35,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj$std_coords_cols))
+  col_labels = seq(ncol(obj@std_coords_cols))
 )
 
 \method{ca_3Dplot}{Seurat}(
@@ -45,7 +45,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj$std_coords_cols))
+  col_labels = seq(ncol(caobj@std_coords_cols))
 )
 
 \method{ca_3Dplot}{SingleCellExperiment}(
@@ -55,7 +55,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj$std_coords_cols))
+  col_labels = seq(ncol(caobj@std_coords_cols))
 )
 }
 \arguments{
@@ -72,7 +72,7 @@ ca_3Dplot(
 \item{row_labels}{Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.}
 
 \item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-Default seq(ncol(obj$std_coords_cols)) (all columns).}
+Default seq(ncol(obj@std_coords_cols)) (all columns).}
 }
 \value{
 Plot of class "plotly".
