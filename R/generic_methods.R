@@ -38,3 +38,17 @@ show.cacomp <- function(object){
 setMethod(f = "show", signature(object = "cacomp"), function(object) {
   show.cacomp(object)
 })
+
+
+setMethod("as.list",signature(x="cacomp"),function(x) {
+  mapply(function(y) {
+
+    if (inherits(slot(x,y),"cacomp")) {
+      as.list(slot(x,y))
+    } else {
+      slot(x,y)
+    }
+  },
+  slotNames(class(x)),
+  SIMPLIFY=FALSE)
+})

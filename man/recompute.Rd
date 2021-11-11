@@ -4,7 +4,7 @@
 \alias{recompute}
 \title{Recompute missing values of cacomp object.}
 \usage{
-recompute(calist, mat)
+recompute(calist, mat, ...)
 }
 \arguments{
 \item{calist}{A list with std_coords_cols, the prin_coords_rows and D.}

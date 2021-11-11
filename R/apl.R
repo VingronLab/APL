@@ -159,8 +159,9 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
     #permute rows and rerun cacomp
 
     if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
-
-      caobjp <- caobj@permuted_data[[k]]
+      calist <- caobj@permuted_data[[k]][1:3]
+      mat <- caobj@permuted_data[[k]]$mat
+      caobjp <- recompute(calist, mat)
 
     } else {
       mat_perm <- t(apply(mat, margin, FUN=sample))
@@ -176,13 +177,15 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
                                          inertia = FALSE))
 
       if(isTRUE(store_perm)){
-        # x <- list("std_coords_cols" = caobjp@std_coords_cols,
-        #           "prin_coords_rows" = caobjp@prin_coords_rows,
-        #           "D" = caobjp$
-        #           "top_rows" = caobjp@top_rows)
+        x <- list("std_coords_cols" = caobjp@std_coords_cols,
+                  "std_coords_rows" = caobjp@std_coords_rows,
+                  "D" = caobjp@D,
+                  "mat" = mat_perm)
         # x <- recompute(x, mat_perm)
 
-        saved_ca[[k]] <- caobjp
+        # saved_ca[[k]] <- caobjp
+        saved_ca[[k]] <- x
+
       }
     }
 
