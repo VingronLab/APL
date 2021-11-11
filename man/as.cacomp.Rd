@@ -8,15 +8,15 @@
 \alias{as.cacomp.SingleCellExperiment}
 \title{Create cacomp object from Seurat/SingleCellExperiment container}
 \usage{
-as.cacomp(obj, assay)
+as.cacomp(obj, assay, ...)
 
-as.cacomp.default(obj, assay = NULL)
+as.cacomp.default(obj, assay = NULL, ...)
 
 as.cacomp.cacomp(obj, assay = NULL)
 
-as.cacomp.Seurat(obj, assay = "RNA")
+as.cacomp.Seurat(obj, assay = "RNA", ..., slot = "counts")
 
-as.cacomp.SingleCellExperiment(obj, assay = NULL)
+as.cacomp.SingleCellExperiment(obj, assay = "counts", ...)
 }
 \arguments{
 \item{obj}{An object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.}

@@ -46,7 +46,8 @@ pick_dims(
   python = TRUE,
   return_plot = FALSE,
   ...,
-  assay
+  assay,
+  slot = "counts"
 )
 
 \method{pick_dims}{SingleCellExperiment}(

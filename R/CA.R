@@ -186,7 +186,7 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
     if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
   }
 
-  # j <- seq_len(length(SVD$D))
+  names(SVD$D) <- paste0("Dim", seq_len(length(SVD$D)))
   dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ncol(SVD$V))))
   dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ncol(SVD$U))))
 
@@ -261,14 +261,14 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
 #' @param ... Other parameters
 #' @rdname cacomp
 #' @export
-cacomp.Seurat <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...,assay = DefaultAssay(obj), return_input = FALSE){
+cacomp.Seurat <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...,assay = DefaultAssay(obj), slot = "counts", return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
 
   stopifnot("Set coords = TRUE when inputting a Seurat object and return_input = TRUE." = coords == TRUE)
 
 
-  seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
+  seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
   seu <- as.matrix(seu)
 
   caobj <- cacomp(obj = seu,
@@ -732,12 +732,12 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
 #'
 #' @rdname pick_dims
 #' @export
-pick_dims.Seurat <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ..., assay){
+pick_dims.Seurat <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ..., assay, slot = "counts"){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
   if (method == "elbow_rule") {
-    seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
+    seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
     seu <- as.matrix(seu)
   } else {
     seu <- NULL

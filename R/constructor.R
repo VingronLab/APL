@@ -1,9 +1,15 @@
 
-
-
-
+#' Helper function to check if object is empty.
+#' @param x object
 is.empty <- function(x) return(isTRUE(length(x) == 0 & !is.null(x)))
 
+
+#' Check if cacomp object was correctly created.
+#'
+#' @description Checks if the slots in a cacomp object are of the correct size
+#' and whether they are coherent.
+#' @param object A cacomp object.
+#' @export
 check_cacomp <- function(object) {
   errors <- character()
 
@@ -138,7 +144,34 @@ check_cacomp <- function(object) {
   if (length(errors) == 0) TRUE else errors
 }
 
-
+#' An S4 class that contains all elements needed for CA.
+#'
+#' @description
+#' This class contains elements necessary to computer CA coordinates or Association Plot coordinates,
+#' as well as other informative data such as row/column inertia, gene-wise APL-scores, etc. ...
+#'
+#' @slot U class "matrix". Left singular vectors of the original input matrix.
+#' @slot V class "matrix". Right singular vectors of the original input matrix.
+#' @slot D class "numeric". Singular values of the original inpt matrix.
+#' @slot std_coords_rows class "matrix". Standard CA coordinates of the rows.
+#' @slot std_coords_cols class "matrix". Standard CA coordinates of the columns.
+#' @slot prin_coords_rows class "matrix". Principal CA coordinates of the rows.
+#' @slot prin_coords_cols class "matrix". Principal CA coordinates of the columns.
+#' @slot apl_rows class "matrix". Association plot coordinates of the rows for the direction defined in slot "group"
+#' @slot apl_cols class "matrix". Association plot coordinates of the columns for the direction defined in slot "group"
+#' @slot APL_score class "data.frame". Contains rows sorted by the APL score.
+#' Columns: Rowname (gene name in the case of gene expression data),
+#' APL score calculated for the direction defined in slot "group",
+#' the original row number and the rank of the row as determined by the score.
+#' @slot dims class "numeric". Number of dimensions in CA space.
+#' @slot group class "numeric". Indices of the chosen columns for APL calculations.
+#' @slot row_masses class "numeric". Row masses of the frequency table.
+#' @slot col_masses class "numeric". Column masses of the frequency table.
+#' @slot top_rows class "numeric". Number of most variable rows chosen.
+#' @slot tot_inertia class "numeric". Total inertia in CA space.
+#' @slot row_inertia class "numeric". Row-wise inertia in CA space.
+#' @slot col_inertia class "numeric". Column-wise inertia in CA space.
+#' @slot permuted_data class "list". Storage slot for permuted data.
 setClass("cacomp",
          representation(
            U = "matrix",
@@ -152,7 +185,7 @@ setClass("cacomp",
            apl_cols = "matrix",
            APL_score = "data.frame",
            dims = "numeric",
-           group = "integer",
+           group = "numeric",
            row_masses = "numeric",
            col_masses = "numeric",
            top_rows = "numeric",
@@ -173,7 +206,7 @@ setClass("cacomp",
            apl_cols = matrix(0, 0, 0),
            APL_score = data.frame(),
            dims = numeric(),
-           group = integer(),
+           group = numeric(),
            row_masses = numeric(),
            col_masses = numeric(),
            top_rows = numeric(),
@@ -184,68 +217,12 @@ setClass("cacomp",
          validity = check_cacomp
 )
 
-
-
+#' Create new "cacomp" object.
+#'
+#' @description Creates new cacomp object.
+#'
+#' @param ... Should contain arguments forwared to new().
+#' Arguments should be the slot name followed by the approbiate object type.
+#' @export
 new_cacomp <- function(...) new("cacomp",...)
 
-
-#'
-#'
-#'
-#' #' Create new object of class "cacomp"
-#' #'
-#' #' @param x object to create new cacomp from.
-#' #' @export
-#' new_cacomp <- function(x){
-#'   stopifnot(is.list(x))
-#'
-#'   cacomp_nms <- c("U",
-#'                   "V",
-#'                   "D",
-#'                   "std_coords_rows",
-#'                   "std_coords_cols",
-#'                   "prin_coords_rows",
-#'                   "prin_coords_cols",
-#'                   "apl_rows",
-#'                   "apl_cols",
-#'                   "dims",
-#'                   "group",
-#'                   "row_masses",
-#'                   "col_masses",
-#'                   "top_rows",
-#'                   "tot_inertia",
-#'                   "row_inertia",
-#'                   "col_inertia",
-#'                   "permuted_data")
-#'
-#'   check_names(x, canames = cacomp_nms)
-#'   x <- fill_names(x, canames = cacomp_nms)
-#'   x <- structure(x, class = "cacomp")
-#'
-#'   return(x)
-#' }
-#'
-#' #' Check names of potential cacomp object.
-#' #'
-#' #' @param x An object to check.
-#' #' @param canames Allowed names.
-#' check_names <- function(x, canames){
-#'   nms <- names(x)
-#'
-#'   if (sum(!nms %in% canames) != 0){
-#'     stop("x contains unsuitable names.")
-#'   }
-#'
-#' }
-#'
-#' #' Create missing names
-#' #' @description Adds missing names to object and sets them NULL.
-#' #' @param x Object to fill names in for.
-#' #' @param canames Allowed names.
-#' fill_names <- function(x, canames){
-#'
-#'   idx <- which(!canames %in% names(x))
-#'   x <- c(x, setNames(rep(list(NULL), length(idx)), canames[idx]))
-#'   x <- x[canames]
-#'   return(x)
-#' }

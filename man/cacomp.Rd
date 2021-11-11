@@ -55,6 +55,7 @@ cacomp(
   rm_zeros = TRUE,
   ...,
   assay = DefaultAssay(obj),
+  slot = "counts",
   return_input = FALSE
 )
 
