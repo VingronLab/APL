@@ -12,7 +12,7 @@ cacomp(
   obj,
   coords = TRUE,
   princ_coords = 1,
-  python = TRUE,
+  python = FALSE,
   dims = NULL,
   top = NULL,
   inertia = TRUE,
@@ -97,6 +97,8 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 
 \item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
 
+\item{slot}{character. The slot of the Seurat assay. Default "counts".}
+
 \item{return_input}{Logical. If TRUE returns the input (SingleCellExperiment/Seurat object) with the CA results saved in the reducedDim/DimReduc slot "CA".
 Otherwise returns a "cacomp". Default FALSE.}
 }
@@ -135,6 +137,17 @@ The calculation is performed according to Greenacre. Singular value decompositio
 can be performed either with the base R function `svd` or preferably by the much faster
 pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
 principal coordinates should only computed when needed to save computational time.
+}
+\examples{
+# Simulate scRNAseq data.
+cnts <- data.frame(cell_1 = rpois(10, 5),
+                   cell_2 = rpois(10, 10),
+                   cell_3 = rpois(10, 20))
+rownames(cnts) <- paste0("gene_", 1:10)
+cnts <- as.matrix(cnts)
+
+# Run correspondence analysis.
+ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
 }
 \references{
 Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.

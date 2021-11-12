@@ -224,8 +224,11 @@ recompute <- function(calist, mat, ...){
 #' @return
 #' A cacomp object.
 #'
-#' @param obj An object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.
-#' @param assay Character. The assay from which extract the count matrix, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' @param obj An object of class "Seurat" or "SingleCellExperiment"
+#' with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.
+#' @param assay Character. The assay from which extract the count matrix,
+#' e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' @param ... Further arguments.
 #' @export
 as.cacomp <- function(obj, assay, ...) {
   UseMethod("as.cacomp")
@@ -246,17 +249,18 @@ as.cacomp.default <- function(obj, assay = NULL, ...){
 #' @description as.cacomp.cacomp returns input without any calculations.
 #' @rdname as.cacomp
 #' @export
-as.cacomp.cacomp <- function(obj, assay = NULL){
+as.cacomp.cacomp <- function(obj, assay = NULL, ...){
   stopifnot(is(obj, "cacomp"))
   return(obj)
 }
 
-
+#' Convert cacomp object to cacomp object (returns input).
+setMethod("as.cacomp", "cacomp", as.cacomp.cacomp)
 
 
 #' @description
 #' as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
-#'
+#' @param slot character. Slot of the Seurat assay to use. Default "counts".
 #' @rdname as.cacomp
 #' @export
 as.cacomp.Seurat <- function(obj, assay="RNA", ..., slot = "counts"){
@@ -290,7 +294,7 @@ as.cacomp.Seurat <- function(obj, assay="RNA", ..., slot = "counts"){
   return(ca_obj)
 }
 
-
+#' Convert Seurat object to cacomp object.
 setMethod("as.cacomp", "Seurat", as.cacomp.Seurat)
 
 
@@ -336,6 +340,7 @@ as.cacomp.SingleCellExperiment <- function(obj, assay="counts", ...){
   return(ca_obj)
 }
 
+#' Convert SingleCellObject object to cacomp object.
 setMethod("as.cacomp", "SingleCellExperiment", as.cacomp.SingleCellExperiment)
 
 
