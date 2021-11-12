@@ -98,3 +98,32 @@ to estimate the number of dimensions that best represent the data.
 "elbow_rule" Formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
 }
+\examples{
+# Simulate scRNAseq data.
+cnts <- data.frame(cell_1 = rpois(10, 20),
+                   cell_2 = rpois(10, 20),
+                   cell_3 = rpois(10, 20),
+                   cell_4 = rpois(10, 20),
+                   cell_5 = rpois(10, 20),
+                   cell_6 = rpois(10, 20))
+
+rownames(cnts) <- paste0("gene_", 1:10)
+cnts <- as.matrix(cnts)
+
+ca <- cacomp(obj = cnts)
+
+DO NOT RUN! NOT WORKING!
+set.seed(2358)
+pd <- pick_dims(obj = ca,
+                mat = cnts,
+                method = "elbow_rule",
+                return_plot = TRUE,
+                reps = 10)
+pd$plot
+ca_sub <- subset_dims(ca, dims = pd$dims)
+
+# pick dimensions with cumulatively >80\% of total inertia. Returns vector.
+pd <- pick_dims(obj = ca,
+                method = "maj_inertia")
+ca_sub <- subset_dims(ca, dims = pd)
+}

@@ -95,14 +95,40 @@ var_rows <- function(mat, top = 5000){
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
 #' @param ... Arguments forwarded to methods.
+#' @examples
+#' # Simulate scRNAseq data.
+#' cnts <- data.frame(cell_1 = rpois(10, 5),
+#'                    cell_2 = rpois(10, 10),
+#'                    cell_3 = rpois(10, 20))
+#' rownames(cnts) <- paste0("gene_", 1:10)
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
 #' @export
-cacomp <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
+cacomp <- function(obj,
+                   coords=TRUE,
+                   princ_coords = 1,
+                   python = FALSE,
+                   dims = NULL,
+                   top = NULL,
+                   inertia = TRUE,
+                   rm_zeros = TRUE,
+                   ...){
   UseMethod("cacomp")
 }
 
 #' @rdname cacomp
 #' @export
-cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
+cacomp.default <- function(obj,
+                           coords=TRUE,
+                           princ_coords = 1,
+                           python = TRUE,
+                           dims = NULL,
+                           top = NULL,
+                           inertia = TRUE,
+                           rm_zeros = TRUE,
+                           ...){
   stop(paste0("cacomp does not know how to handle objects of class ",
               class(obj),
               ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
@@ -111,7 +137,15 @@ cacomp.default <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, di
 
 #' @rdname cacomp
 #' @export
-cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...){
+cacomp.matrix <- function(obj,
+                          coords=TRUE,
+                          princ_coords = 1,
+                          python = TRUE,
+                          dims = NULL,
+                          top = NULL,
+                          inertia = TRUE,
+                          rm_zeros = TRUE,
+                          ...){
 
   # chkDots(...)
 
@@ -256,12 +290,24 @@ cacomp.matrix <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
 #' are stored as stdev.
 #' To recompute a regular "cacomp" object without rerunning cacomp use `as.cacomp()`.
 #' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' @param slot character. The slot of the Seurat assay. Default "counts".
 #' @param return_input Logical. If TRUE returns the input (SingleCellExperiment/Seurat object) with the CA results saved in the reducedDim/DimReduc slot "CA".
 #'  Otherwise returns a "cacomp". Default FALSE.
 #' @param ... Other parameters
 #' @rdname cacomp
 #' @export
-cacomp.Seurat <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ...,assay = DefaultAssay(obj), slot = "counts", return_input = FALSE){
+cacomp.Seurat <- function(obj,
+                          coords=TRUE,
+                          princ_coords = 1,
+                          python = TRUE,
+                          dims = NULL,
+                          top = NULL,
+                          inertia = TRUE,
+                          rm_zeros = TRUE,
+                          ...,
+                          assay = DefaultAssay(obj),
+                          slot = "counts",
+                          return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -287,7 +333,7 @@ cacomp.Seurat <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
     obj[["CA"]] <- Seurat::CreateDimReducObject(embeddings = caobj@std_coords_cols,
                                                loadings = caobj@prin_coords_rows,
                                                stdev = caobj@D,
-                                               key = "DIM_",
+                                               key = "Dim_",
                                                assay = assay)
 
     return(obj)
@@ -315,7 +361,17 @@ cacomp.Seurat <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dim
 #'  Otherwise returns a "cacomp". Default FALSE.
 #' @rdname cacomp
 #' @export
-cacomp.SingleCellExperiment <- function(obj, coords=TRUE, princ_coords = 1, python = TRUE, dims = NULL, top = NULL, inertia = TRUE, rm_zeros = TRUE, ..., assay = "counts", return_input = FALSE){
+cacomp.SingleCellExperiment <- function(obj,
+                                        coords=TRUE,
+                                        princ_coords = 1,
+                                        python = TRUE,
+                                        dims = NULL,
+                                        top = NULL,
+                                        inertia = TRUE,
+                                        rm_zeros = TRUE,
+                                        ...,
+                                        assay = "counts",
+                                        return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
   stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
@@ -370,6 +426,17 @@ cacomp.SingleCellExperiment <- function(obj, coords=TRUE, princ_coords = 1, pyth
 #'
 #' @param caobj A caobj.
 #' @param dims Integer. Number of dimensions.
+#' #' # Simulate scRNAseq data.
+#' cnts <- data.frame(cell_1 = rpois(10, 5),
+#'                    cell_2 = rpois(10, 10),
+#'                    cell_3 = rpois(10, 20))
+#' rownames(cnts) <- paste0("gene_", 1:10)
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(cnts)
+#' ca <- subset_dims(ca, 2)
+#' @export
 subset_dims <- function(caobj, dims){
 
   stopifnot(is(caobj, "cacomp"))
@@ -427,6 +494,17 @@ subset_dims <- function(caobj, dims){
 #' Or, in other words, whether the standard coordinates are already calculated and stored in `caobj`. Default `FALSE`.
 #' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
 #' Default 3.
+#' @examples
+#' # Simulate scRNAseq data.
+#' cnts <- data.frame(cell_1 = rpois(10, 5),
+#'                    cell_2 = rpois(10, 10),
+#'                    cell_3 = rpois(10, 20))
+#' rownames(cnts) <- paste0("gene_", 1:10)
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts, princ_coords = 1)
+#' ca <- ca_coords(ca, princ_coords = 3)
 #' @export
 ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
 
@@ -592,6 +670,36 @@ scree_plot <- function(df){
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @param ... Arguments forwarded to methods.
+#' @examples
+#' # Simulate scRNAseq data.
+#' cnts <- data.frame(cell_1 = rpois(10, 20),
+#'                    cell_2 = rpois(10, 20),
+#'                    cell_3 = rpois(10, 20),
+#'                    cell_4 = rpois(10, 20),
+#'                    cell_5 = rpois(10, 20),
+#'                    cell_6 = rpois(10, 20))
+#'
+#' rownames(cnts) <- paste0("gene_", 1:10)
+#' cnts <- as.matrix(cnts)
+#'
+# Run correspondence analysis.
+#' ca <- cacomp(obj = cnts)
+#'
+# pick dimensions with the elbow rule. Returns list.
+#' DO NOT RUN! NOT WORKING!
+#' set.seed(2358)
+#' pd <- pick_dims(obj = ca,
+#'                 mat = cnts,
+#'                 method = "elbow_rule",
+#'                 return_plot = TRUE,
+#'                 reps = 10)
+#' pd$plot
+#' ca_sub <- subset_dims(ca, dims = pd$dims)
+#'
+#' # pick dimensions with cumulatively >80% of total inertia. Returns vector.
+#' pd <- pick_dims(obj = ca,
+#'                 method = "maj_inertia")
+#' ca_sub <- subset_dims(ca, dims = pd)
 #' @export
 pick_dims <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ...){
   UseMethod("pick_dims")

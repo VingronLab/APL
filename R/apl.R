@@ -358,6 +358,10 @@ apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, s
 #' This function uses the Kolmogorov-Smirnov test as implemented by the package topGO to test for overrepresentation in Gene Ontology gene sets.
 #'
 #' @details
+#' For a chosen group of cells/samples,
+#' the top 'ngenes' group specific genes are used for gene overrepresentation analysis.
+#' The genes are ranked either by the precomputed APL score, or, if
+#' not available by their APL x-coordinates.
 #'
 #' @return
 #' A data.frame containing the gene sets with the highest overrepresentation.
@@ -380,7 +384,7 @@ apl_topGO <- function(caobj,
                       use_coords = FALSE,
                       return_plot = FALSE){
 
-  require(topGO)
+  requireNamespace("topGO")
   if (ngenes > nrow(caobj@apl_rows)){
     stop("ngenes is larger than the total number of genes.\n")
   } else if (ngenes == nrow(caobj@apl_rows)){
@@ -417,7 +421,7 @@ apl_topGO <- function(caobj,
   } else if (organism == "mm"){
     organism <- "org.Mm.eg.db"
   } else {
-    Warning("Custom organism chosen.\n")
+    warning("Custom organism chosen.\n")
     organism <- organism
   }
 

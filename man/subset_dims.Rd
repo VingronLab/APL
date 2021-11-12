@@ -9,7 +9,17 @@ subset_dims(caobj, dims)
 \arguments{
 \item{caobj}{A caobj.}
 
-\item{dims}{Integer. Number of dimensions.}
+\item{dims}{Integer. Number of dimensions.
+#' # Simulate scRNAseq data.
+cnts <- data.frame(cell_1 = rpois(10, 5),
+                   cell_2 = rpois(10, 10),
+                   cell_3 = rpois(10, 20))
+rownames(cnts) <- paste0("gene_", 1:10)
+cnts <- as.matrix(cnts)
+
+# Run correspondence analysis.
+ca <- cacomp(cnts)
+ca <- subset_dims(ca, 2)}
 }
 \value{
 Returns caobj.

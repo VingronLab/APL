@@ -37,5 +37,8 @@ A data.frame containing the gene sets with the highest overrepresentation.
 This function uses the Kolmogorov-Smirnov test as implemented by the package topGO to test for overrepresentation in Gene Ontology gene sets.
 }
 \details{
-
+For a chosen group of cells/samples,
+the top 'ngenes' group specific genes are used for gene overrepresentation analysis.
+The genes are ranked either by the precomputed APL score, or, if
+not available by their APL x-coordinates.
 }

@@ -30,3 +30,15 @@ prin_coords_rows/prin_coords_cols: Principal coordinates of rows/columns.
 Takes a "cacomp" object and calculates standard and principal coordinates for the visualisation of CA results in a biplot or
 to subsequently calculate coordinates in an association plot.
 }
+\examples{
+# Simulate scRNAseq data.
+cnts <- data.frame(cell_1 = rpois(10, 5),
+                   cell_2 = rpois(10, 10),
+                   cell_3 = rpois(10, 20))
+rownames(cnts) <- paste0("gene_", 1:10)
+cnts <- as.matrix(cnts)
+
+# Run correspondence analysis.
+ca <- cacomp(obj = cnts, princ_coords = 1)
+ca <- ca_coords(ca, princ_coords = 3)
+}

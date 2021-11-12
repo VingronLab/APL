@@ -12,16 +12,22 @@ as.cacomp(obj, assay, ...)
 
 as.cacomp.default(obj, assay = NULL, ...)
 
-as.cacomp.cacomp(obj, assay = NULL)
+as.cacomp.cacomp(obj, assay = NULL, ...)
 
 as.cacomp.Seurat(obj, assay = "RNA", ..., slot = "counts")
 
 as.cacomp.SingleCellExperiment(obj, assay = "counts", ...)
 }
 \arguments{
-\item{obj}{An object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.}
+\item{obj}{An object of class "Seurat" or "SingleCellExperiment"
+with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.}
 
-\item{assay}{Character. The assay from which extract the count matrix, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+\item{assay}{Character. The assay from which extract the count matrix,
+e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+
+\item{...}{Further arguments.}
+
+\item{slot}{character. Slot of the Seurat assay to use. Default "counts".}
 }
 \value{
 A cacomp object.
