@@ -9,9 +9,10 @@ apl_topGO(
   ontology,
   organism = "hs",
   ngenes = 1000,
-  top_res = 10,
+  score_cutoff = 1,
   use_coords = FALSE,
-  return_plot = FALSE
+  return_plot = FALSE,
+  top_res = 15
 )
 }
 \arguments{
@@ -23,12 +24,14 @@ apl_topGO(
 
 \item{ngenes}{Numeric. Number of top ranked genes to test for overrepresentation.}
 
-\item{top_res}{Numeric. Number of most significant gene sets to return.}
+\item{score_cutoff}{numeric. S-alpha score cutoff. Only genes with a score larger will be tested.}
 
 \item{use_coords}{Logical. Whether the x-coordinates of the row APL coordinates should be used for ranking.
 Only recommended when no S-alpha score (see apl_score()) can be calculated.}
 
 \item{return_plot}{Logical. Whether a plot of significant gene sets should be additionally returned.}
+
+\item{top_res}{Numeric. Number of top scoring gene sets to plot.}
 }
 \value{
 A data.frame containing the gene sets with the highest overrepresentation.

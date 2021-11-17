@@ -2,10 +2,9 @@
 % Please edit documentation in R/plot.R
 \name{ca_3Dplot}
 \alias{ca_3Dplot}
-\alias{ca_3Dplot.default}
-\alias{ca_3Dplot.cacomp}
-\alias{ca_3Dplot.Seurat}
-\alias{ca_3Dplot.SingleCellExperiment}
+\alias{ca_3Dplot,cacomp-method}
+\alias{ca_3Dplot,Seurat-method}
+\alias{ca_3Dplot,SingleCellExperiment-method}
 \title{Plot of the first 3 CA dimensions.}
 \usage{
 ca_3Dplot(
@@ -15,47 +14,44 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj@std_coords_cols))
+  col_labels = seq(ncol(obj@std_coords_cols)),
+  ...
 )
 
-\method{ca_3Dplot}{default}(
+\S4method{ca_3Dplot}{cacomp}(
   obj,
   xdim = 1,
   ydim = 2,
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj@std_coords_cols))
+  col_labels = seq(ncol(obj@std_coords_cols)),
+  ...
 )
 
-\method{ca_3Dplot}{cacomp}(
+\S4method{ca_3Dplot}{Seurat}(
   obj,
   xdim = 1,
   ydim = 2,
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj@std_coords_cols))
+  col_labels = seq(ncol(caobj@std_coords_cols)),
+  ...,
+  assay = Seurat::DefaultAssay(obj),
+  slot = "counts"
 )
 
-\method{ca_3Dplot}{Seurat}(
+\S4method{ca_3Dplot}{SingleCellExperiment}(
   obj,
   xdim = 1,
   ydim = 2,
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj@std_coords_cols))
-)
-
-\method{ca_3Dplot}{SingleCellExperiment}(
-  obj,
-  xdim = 1,
-  ydim = 2,
-  zdim = 3,
-  princ_coords = 1,
-  row_labels = NULL,
-  col_labels = seq(ncol(caobj@std_coords_cols))
+  col_labels = seq(ncol(caobj@std_coords_cols)),
+  ...,
+  assay = "counts"
 )
 }
 \arguments{
@@ -71,8 +67,14 @@ ca_3Dplot(
 
 \item{row_labels}{Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.}
 
-\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
+\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).}
+
+\item{...}{Further arguments.
 Default seq(ncol(obj@std_coords_cols)) (all columns).}
+
+\item{assay}{SingleCellExperiment assay to obtain counts from.}
+
+\item{slot}{Seurat slot from assay to get count matrix from.}
 }
 \value{
 Plot of class "plotly".

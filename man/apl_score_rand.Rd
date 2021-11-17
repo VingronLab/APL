@@ -26,11 +26,6 @@ apl_score_rand(
 
 \item{store_perm}{Logical. Whether calculated cutoff should be stored. Default TRUE.
 This implementation dramatically speeds up computation compared to `svd()` in R.}
-
-\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
-Should contain row and column names.}
-
-\item{group}{Vector of indices of the columns to calculate centroid/x-axis direction.}
 }
 \value{
 Returns the input "cacomp" object with "APL_score" component added.

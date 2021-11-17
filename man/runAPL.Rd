@@ -2,10 +2,9 @@
 % Please edit documentation in R/apl.R
 \name{runAPL}
 \alias{runAPL}
-\alias{runAPL.default}
-\alias{runAPL.matrix}
-\alias{runAPL.SingleCellExperiment}
-\alias{runAPL.Seurat}
+\alias{runAPL,matrix-method}
+\alias{pick_dims,SingleCellExperiment-method}
+\alias{runAPL,Seurat-method}
 \title{Compute and plot Association plot}
 \usage{
 runAPL(
@@ -19,14 +18,14 @@ runAPL(
   mark_rows = NULL,
   mark_cols = caobj@group,
   reps = 3,
-  python = TRUE,
+  python = FALSE,
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
   ...
 )
 
-\method{runAPL}{default}(
+\S4method{runAPL}{matrix}(
   obj,
   group,
   caobj = NULL,
@@ -37,14 +36,14 @@ runAPL(
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
-  python = TRUE,
+  python = FALSE,
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
   ...
 )
 
-\method{runAPL}{matrix}(
+\S4method{pick_dims}{SingleCellExperiment}(
   obj,
   group,
   caobj = NULL,
@@ -55,25 +54,7 @@ runAPL(
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
-  python = TRUE,
-  row_labs = TRUE,
-  col_labs = TRUE,
-  type = "plotly",
-  ...
-)
-
-\method{runAPL}{SingleCellExperiment}(
-  obj,
-  group,
-  caobj = NULL,
-  dims = NULL,
-  nrow = 10,
-  top = 5000,
-  score = TRUE,
-  mark_rows = NULL,
-  mark_cols = NULL,
-  reps = 3,
-  python = TRUE,
+  python = FALSE,
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
@@ -81,7 +62,7 @@ runAPL(
   assay = "counts"
 )
 
-\method{runAPL}{Seurat}(
+\S4method{runAPL}{Seurat}(
   obj,
   group,
   caobj = NULL,
@@ -92,7 +73,7 @@ runAPL(
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
-  python = TRUE,
+  python = FALSE,
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",

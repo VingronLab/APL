@@ -2,30 +2,27 @@
 % Please edit documentation in R/convert.R
 \name{as.cacomp}
 \alias{as.cacomp}
-\alias{as.cacomp.default}
-\alias{as.cacomp.cacomp}
-\alias{as.cacomp.Seurat}
-\alias{as.cacomp.SingleCellExperiment}
+\alias{as.cacomp,cacomp-method}
+\alias{as.cacomp,Seurat-method}
+\alias{as.cacomp,SingleCellExperiment-method}
 \title{Create cacomp object from Seurat/SingleCellExperiment container}
 \usage{
-as.cacomp(obj, assay, ...)
+as.cacomp(obj, ...)
 
-as.cacomp.default(obj, assay = NULL, ...)
+\S4method{as.cacomp}{cacomp}(obj, ...)
 
-as.cacomp.cacomp(obj, assay = NULL, ...)
+\S4method{as.cacomp}{Seurat}(obj, ..., assay = "RNA", slot = "counts")
 
-as.cacomp.Seurat(obj, assay = "RNA", ..., slot = "counts")
-
-as.cacomp.SingleCellExperiment(obj, assay = "counts", ...)
+\S4method{as.cacomp}{SingleCellExperiment}(obj, ..., assay = "counts")
 }
 \arguments{
 \item{obj}{An object of class "Seurat" or "SingleCellExperiment"
 with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.}
 
+\item{...}{Further arguments.}
+
 \item{assay}{Character. The assay from which extract the count matrix,
 e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
-
-\item{...}{Further arguments.}
 
 \item{slot}{character. Slot of the Seurat assay to use. Default "counts".}
 }

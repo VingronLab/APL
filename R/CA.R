@@ -63,50 +63,8 @@ var_rows <- function(mat, top = 5000){
 
 }
 
-#' Correspondance Analysis
-#'
-#' @description
-#' `cacomp` performs correspondence analysis on a matrix or Seurat/SingleCellExperiment object and returns the transformed data.
-#'
-#' @details
-#' The calculation is performed according to Greenacre. Singular value decomposition
-#' can be performed either with the base R function `svd` or preferably by the much faster
-#' pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
-#' principal coordinates should only computed when needed to save computational time.
-#'
-#' @return
-#' Returns a named list of class "cacomp" with components
-#' U, V and D: The results from the SVD.
-#' row_masses and col_masses: Row and columns masses.
-#' top_rows: How many of the most variable rows were retained for the analysis.
-#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
-#' @references
-#' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
 
-#' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
-#' Should contain row and column names.
-#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
-#' Default 1.
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default NULL.
-#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
-#' @param ... Arguments forwarded to methods.
-#' @examples
-#' # Simulate scRNAseq data.
-#' cnts <- data.frame(cell_1 = rpois(10, 5),
-#'                    cell_2 = rpois(10, 10),
-#'                    cell_3 = rpois(10, 20))
-#' rownames(cnts) <- paste0("gene_", 1:10)
-#' cnts <- as.matrix(cnts)
-#'
-#' # Run correspondence analysis.
-#' ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
-#' @export
-cacomp <- function(obj,
+run_cacomp <- function(obj,
                    coords=TRUE,
                    princ_coords = 1,
                    python = FALSE,
@@ -115,39 +73,6 @@ cacomp <- function(obj,
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    ...){
-  UseMethod("cacomp")
-}
-
-#' @rdname cacomp
-#' @export
-cacomp.default <- function(obj,
-                           coords=TRUE,
-                           princ_coords = 1,
-                           python = TRUE,
-                           dims = NULL,
-                           top = NULL,
-                           inertia = TRUE,
-                           rm_zeros = TRUE,
-                           ...){
-  stop(paste0("cacomp does not know how to handle objects of class ",
-              class(obj),
-              ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
-}
-
-
-#' @rdname cacomp
-#' @export
-cacomp.matrix <- function(obj,
-                          coords=TRUE,
-                          princ_coords = 1,
-                          python = TRUE,
-                          dims = NULL,
-                          top = NULL,
-                          inertia = TRUE,
-                          rm_zeros = TRUE,
-                          ...){
-
-  # chkDots(...)
 
   stopifnot("Input matrix does not have any rownames!" = !is.null(rownames(obj)))
   stopifnot("Input matrix does not have any colnames!" = !is.null(colnames(obj)))
@@ -244,9 +169,9 @@ cacomp.matrix <- function(obj,
     # message("Calculating coordinates ...")
 
     SVD <- ca_coords(caobj = SVD,
-                    dims = dims,
-                    princ_coords = princ_coords,
-                    princ_only = FALSE)
+                     dims = dims,
+                     princ_coords = princ_coords,
+                     princ_only = FALSE)
   } else {
     if(!is.null(dims)){
       if (dims >= length(SVD@D)){
@@ -272,8 +197,92 @@ cacomp.matrix <- function(obj,
 
   stopifnot(validObject(SVD))
   return(SVD)
-
 }
+
+
+#' Correspondance Analysis
+#'
+#' @description
+#' `cacomp` performs correspondence analysis on a matrix or Seurat/SingleCellExperiment object and returns the transformed data.
+#'
+#' @details
+#' The calculation is performed according to Greenacre. Singular value decomposition
+#' can be performed either with the base R function `svd` or preferably by the much faster
+#' pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
+#' principal coordinates should only computed when needed to save computational time.
+#'
+#' @return
+#' Returns a named list of class "cacomp" with components
+#' U, V and D: The results from the SVD.
+#' row_masses and col_masses: Row and columns masses.
+#' top_rows: How many of the most variable rows were retained for the analysis.
+#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
+#' @references
+#' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
+
+#' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' Should contain row and column names.
+#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
+#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
+#' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
+#' Default 1.
+#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
+#' @param top Integer. Number of most variable rows to retain. Default NULL.
+#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
+#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
+#' @param ... Arguments forwarded to methods.
+#' @examples
+#' # Simulate scRNAseq data.
+#' cnts <- data.frame(cell_1 = rpois(10, 5),
+#'                    cell_2 = rpois(10, 10),
+#'                    cell_3 = rpois(10, 20))
+#' rownames(cnts) <- paste0("gene_", 1:10)
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
+#' @export
+setGeneric("cacomp", function(obj,
+                              coords=TRUE,
+                              princ_coords = 1,
+                              python = FALSE,
+                              dims = NULL,
+                              top = NULL,
+                              inertia = TRUE,
+                              rm_zeros = TRUE,
+                              ...) {
+  standardGeneric("cacomp")
+})
+
+
+#' @rdname cacomp
+#' @export
+setMethod(f = "cacomp",
+          signature=(obj="matrix"),
+          function(obj,
+                   coords=TRUE,
+                   princ_coords = 1,
+                   python = FALSE,
+                   dims = NULL,
+                   top = NULL,
+                   inertia = TRUE,
+                   rm_zeros = TRUE,
+                   ...){
+
+    caobj <- run_cacomp(obj = obj,
+                        coords = coords,
+                        princ_coords = princ_coords,
+                        python = python,
+                        dims = dims,
+                        top = top,
+                        inertia = inertia,
+                        rm_zeros = rm_zeros,
+                        ...)
+
+    return(caobj)
+
+})
 
 
 #' Correspondance Analysis for Seurat objects
@@ -296,18 +305,20 @@ cacomp.matrix <- function(obj,
 #' @param ... Other parameters
 #' @rdname cacomp
 #' @export
-cacomp.Seurat <- function(obj,
-                          coords=TRUE,
-                          princ_coords = 1,
-                          python = TRUE,
-                          dims = NULL,
-                          top = NULL,
-                          inertia = TRUE,
-                          rm_zeros = TRUE,
-                          ...,
-                          assay = DefaultAssay(obj),
-                          slot = "counts",
-                          return_input = FALSE){
+setMethod(f = "cacomp",
+          signature=(obj="Seurat"),
+          function(obj,
+                    coords=TRUE,
+                    princ_coords = 1,
+                    python = FALSE,
+                    dims = NULL,
+                    top = NULL,
+                    inertia = TRUE,
+                    rm_zeros = TRUE,
+                    ...,
+                    assay = DefaultAssay(obj),
+                    slot = "counts",
+                    return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -317,14 +328,15 @@ cacomp.Seurat <- function(obj,
   seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
   seu <- as.matrix(seu)
 
-  caobj <- cacomp(obj = seu,
-                  coords = coords,
-                  top = top,
-                  princ_coords = princ_coords,
-                  dims = dims,
-                  python = python,
-                  rm_zeros = rm_zeros,
-                  inertia = inertia)
+  caobj <- run_cacomp(obj = seu,
+                      coords = coords,
+                      top = top,
+                      princ_coords = princ_coords,
+                      dims = dims,
+                      python = python,
+                      rm_zeros = rm_zeros,
+                      inertia = inertia,
+                      ...)
 
   if (return_input == TRUE){
     colnames(caobj@V) <- paste0("DIM_", seq(ncol(caobj@V)))
@@ -341,10 +353,11 @@ cacomp.Seurat <- function(obj,
     return(caobj)
   }
 
-}
+})
 
 
-
+#' Correspondance Analysis for SingleCellExperiment objects
+#'
 #' @description
 #' `cacomp.SingleCellExperiment` performs correspondence analysis on an assay from a SingleCellExperiment and stores the standard coordinates
 #'  of the columns (= cells) and the principal coordinates of the rows (= genes) as a matrix in the SingleCellExperiment container.
@@ -361,17 +374,19 @@ cacomp.Seurat <- function(obj,
 #'  Otherwise returns a "cacomp". Default FALSE.
 #' @rdname cacomp
 #' @export
-cacomp.SingleCellExperiment <- function(obj,
-                                        coords=TRUE,
-                                        princ_coords = 1,
-                                        python = TRUE,
-                                        dims = NULL,
-                                        top = NULL,
-                                        inertia = TRUE,
-                                        rm_zeros = TRUE,
-                                        ...,
-                                        assay = "counts",
-                                        return_input = FALSE){
+setMethod(f = "cacomp",
+          signature=(obj="SingleCellExperiment"),
+          function(obj,
+                  coords=TRUE,
+                  princ_coords = 1,
+                  python = FALSE,
+                  dims = NULL,
+                  top = NULL,
+                  inertia = TRUE,
+                  rm_zeros = TRUE,
+                  ...,
+                  assay = "counts",
+                  return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
   stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
@@ -381,14 +396,15 @@ cacomp.SingleCellExperiment <- function(obj,
 
   top <- min(nrow(mat), top)
 
-  caobj <- cacomp.matrix(obj = mat,
-                         coords = coords,
-                         top = top,
-                         princ_coords = princ_coords,
-                         dims = dims,
-                         python = python,
-                         rm_zeros = rm_zeros,
-                         inertia = inertia)
+  caobj <- run_cacomp(obj = mat,
+                     coords = coords,
+                     top = top,
+                     princ_coords = princ_coords,
+                     dims = dims,
+                     python = python,
+                     rm_zeros = rm_zeros,
+                     inertia = inertia,
+                     ...)
 
   if (return_input == TRUE){
     prinInertia <- caobj@D^2
@@ -408,14 +424,7 @@ cacomp.SingleCellExperiment <- function(obj,
     return(caobj)
   }
 
-  # old code
-  # lme <- LinearEmbeddingMatrix(sampleFactors = SVD$std_coords_cols,
-  #                             featureLoadings =SVD$prin_coords_rows,
-  #                             factorData = DataFrame("D" = SVD$D, row.names = paste0("Dim", seq(length(SVD$D)))),
-  #                             metadata = list())
-
-
-}
+})
 
 
 #' Subset dimensions of a caobj
@@ -546,8 +555,8 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
       caobj@std_coords_rows <- caobj@U/sqrt(caobj@row_masses)
       caobj@std_coords_cols <- caobj@V/sqrt(caobj@col_masses)
     } else {
-      caobj@std_coords_rows <- sweep(x = caobj@U, MARGIN = 1, STAT = sqrt(caobj@row_masses), FUN = "/")
-      caobj@std_coords_cols <- sweep(x = caobj@V, MARGIN = 1, STAT = sqrt(caobj@col_masses), FUN = "/")
+      caobj@std_coords_rows <- sweep(x = caobj@U, MARGIN = 1, STATS = sqrt(caobj@row_masses), FUN = "/")
+      caobj@std_coords_cols <- sweep(x = caobj@V, MARGIN = 1, STATS = sqrt(caobj@col_masses), FUN = "/")
     }
 
 
@@ -641,6 +650,7 @@ scree_plot <- function(df){
 }
 
 
+
 #' Compute statistics to help choose the number of dimensions
 #'
 #' @description
@@ -671,22 +681,16 @@ scree_plot <- function(df){
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @param ... Arguments forwarded to methods.
 #' @examples
-#' # Simulate scRNAseq data.
-#' cnts <- data.frame(cell_1 = rpois(10, 20),
-#'                    cell_2 = rpois(10, 20),
-#'                    cell_3 = rpois(10, 20),
-#'                    cell_4 = rpois(10, 20),
-#'                    cell_5 = rpois(10, 20),
-#'                    cell_6 = rpois(10, 20))
-#'
-#' rownames(cnts) <- paste0("gene_", 1:10)
+#' # Example data from Seurat
+#' library(Seurat)
+#' cnts <- pbmc_small@assays$RNA@counts
 #' cnts <- as.matrix(cnts)
 #'
-# Run correspondence analysis.
+#' # Run correspondence analysis.
 #' ca <- cacomp(obj = cnts)
 #'
-# pick dimensions with the elbow rule. Returns list.
-#' DO NOT RUN! NOT WORKING!
+#' # pick dimensions with the elbow rule. Returns list.
+#'
 #' set.seed(2358)
 #' pd <- pick_dims(obj = ca,
 #'                 mat = cnts,
@@ -701,25 +705,28 @@ scree_plot <- function(df){
 #'                 method = "maj_inertia")
 #' ca_sub <- subset_dims(ca, dims = pd)
 #' @export
-pick_dims <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ...){
-  UseMethod("pick_dims")
-}
+setGeneric("pick_dims", function(obj,
+                                 mat = NULL,
+                                 method="scree_plot",
+                                 reps=3,
+                                 python = TRUE,
+                                 return_plot = FALSE,
+                                 ...) {
+  standardGeneric("pick_dims")
+})
 
 
 #' @rdname pick_dims
 #' @export
-pick_dims.default <- function(obj, mat = NULL, method="scree_plot", reps=2, python = TRUE, return_plot = FALSE, ...){
-  stop(paste0("pick_dims does not know how to handle objects of class ",
-              class(obj),
-              ". Currently only objects of class 'cacomp', 'Seurat' or 'SingleCellExperiment' are supported."))
-}
-
-
-
-
-#' @rdname pick_dims
-#' @export
-pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ...){
+setMethod(f = "pick_dims",
+          signature=(obj="cacomp"),
+          function(obj,
+                   mat = NULL,
+                   method="scree_plot",
+                   reps=3,
+                   python = TRUE,
+                   return_plot = FALSE,
+                   ...){
 
   if (!is(obj,"cacomp")){
     stop("Not a CA object. Please run cacomp() first!")
@@ -832,15 +839,26 @@ pick_dims.cacomp <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
     cat("Please pick a valid method!")
     stop()
   }
-}
+})
 
 
 
 #' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' @param slot Character. Data slot of the Seurat assay. E.g. "data" or "counts". Default "counts".
 #'
 #' @rdname pick_dims
 #' @export
-pick_dims.Seurat <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ..., assay, slot = "counts"){
+setMethod(f = "pick_dims",
+          signature=(obj="Seurat"),
+          function(obj,
+                   mat = NULL,
+                   method="scree_plot",
+                   reps=3,
+                   python = TRUE,
+                   return_plot = FALSE,
+                   ...,
+                   assay = Seurat::DefaultAssay(obj),
+                   slot = "counts"){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -857,21 +875,31 @@ pick_dims.Seurat <- function(obj, mat = NULL, method="scree_plot", reps=3, pytho
     stop("No 'CA' dim. reduction object found. Please run cacomp(seurat_obj, top, coords = FALSE, return_input=TRUE) first.")
   }
 
+  stopifnot(is(caobj, "cacomp"))
 
-  pick_dims.cacomp(obj = caobj,
-                    mat = seu,
-                    method = method,
-                    reps = reps,
-                    return_plot = return_plot,
-                   python = python)
-}
+  pick_dims(obj = caobj,
+            mat = seu,
+            method = method,
+            reps = reps,
+            return_plot = return_plot,
+            python = python)
+})
 
 
 #' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #'
 #' @rdname pick_dims
 #' @export
-pick_dims.SingleCellExperiment <- function(obj, mat = NULL, method="scree_plot", reps=3, python = TRUE, return_plot = FALSE, ..., assay){
+setMethod(f = "pick_dims",
+          signature=(obj="SingleCellExperiment"),
+          function(obj,
+                   mat = NULL,
+                   method="scree_plot",
+                   reps=3,
+                   python = TRUE,
+                   return_plot = FALSE,
+                   ...,
+                   assay){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
@@ -887,15 +915,15 @@ pick_dims.SingleCellExperiment <- function(obj, mat = NULL, method="scree_plot",
     stop("No 'CA' dim. reduction object found. Please run cacomp(sce, top, coords = FALSE, return_input=TRUE) first.")
   }
 
+  stopifnot(is(caobj, "cacomp"))
+  pick_dims(obj = caobj,
+           mat = mat,
+           method = method,
+           reps = reps,
+           return_plot = return_plot,
+           python = python)
 
-  pick_dims.cacomp(obj = caobj,
-                   mat = mat,
-                   method = method,
-                   reps = reps,
-                   return_plot = return_plot,
-                   python = python)
-
-}
+})
 
 
 

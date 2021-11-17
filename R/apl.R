@@ -250,10 +250,7 @@ apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = T
 #' APL_score contains a data frame with ranked rows, their score and their original row number.
 #'
 #' @param caobj A "cacomp" object with principal row coordinates and standard column coordinates calculated.
-#' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
-#' Should contain row and column names.
 #' @param dims Integer. Number of CA dimensions to retain. Needs to be the same as in caobj!
-#' @param group Vector of indices of the columns to calculate centroid/x-axis direction.
 #' @param reps Integer. Number of permutations to perform. Default = 10.
 #' @param quant Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
@@ -370,37 +367,35 @@ apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, s
 #' @param ontology Character string. Chooses GO sets for 'BP' (biological processes), 'CC' (cell compartment) or 'MF' (molecular function).
 #' @param organism Character string. Either 'hs' (homo sapiens), 'mm' (mus musculus) or the name of the organism package such as 'org.*.eg.db'.
 #' @param ngenes Numeric. Number of top ranked genes to test for overrepresentation.
-#' @param top_res Numeric. Number of most significant gene sets to return.
+#' @param score_cutoff numeric. S-alpha score cutoff. Only genes with a score larger will be tested.
 #' @param use_coords Logical. Whether the x-coordinates of the row APL coordinates should be used for ranking.
 #' Only recommended when no S-alpha score (see apl_score()) can be calculated.
 #' @param return_plot Logical. Whether a plot of significant gene sets should be additionally returned.
+#' @param top_res Numeric. Number of top scoring gene sets to plot.
 #'
 #' @export
 apl_topGO <- function(caobj,
                       ontology,
                       organism="hs",
                       ngenes = 1000,
-                      top_res = 10,
+                      score_cutoff = 1,
                       use_coords = FALSE,
-                      return_plot = FALSE){
+                      return_plot = FALSE,
+                      top_res = 15){
 
-  requireNamespace("topGO")
-  if (ngenes > nrow(caobj@apl_rows)){
-    stop("ngenes is larger than the total number of genes.\n")
-  } else if (ngenes == nrow(caobj@apl_rows)){
-    warning("You have selected all available genes.\n")
-  }
-
-  # if(!is(gene_sets, "list")){
+  # requireNamespace("topGO")
+  topGO::groupGOTerms()
+    # if(!is(gene_sets, "list")){
   #   stop("gene_sets should be a list of gene sets, each gene set containing the gene symbols.")
   # }
 
 
   if(!is.empty(caobj@APL_score) & !isTRUE(use_coords)){
 
-
     Score_ord <- caobj@APL_score[order(caobj@APL_score$Score, decreasing=TRUE),]
-    ranked_genes <- Score_ord$Score
+    sel <- which(!Score_ord$Score >= score_cutoff)[1]
+    sel <- sel-1
+    ranked_genes <- seq_len(nrow(Score_ord))
     names(ranked_genes) <- Score_ord$Rowname
 
   } else if (isTRUE(use_coords) | is.empty(caobj@APL_score)) {
@@ -408,10 +403,14 @@ apl_topGO <- function(caobj,
     if(is.empty(caobj@apl_rows)){
       stop("No APL coordinates found for rows. Please first run apl_coords.\n")
     }
-
+    if (ngenes > nrow(caobj@apl_rows)){
+      stop("ngenes is larger than the total number of genes.\n")
+    } else if (ngenes == nrow(caobj@apl_rows)){
+      warning("You have selected all available genes.\n")
+    }
     ranked_genes <- 1:nrow(caobj@apl_rows)
     names(ranked_genes) <- rownames(caobj@apl_rows)[order(caobj@apl_rows[,1], decreasing = TRUE)]
-
+    sel <- ngenes
   } else {
     stop("APL scores not present but use_coords set to FALSE.\n")
   }
@@ -429,31 +428,36 @@ apl_topGO <- function(caobj,
     stop("Please choose one of the following ontologies: 'BP', 'CC' or 'MF'.\n")
   }
 
-  rankedGenes <- ranked_genes[1:ngenes]
 
-  gene_sets <- topGO::annFUN.org(whichOnto=ontology, feasibleGenes=NULL, mapping= organism, ID="symbol")
+  gene_sets <- topGO::annFUN.org(whichOnto=ontology,
+                                 feasibleGenes=NULL,
+                                 mapping=organism,
+                                 ID="symbol")
 
   GOdata <- new("topGOdata",
                 ontology = ontology,
-                allGenes = rankedGenes,
+                allGenes = ranked_genes,
                 annot = topGO::annFUN.GO2genes,
                 GO2genes = gene_sets,
-                geneSelectionFun = function(x) TRUE,
+                geneSelectionFun = function(x) x<sel,
                 nodeSize=5)
 
+  results_test <- topGO::runTest(GOdata, algorithm = "elim", statistic = "fisher")
 
-  results.ks <- topGO::runTest(GOdata, algorithm="classic", statistic="ks")
+  # results_test <- topGO::runTest(GOdata, algorithm="classic", statistic="ks")
 
-  if(top_res > length(results.ks@score)){
-    warning("More top nodes selected via top_res than available. Returning max. number of nodes instead.\n")
-  }
 
-  top_res <- min(top_res, length(results.ks@score))
-  goEnrichment <- topGO::GenTable(GOdata, KS=results.ks, orderBy="KS", topNodes = top_res)
-  # goEnrichment <- goEnrichment[,c("GO.ID","Term","KS")]
-
+  # goEnrichment <- topGO::GenTable(GOdata, KS=results_test, orderBy="KS", topNodes = top_res)
+  goEnrichment <- topGO::GenTable(GOdata,
+                                  raw.p.value = results_test,
+                                  topNodes = length(results_test@score)) #, numChar = 1200
   if (isTRUE(return_plot)){
-    showSigOfNodes(GOdata, score(results.ks), firstSigNodes = top_res, useInfo = 'def')
+
+    if(top_res > length(results_test@score)){
+      warning("More top nodes selected via top_res than available. Returning max. number of nodes instead.\n")
+      top_res <- min(top_res, length(results_test@score))
+    }
+    showSigOfNodes(GOdata, score(results_test), firstSigNodes = top_res, useInfo = 'def')
   }
 
   return(goEnrichment)
@@ -657,7 +661,6 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj@group, r
 
 }
 
-
 #' Compute and plot Association plot
 #'
 #' @description
@@ -689,25 +692,43 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj@group, r
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".
 #' @param ... Arguments forwarded to methods.
 #' @export
-runAPL <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = caobj@group, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
-  UseMethod("runAPL")
-}
+setGeneric("runAPL", function(obj,
+                                 group,
+                                 caobj = NULL,
+                                 dims = NULL,
+                                 nrow = 10,
+                                 top = 5000,
+                                 score = TRUE,
+                                 mark_rows = NULL,
+                                 mark_cols = caobj@group,
+                                 reps = 3,
+                                 python = FALSE,
+                                 row_labs = TRUE,
+                                 col_labs = TRUE,
+                                 type = "plotly",
+                                 ...) {
+  standardGeneric("runAPL")
+})
 
-
-
-#' @rdname runAPL
 #' @export
-runAPL.default <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
-  stop(paste0("runAPL does not know how to handle objects of class ",
-              class(x),
-              ". Currently only objects of class 'matrix' or objects coercible to one, 'Seurat' or 'SingleCellExperiment' are supported."))
-}
-
-
-
-#' @export
 #' @rdname runAPL
-runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ...){
+setMethod(f = "runAPL",
+          signature=(obj="matrix"),
+          function(obj,
+                   group,
+                   caobj = NULL,
+                   dims = NULL,
+                   nrow = 10,
+                   top = 5000,
+                   score = TRUE,
+                   mark_rows = NULL,
+                   mark_cols = NULL,
+                   reps = 3,
+                   python = FALSE,
+                   row_labs = TRUE,
+                   col_labs = TRUE,
+                   type = "plotly",
+                   ...){
 
   if (!is(obj, "matrix")){
     obj <- as.matrix(obj)
@@ -796,7 +817,7 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
            show_score = score)
 
   return(p)
-}
+})
 
 
 
@@ -807,32 +828,49 @@ runAPL.matrix <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top 
 #'
 #' @rdname runAPL
 #' @export
-runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL,  reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ..., assay = "counts"){
+setMethod(f = "pick_dims",
+          signature=(obj="SingleCellExperiment"),
+          function(obj,
+                   group,
+                   caobj = NULL,
+                   dims = NULL,
+                   nrow = 10,
+                   top = 5000,
+                   score = TRUE,
+                   mark_rows = NULL,
+                   mark_cols = NULL,
+                   reps = 3,
+                   python = FALSE,
+                   row_labs = TRUE,
+                   col_labs = TRUE,
+                   type = "plotly",
+                   ...,
+                   assay = "counts"){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
   mat <- SummarizedExperiment::assay(obj, assay)
 
   if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
-    caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
+    caobj <- as.cacomp(obj, assay = assay)
   }
 
-  runAPL.matrix(obj = mat,
-                caobj = caobj,
-                dims = dims,
-                group = group,
-                mark_rows = mark_rows,
-                mark_cols = mark_cols,
-                nrow = nrow,
-                top = top,
-                score = score,
-                reps = reps,
-                python = python,
-                row_labs = row_labs,
-                col_labs = col_labs,
-                type = type)
+  runAPL(obj = mat,
+        caobj = caobj,
+        dims = dims,
+        group = group,
+        mark_rows = mark_rows,
+        mark_cols = mark_cols,
+        nrow = nrow,
+        top = top,
+        score = score,
+        reps = reps,
+        python = python,
+        row_labs = row_labs,
+        col_labs = col_labs,
+        type = type)
 
-}
+})
 
 
 #' @description
@@ -842,28 +880,45 @@ runAPL.SingleCellExperiment <- function(obj, group, caobj = NULL, dims = NULL, n
 #'
 #' @rdname runAPL
 #' @export
-runAPL.Seurat <- function(obj, group, caobj = NULL, dims = NULL, nrow = 10, top = 5000, score = TRUE, mark_rows = NULL, mark_cols = NULL, reps = 3, python = TRUE, row_labs = TRUE, col_labs = TRUE, type = "plotly", ..., assay = DefaultAssay(obj)){
+setMethod(f = "runAPL",
+          signature=(obj="Seurat"),
+          function(obj,
+                   group,
+                   caobj = NULL,
+                   dims = NULL,
+                   nrow = 10,
+                   top = 5000,
+                   score = TRUE,
+                   mark_rows = NULL,
+                   mark_cols = NULL,
+                   reps = 3,
+                   python = FALSE,
+                   row_labs = TRUE,
+                   col_labs = TRUE,
+                   type = "plotly",
+                   ...,
+                   assay = DefaultAssay(obj)){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
   seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
 
   if ("CA" %in% Seurat::Reductions(obj)){
-    caobj <- as.cacomp(obj, assay = assay, recompute = TRUE)
+    caobj <- as.cacomp(obj, assay = assay)
   }
 
-  runAPL.matrix(obj = seu,
-                caobj = caobj,
-                top = top,
-                dims= dims,
-                group = group,
-                score = score,
-                reps = reps,
-                python = python,
-                mark_rows = mark_rows,
-                mark_cols = mark_cols,
-                nrow = nrow,
-                row_labs = row_labs,
-                col_labs = col_labs,
-                type = type)
-}
+  runAPL(obj = seu,
+        caobj = caobj,
+        top = top,
+        dims= dims,
+        group = group,
+        score = score,
+        reps = reps,
+        python = python,
+        mark_rows = mark_rows,
+        mark_cols = mark_cols,
+        nrow = nrow,
+        row_labs = row_labs,
+        col_labs = col_labs,
+        type = type)
+})
