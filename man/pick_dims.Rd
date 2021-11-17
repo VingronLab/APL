@@ -2,10 +2,9 @@
 % Please edit documentation in R/CA.R
 \name{pick_dims}
 \alias{pick_dims}
-\alias{pick_dims.default}
-\alias{pick_dims.cacomp}
-\alias{pick_dims.Seurat}
-\alias{pick_dims.SingleCellExperiment}
+\alias{pick_dims,cacomp-method}
+\alias{pick_dims,Seurat-method}
+\alias{pick_dims,SingleCellExperiment-method}
 \title{Compute statistics to help choose the number of dimensions}
 \usage{
 pick_dims(
@@ -18,17 +17,7 @@ pick_dims(
   ...
 )
 
-\method{pick_dims}{default}(
-  obj,
-  mat = NULL,
-  method = "scree_plot",
-  reps = 2,
-  python = TRUE,
-  return_plot = FALSE,
-  ...
-)
-
-\method{pick_dims}{cacomp}(
+\S4method{pick_dims}{cacomp}(
   obj,
   mat = NULL,
   method = "scree_plot",
@@ -38,7 +27,7 @@ pick_dims(
   ...
 )
 
-\method{pick_dims}{Seurat}(
+\S4method{pick_dims}{Seurat}(
   obj,
   mat = NULL,
   method = "scree_plot",
@@ -46,19 +35,27 @@ pick_dims(
   python = TRUE,
   return_plot = FALSE,
   ...,
-  assay,
+  assay = Seurat::DefaultAssay(obj),
   slot = "counts"
 )
 
-\method{pick_dims}{SingleCellExperiment}(
+\S4method{pick_dims}{SingleCellExperiment}(
   obj,
-  mat = NULL,
-  method = "scree_plot",
+  group,
+  caobj = NULL,
+  dims = NULL,
+  nrow = 10,
+  top = 5000,
+  score = TRUE,
+  mark_rows = NULL,
+  mark_cols = NULL,
   reps = 3,
-  python = TRUE,
-  return_plot = FALSE,
+  python = FALSE,
+  row_labs = TRUE,
+  col_labs = TRUE,
+  type = "plotly",
   ...,
-  assay
+  assay = "counts"
 )
 }
 \arguments{
@@ -81,6 +78,8 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 \item{...}{Arguments forwarded to methods.}
 
 \item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+
+\item{slot}{Character. Data slot of the Seurat assay. E.g. "data" or "counts". Default "counts".}
 }
 \value{
 For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) returns an integer, indicating the suggested number of dimensions to use.
@@ -99,20 +98,16 @@ to estimate the number of dimensions that best represent the data.
  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
 }
 \examples{
-# Simulate scRNAseq data.
-cnts <- data.frame(cell_1 = rpois(10, 20),
-                   cell_2 = rpois(10, 20),
-                   cell_3 = rpois(10, 20),
-                   cell_4 = rpois(10, 20),
-                   cell_5 = rpois(10, 20),
-                   cell_6 = rpois(10, 20))
-
-rownames(cnts) <- paste0("gene_", 1:10)
+# Example data from Seurat
+library(Seurat)
+cnts <- pbmc_small@assays$RNA@counts
 cnts <- as.matrix(cnts)
 
+# Run correspondence analysis.
 ca <- cacomp(obj = cnts)
 
-DO NOT RUN! NOT WORKING!
+# pick dimensions with the elbow rule. Returns list.
+
 set.seed(2358)
 pd <- pick_dims(obj = ca,
                 mat = cnts,

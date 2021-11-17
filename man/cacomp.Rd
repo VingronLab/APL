@@ -2,10 +2,9 @@
 % Please edit documentation in R/CA.R
 \name{cacomp}
 \alias{cacomp}
-\alias{cacomp.default}
-\alias{cacomp.matrix}
-\alias{cacomp.Seurat}
-\alias{cacomp.SingleCellExperiment}
+\alias{cacomp,matrix-method}
+\alias{cacomp,Seurat-method}
+\alias{cacomp,SingleCellExperiment-method}
 \title{Correspondance Analysis}
 \usage{
 cacomp(
@@ -20,11 +19,11 @@ cacomp(
   ...
 )
 
-\method{cacomp}{default}(
+\S4method{cacomp}{matrix}(
   obj,
   coords = TRUE,
   princ_coords = 1,
-  python = TRUE,
+  python = FALSE,
   dims = NULL,
   top = NULL,
   inertia = TRUE,
@@ -32,23 +31,11 @@ cacomp(
   ...
 )
 
-\method{cacomp}{matrix}(
+\S4method{cacomp}{Seurat}(
   obj,
   coords = TRUE,
   princ_coords = 1,
-  python = TRUE,
-  dims = NULL,
-  top = NULL,
-  inertia = TRUE,
-  rm_zeros = TRUE,
-  ...
-)
-
-\method{cacomp}{Seurat}(
-  obj,
-  coords = TRUE,
-  princ_coords = 1,
-  python = TRUE,
+  python = FALSE,
   dims = NULL,
   top = NULL,
   inertia = TRUE,
@@ -59,11 +46,11 @@ cacomp(
   return_input = FALSE
 )
 
-\method{cacomp}{SingleCellExperiment}(
+\S4method{cacomp}{SingleCellExperiment}(
   obj,
   coords = TRUE,
   princ_coords = 1,
-  python = TRUE,
+  python = FALSE,
   dims = NULL,
   top = NULL,
   inertia = TRUE,

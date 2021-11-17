@@ -10,6 +10,8 @@ recompute(calist, mat, ...)
 \item{calist}{A list with std_coords_cols, the prin_coords_rows and D.}
 
 \item{mat}{A matrix from which the cacomp object derives from.}
+
+\item{...}{Further arguments forwarded to cacomp.}
 }
 \value{
 A cacomp object with additional calculated row_masses, col_masses, std_coords_rows, U and V.

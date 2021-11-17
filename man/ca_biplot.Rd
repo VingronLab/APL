@@ -2,10 +2,9 @@
 % Please edit documentation in R/plot.R
 \name{ca_biplot}
 \alias{ca_biplot}
-\alias{ca_biplot.default}
-\alias{ca_biplot.cacomp}
-\alias{ca_biplot.Seurat}
-\alias{ca_biplot.SingleCellExperiment}
+\alias{ca_biplot,cacomp-method}
+\alias{ca_biplot,Seurat-method}
+\alias{ca_biplot,SingleCellExperiment-method}
 \title{Plot of the first 2 CA dimensions.}
 \usage{
 ca_biplot(
@@ -15,47 +14,44 @@ ca_biplot(
   princ_coords = 1,
   row_labels = NULL,
   col_labels = seq(ncol(obj@std_coords_cols)),
-  type = "plotly"
+  type = "plotly",
+  ...
 )
 
-\method{ca_biplot}{default}(
+\S4method{ca_biplot}{cacomp}(
   obj,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
   col_labels = seq(ncol(obj@std_coords_cols)),
-  type = "plotly"
+  type = "plotly",
+  ...
 )
 
-\method{ca_biplot}{cacomp}(
-  obj,
-  xdim = 1,
-  ydim = 2,
-  princ_coords = 1,
-  row_labels = NULL,
-  col_labels = seq(ncol(obj@std_coords_cols)),
-  type = "plotly"
-)
-
-\method{ca_biplot}{Seurat}(
+\S4method{ca_biplot}{Seurat}(
   obj,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
   col_labels = seq(ncol(caobj@std_coords_cols)),
-  type = "plotly"
+  type = "plotly",
+  ...,
+  assay = Seurat::DefaultAssay(obj),
+  slot = "counts"
 )
 
-\method{ca_biplot}{SingleCellExperiment}(
+\S4method{ca_biplot}{SingleCellExperiment}(
   obj,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
   col_labels = seq(ncol(caobj@std_coords_cols)),
-  type = "plotly"
+  type = "plotly",
+  ...,
+  assay = "counts"
 )
 }
 \arguments{
@@ -74,6 +70,12 @@ or alternatively an object of class "Seurat" or "SingleCellExperiment" with a di
 Default seq(ncol(obj@std_coords_cols)) (all columns).}
 
 \item{type}{String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".}
+
+\item{...}{Further arguments.}
+
+\item{assay}{SingleCellExperiment assay for recomputation}
+
+\item{slot}{Seurat assay slot from which to get matrix.}
 }
 \value{
 Plot of class "plotly" or "ggplot".

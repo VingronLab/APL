@@ -13,6 +13,7 @@
 #'
 #' @param calist A list with std_coords_cols, the prin_coords_rows and D.
 #' @param mat A matrix from which the cacomp object derives from.
+#' @param ... Further arguments forwarded to cacomp.
 #' @export
 recompute <- function(calist, mat, ...){
   stopifnot(is(calist, "list"))
@@ -44,11 +45,11 @@ recompute <- function(calist, mat, ...){
   colm <- res$colm
 
   if(std_rows & !u) {
-    calist$std_coords_rows <- sweep(x = calist$U, MARGIN = 1, STAT = sqrt(rowm), FUN = "/")
+    calist$std_coords_rows <- sweep(x = calist$U, MARGIN = 1, STATS = sqrt(rowm), FUN = "/")
     std_rows <- FALSE
   }
   if(std_cols & !v){
-    calist$std_coords_cols <- sweep(x = calist$V, MARGIN = 1, STAT = sqrt(colm), FUN = "/")
+    calist$std_coords_cols <- sweep(x = calist$V, MARGIN = 1, STATS = sqrt(colm), FUN = "/")
     std_cols <- FALSE
   }
 
@@ -230,40 +231,24 @@ recompute <- function(calist, mat, ...){
 #' e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 #' @param ... Further arguments.
 #' @export
-as.cacomp <- function(obj, assay, ...) {
-  UseMethod("as.cacomp")
-}
-
-setGeneric("as.cacomp")
-
-
-#' @rdname as.cacomp
-#' @export
-as.cacomp.default <- function(obj, assay = NULL, ...){
-  stop(paste0("as.cacomp does not know how to handle objects of class ",
-              class(obj),
-              ". Currently only objects of class 'Seurat' or 'SingleCellExperiment' can be converted to 'cacomp'."))
-}
-
+setGeneric("as.cacomp", function(obj, ...) {
+  standardGeneric("as.cacomp")
+})
 
 #' @description as.cacomp.cacomp returns input without any calculations.
 #' @rdname as.cacomp
 #' @export
-as.cacomp.cacomp <- function(obj, assay = NULL, ...){
+setMethod(f = "as.cacomp", signature=(obj="cacomp"), function(obj, ...) {
   stopifnot(is(obj, "cacomp"))
   return(obj)
-}
-
-#' Convert cacomp object to cacomp object (returns input).
-setMethod("as.cacomp", "cacomp", as.cacomp.cacomp)
-
+})
 
 #' @description
 #' as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
 #' @param slot character. Slot of the Seurat assay to use. Default "counts".
 #' @rdname as.cacomp
 #' @export
-as.cacomp.Seurat <- function(obj, assay="RNA", ..., slot = "counts"){
+setMethod(f = "as.cacomp", signature=(obj="Seurat"), function(obj, ..., assay="RNA", slot = "counts") {
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
   stopifnot("obj doesn't contain a DimReduc object named 'CA'. Try running cacomp()." = "CA" %in% names(obj@reductions))
@@ -271,8 +256,8 @@ as.cacomp.Seurat <- function(obj, assay="RNA", ..., slot = "counts"){
   if (is.null(assay)) assay <- DefaultAssay(obj)
 
   ca_list <- list("std_coords_cols" = Seurat::Embeddings(obj, reduction = "CA"),
-                 "D" = Seurat::Stdev(obj, reduction = "CA"),
-                 "prin_coords_rows" = Seurat::Loadings(obj, reduction = "CA"))
+                  "D" = Seurat::Stdev(obj, reduction = "CA"),
+                  "prin_coords_rows" = Seurat::Loadings(obj, reduction = "CA"))
   ca_list$top_rows <- nrow(ca_list$prin_coords_rows)
   ca_list$dims <- length(ca_list$D)
 
@@ -292,14 +277,7 @@ as.cacomp.Seurat <- function(obj, assay="RNA", ..., slot = "counts"){
 
   stopifnot(validObject(ca_obj))
   return(ca_obj)
-}
-
-#' Convert Seurat object to cacomp object.
-setMethod("as.cacomp", "Seurat", as.cacomp.Seurat)
-
-
-
-
+})
 
 
 #' @description
@@ -307,15 +285,17 @@ setMethod("as.cacomp", "Seurat", as.cacomp.Seurat)
 #'
 #' @rdname as.cacomp
 #' @export
-as.cacomp.SingleCellExperiment <- function(obj, assay="counts", ...){
+setMethod(f = "as.cacomp",
+          signature=(obj="SingleCellExperiment"),
+          function(obj, ..., assay="counts") {
 
   sce_ca <- SingleCellExperiment::reducedDim(obj, "CA")
   stopifnot("Attribute singval of dimensional reduction slot CA is empty.\nThis can happen after subsetting the sce obj." = !is.null(attr(sce_ca, "singval")))
   stopifnot("Attribute prin_coords_rows of dimensional reduction slot CA is empty.\nThis can happen after subsetting the sce obj." = !is.null(attr(sce_ca, "prin_coords_rows")))
 
   ca_list <- list("std_coords_cols" = sce_ca,
-                 "D" = attr(sce_ca, "singval"),
-                 "prin_coords_rows" = attr(sce_ca, "prin_coords_rows"))
+                  "D" = attr(sce_ca, "singval"),
+                  "prin_coords_rows" = attr(sce_ca, "prin_coords_rows"))
 
   if(is.null(assay)) assay <- "counts"
 
@@ -338,9 +318,7 @@ as.cacomp.SingleCellExperiment <- function(obj, assay="counts", ...){
 
   stopifnot(validObject(ca_obj))
   return(ca_obj)
-}
+})
 
 #' Convert SingleCellObject object to cacomp object.
-setMethod("as.cacomp", "SingleCellExperiment", as.cacomp.SingleCellExperiment)
-
-
+# setMethod("as.cacomp", "SingleCellExperiment", as.cacomp.SingleCellExperiment)
