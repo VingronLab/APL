@@ -41,21 +41,13 @@ pick_dims(
 
 \S4method{pick_dims}{SingleCellExperiment}(
   obj,
-  group,
-  caobj = NULL,
-  dims = NULL,
-  nrow = 10,
-  top = 5000,
-  score = TRUE,
-  mark_rows = NULL,
-  mark_cols = NULL,
+  mat = NULL,
+  method = "scree_plot",
   reps = 3,
-  python = FALSE,
-  row_labs = TRUE,
-  col_labs = TRUE,
-  type = "plotly",
+  python = TRUE,
+  return_plot = FALSE,
   ...,
-  assay = "counts"
+  assay
 )
 }
 \arguments{

@@ -36,6 +36,28 @@ comp_std_residuals <- function(mat){
   return(out)
 }
 
+#' removes 0-only rows and columns in a matrix.
+#'
+#' @param obj A matrix.
+#'
+rm_zeros <- function(obj){
+  stopifnot(is(obj, "matrix"))
+
+  no_zeros_rows <- rowSums(obj) > 0
+  no_zeros_cols <- colSums(obj) > 0
+  if (sum(!no_zeros_rows) != 0){
+    ## Delete genes with only with only zero values across all conditions
+    warning("Matrix contains rows with only 0s. These rows were removed. If undesired set rm_zeros = FALSE.")
+    obj <- obj[no_zeros_rows,]
+  }
+  if (sum(!no_zeros_cols) != 0){
+    ## Delete genes with only with only zero values across all conditions
+    warning("Matrix contains columns with only 0s. These columns were removed. If undesired set rm_zeros = FALSE.")
+    obj <- obj[,no_zeros_cols]
+  }
+
+  return(obj)
+}
 #' Find most variable rows
 #'
 #' @description
@@ -78,18 +100,7 @@ run_cacomp <- function(obj,
   stopifnot("Input matrix does not have any colnames!" = !is.null(colnames(obj)))
 
   if (rm_zeros == TRUE){
-    no_zeros_rows <- rowSums(obj) > 0
-    no_zeros_cols <- colSums(obj) > 0
-    if (sum(!no_zeros_rows) != 0){
-      ## Delete genes with only with only zero values across all conditions
-      warning("Matrix contains rows with only 0s. These rows were removed. If undesired set rm_zeros = FALSE.")
-      obj <- obj[no_zeros_rows,]
-    }
-    if (sum(!no_zeros_cols) != 0){
-      ## Delete genes with only with only zero values across all conditions
-      warning("Matrix contains columns with only 0s. These columns were removed. If undesired set rm_zeros = FALSE.")
-      obj <- obj[,no_zeros_cols]
-    }
+    obj <- rm_zeros(obj)
   }
 
 
@@ -103,11 +114,11 @@ run_cacomp <- function(obj,
     res <-  comp_std_residuals(mat=obj)
     toptmp <- top
   } else if (top > nrow(obj)) {
-    warning("Parameter top is >nrow(obj) and therefore ignored.")
+    warning("\nParameter top is >nrow(obj) and therefore ignored.")
     res <-  comp_std_residuals(mat=obj)
     toptmp <- nrow(obj)
   } else {
-    warning("Unusual input for top, argument ignored.")
+    warning("\nUnusual input for top, argument ignored.")
     res <-  comp_std_residuals(mat=obj)
     toptmp <- nrow(obj)
   }
@@ -523,29 +534,9 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
   if(!is.null(dims)){
     if (dims > length(caobj@D)){
       warning("Chosen dimensions are larger than the number of dimensions obtained from the singular value decomposition. Argument ignored.")
-     } #else {
-    #   if ("dims" %in% names(caobj)) {
-    #     warning("The caobj was previously already subsetted to ", caobj@dims, " dimensions. Subsetting again!")
-    #   }
+     }
       caobj <- subset_dims(caobj = caobj, dims = dims)
-      # dims <- min(dims, length(caobj@D))
-      # caobj@dims <- dims
-      # dims <- seq(dims)
-      # # subset to number of dimensions
-      # caobj@U <- caobj@U[,dims]
-      # caobj@V <- caobj@V[,dims]
-      # caobj@D <- caobj@D[dims]
-      #
-      # if (princ_only == TRUE){
-      #   stopifnot(!is.null(caobj@std_coords_rows))
-      #   stopifnot(!is.null(caobj@std_coords_cols))
-      #
-      #   caobj@std_coords_rows <- caobj@std_coords_rows[,dims]
-      #   caobj@std_coords_cols <- caobj@std_coords_cols[,dims]
-      # }
     }
-
-
 
 
   if(princ_only == FALSE){
@@ -630,7 +621,6 @@ scree_plot <- function(df){
 
   screeplot <- ggplot2::ggplot(df, ggplot2::aes(x=dims, y=inertia)) +
     ggplot2::geom_col(fill="#4169E1") +
-    # geom_point(color="#B22222")+
     ggplot2::geom_line(color="#B22222", size=1) +
     ggplot2::geom_abline(slope = 0, intercept = avg_inertia, linetype=3, alpha=0.8, color ="#606060")+
     ggplot2::labs(title = "Scree plot of explained inertia per dimensions and the average inertia",
@@ -641,10 +631,6 @@ scree_plot <- function(df){
       x = max_num_dims*0.9,
       y = avg_inertia,
       label = "avg. inertia")+
-    # scale_color_identity(name = "Explained Inertia of:",
-    #                      breaks = c("#B22222"),
-    #                      labels = c("Data"),
-    #                      guide = "legend")+
     ggplot2::theme_bw()
   return(screeplot)
 }
@@ -778,7 +764,6 @@ setMethod(f = "pick_dims",
     pb <- txtProgressBar(min = 0, max = reps, style = 3)
 
     for (k in seq(reps)) {
-      # message("Running permutation ", k, " out of ", reps, " for elbow rule ...")
 
       mat <- as.matrix(mat)
       mat_perm <- apply(mat, 2, FUN=sample)
