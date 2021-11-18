@@ -3,7 +3,7 @@
 \name{runAPL}
 \alias{runAPL}
 \alias{runAPL,matrix-method}
-\alias{pick_dims,SingleCellExperiment-method}
+\alias{runAPL,SingleCellExperiment-method}
 \alias{runAPL,Seurat-method}
 \title{Compute and plot Association plot}
 \usage{
@@ -43,7 +43,7 @@ runAPL(
   ...
 )
 
-\S4method{pick_dims}{SingleCellExperiment}(
+\S4method{runAPL}{SingleCellExperiment}(
   obj,
   group,
   caobj = NULL,
@@ -78,7 +78,8 @@ runAPL(
   col_labs = TRUE,
   type = "plotly",
   ...,
-  assay = DefaultAssay(obj)
+  assay = Seurat::DefaultAssay(obj),
+  slot = "counts"
 )
 }
 \arguments{
@@ -115,6 +116,8 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 \item{...}{Arguments forwarded to methods.}
 
 \item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+
+\item{slot}{character. The Seurat assay slot from which to extract the count matrix.}
 }
 \value{
 Association plot (plotly object).

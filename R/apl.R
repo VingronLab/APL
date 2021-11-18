@@ -122,7 +122,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' @param store_perm Logical. Whether permuted data should be stored in the CA object.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
-apl_score <- function(caobj, mat, dims, group, reps=10, quant = 0.99, python = TRUE, store_perm = TRUE){
+apl_score <- function(caobj, mat, dims, group = caobj@group, reps=10, quant = 0.99, python = TRUE, store_perm = TRUE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -485,7 +485,13 @@ apl_topGO <- function(caobj,
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @param show_score Logical. Wheter the S-alpha score should be shown in the plot.
 #' @export
-apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj@group, row_labs = FALSE, col_labs = TRUE, show_score = FALSE){
+apl <- function(caobj,
+                type="ggplot",
+                rows_idx = NULL,
+                cols_idx = caobj@group,
+                row_labs = FALSE,
+                col_labs = TRUE,
+                show_score = FALSE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -510,10 +516,16 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj@group, r
   }
 
   if (is.numeric(cols_idx)){
-  group_cols <- data.frame(rownms = rownames(caobj@apl_cols)[cols_idx], x = caobj@apl_cols[cols_idx,"x"], y = caobj@apl_cols[cols_idx,"y"], row.names = NULL)
+  group_cols <- data.frame(rownms = rownames(caobj@apl_cols)[cols_idx],
+                           x = caobj@apl_cols[cols_idx,"x"],
+                           y = caobj@apl_cols[cols_idx,"y"],
+                           row.names = NULL)
   }
   if(is.numeric(rows_idx)){
-  group_rows <- data.frame(rownms = rownames(caobj@apl_rows)[rows_idx], x = caobj@apl_rows[rows_idx,"x"], y = caobj@apl_rows[rows_idx,"y"], row.names = NULL)
+  group_rows <- data.frame(rownms = rownames(caobj@apl_rows)[rows_idx],
+                           x = caobj@apl_rows[rows_idx,"x"],
+                           y = caobj@apl_rows[rows_idx,"y"],
+                           row.names = NULL)
   }
 
   if (row_labs == FALSE){
@@ -534,38 +546,62 @@ apl <- function(caobj, type="ggplot", rows_idx = NULL, cols_idx = caobj@group, r
 
   }
   apl_scores <- caobj@APL_score$Score[order(caobj@APL_score$Row_num)]
-  apl_rows.tmp <- data.frame(rownms = rownames(caobj@apl_rows), caobj@apl_rows, Score = apl_scores)
-  apl_cols.tmp <- data.frame(rownms = rownames(caobj@apl_cols), caobj@apl_cols)
+
+  apl_rows.tmp <- data.frame(rownms = rownames(caobj@apl_rows),
+                             caobj@apl_rows, Score = apl_scores)
+
+  apl_cols.tmp <- data.frame(rownms = rownames(caobj@apl_cols),
+                             caobj@apl_cols)
 
   if (type == "ggplot"){
 
 
     p <- ggplot2::ggplot() +
-      ggplot2::geom_point(data=apl_cols.tmp, ggplot2::aes(x=x, y=y), color = "#006400", shape = 4)
+      ggplot2::geom_point(data=apl_cols.tmp,
+                          ggplot2::aes(x=x, y=y),
+                          color = "#006400",
+                          shape = 4)
 
 
       if (isTRUE(show_score)){
-        p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y, color = Score), alpha = 0.7, shape = 16) +
-                # scico::  scale_fill_scico(palette = 'batlow')
+        p <- p + ggplot2::geom_point(data=apl_rows.tmp,
+                                     ggplot2::aes(x=x, y=y, color = Score),
+                                     alpha = 0.7,
+                                     shape = 16) +
                 ggplot2::scale_color_viridis_c(option = "D")
       } else {
-        p <- p + ggplot2::geom_point(data=apl_rows.tmp, ggplot2::aes(x=x, y=y), color = "#0066FF", alpha = 0.7, shape = 16)
+        p <- p + ggplot2::geom_point(data=apl_rows.tmp,
+                                     ggplot2::aes(x=x, y=y),
+                                     color = "#0066FF",
+                                     alpha = 0.7,
+                                     shape = 16)
       }
-      p <- p +  ggplot2::geom_point(data=apl_cols.tmp[caobj@group,], ggplot2::aes(x=x, y=y), color = "#990000", shape = 4) +
+      p <- p +  ggplot2::geom_point(data=apl_cols.tmp[caobj@group,],
+                                    ggplot2::aes(x=x, y=y),
+                                    color = "#990000",
+                                    shape = 4) +
                 ggplot2::labs(title="Association Plot") +
                 ggplot2::theme_bw()
 
     if(col_labs == TRUE){
       p <- p +
-        ggrepel::geom_text_repel(data=group_cols, ggplot2::aes(x=x, y=y, label=rownms), color = "#990000")
+        ggrepel::geom_text_repel(data=group_cols,
+                                 ggplot2::aes(x=x, y=y, label=rownms),
+                                 color = "#990000")
       }
     if (is.numeric(rows_idx)){
       p <- p +
-        ggplot2::geom_point(data=group_rows, ggplot2::aes(x=x, y=y), color="#FF0000", shape = 16)
+        ggplot2::geom_point(data=group_rows,
+                            ggplot2::aes(x=x, y=y),
+                            color="#FF0000",
+                            shape = 16)
 
       if(isTRUE(row_labs)){
         p <- p +
-          ggrepel::geom_text_repel(data = group_rows, ggplot2::aes(x=x, y=y, label=rownms), color = "#FF0000", max.overlaps = Inf)
+          ggrepel::geom_text_repel(data = group_rows,
+                                   ggplot2::aes(x=x, y=y, label=rownms),
+                                   color = "#FF0000",
+                                   max.overlaps = Inf)
       }
     }
     rm(apl_rows.tmp, apl_cols.tmp)
@@ -805,8 +841,9 @@ setMethod(f = "runAPL",
     }
   }
 
-  # if(!is(mark_rows, "character")) stop("Parameter mark_rows hast to be of type 'character'.")
-  # if(!is(mark_cols, "character")) stop("Parameter mark_cols hast to be of type 'character'.")
+  if(isTRUE(col_labs) & is.empty(mark_cols)){
+    mark_cols <- caobj@group
+  }
 
   p <- apl(caobj = caobj,
            type = type,
@@ -828,7 +865,7 @@ setMethod(f = "runAPL",
 #'
 #' @rdname runAPL
 #' @export
-setMethod(f = "pick_dims",
+setMethod(f = "runAPL",
           signature=(obj="SingleCellExperiment"),
           function(obj,
                    group,
@@ -877,7 +914,7 @@ setMethod(f = "pick_dims",
 #' runAPL.Seurat: Computes singular value decomposition and coordinates for the Association plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
 #'
 #' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
-#'
+#' @param slot character. The Seurat assay slot from which to extract the count matrix.
 #' @rdname runAPL
 #' @export
 setMethod(f = "runAPL",
@@ -897,14 +934,18 @@ setMethod(f = "runAPL",
                    col_labs = TRUE,
                    type = "plotly",
                    ...,
-                   assay = DefaultAssay(obj)){
+                   assay = Seurat::DefaultAssay(obj),
+                   slot = "counts"){
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
-  seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = "data")
+  seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
+  seu <- as.matrix(seu)
 
   if ("CA" %in% Seurat::Reductions(obj)){
     caobj <- as.cacomp(obj, assay = assay)
+  } else {
+    caobj <- NULL
   }
 
   runAPL(obj = seu,

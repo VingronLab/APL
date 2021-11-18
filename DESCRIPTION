@@ -1,11 +1,10 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 0.2.0.9000
+Version: 0.99.0
 Author: Clemens Kohl and Ela Gralinska
 Maintainer: Clemens Kohl <kohl.clemens@gmail.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: This package performs Correspondence Analysis (CA) and allows to visualize the results in Association Plots (APL) and biplots. For an APL genes can be scored and gene enrichment run for further insights.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
@@ -25,7 +24,7 @@ Imports:
     stats,
     utils
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

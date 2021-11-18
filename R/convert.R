@@ -13,13 +13,16 @@
 #'
 #' @param calist A list with std_coords_cols, the prin_coords_rows and D.
 #' @param mat A matrix from which the cacomp object derives from.
+#' @param rm_zeros Removes rows & columns containing only zeros.
 #' @param ... Further arguments forwarded to cacomp.
 #' @export
-recompute <- function(calist, mat, ...){
+recompute <- function(calist, mat, rm_zeros = TRUE, ...){
   stopifnot(is(calist, "list"))
   stopifnot(is(mat, "matrix"))
 
-
+  if(isTRUE(rm_zeros)){
+    mat <- rm_zeros(mat)
+  }
 
   # make stock of what we have
 
