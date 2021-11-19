@@ -1,6 +1,7 @@
 
 #' Helper function to check if object is empty.
 #' @param x object
+#' @return TRUE if x has length 0 and is not NULL. FALSE otherwise
 is.empty <- function(x) return(isTRUE(length(x) == 0 & !is.null(x)))
 
 
@@ -9,6 +10,7 @@ is.empty <- function(x) return(isTRUE(length(x) == 0 & !is.null(x)))
 #' @description Checks if the slots in a cacomp object are of the correct size
 #' and whether they are coherent.
 #' @param object A cacomp object.
+#' @return TRUE if it is a valid cacomp object. FALSE otherwise.
 #' @export
 check_cacomp <- function(object) {
   errors <- character()
@@ -172,6 +174,7 @@ check_cacomp <- function(object) {
 #' @slot row_inertia class "numeric". Row-wise inertia in CA space.
 #' @slot col_inertia class "numeric". Column-wise inertia in CA space.
 #' @slot permuted_data class "list". Storage slot for permuted data.
+#' @export
 setClass("cacomp",
          representation(
            U = "matrix",
@@ -218,11 +221,12 @@ setClass("cacomp",
 )
 
 #' Create new "cacomp" object.
-#'
+#' @describeIn cacomp Create new cacomp object.
 #' @description Creates new cacomp object.
 #'
-#' @param ... Should contain arguments forwared to new().
-#' Arguments should be the slot name followed by the approbiate object type.
+#' @param ... slot names and objects for new cacomp object.
+#' @return cacomp object
+#'
 #' @export
 new_cacomp <- function(...) new("cacomp",...)
 

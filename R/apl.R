@@ -20,6 +20,21 @@
 #' @param calc_rows TRUE/FALSE. Whether apl row coordinates should be calculated. Default TRUE.
 #' @param calc_cols TRUE/FALSE. Whether apl column coordinates should be calculated. Default TRUE.
 #' @export
+#'
+#' @examples
+#' set.seed(1234)
+#' # Simulate scRNAseq data.
+#' cnts <- data.frame(cell_1 = rpois(10, 5),
+#'                    cell_2 = rpois(10, 10),
+#'                    cell_3 = rpois(10, 20),
+#'                    cell_4 = rpois(10, 20))
+#' rownames(cnts) <- paste0("gene_", 1:10)
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#' # Calculate APL coordinates:
+#' ca <- apl_coords(ca, group = 3:4)
 apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
   stopifnot(is(caobj, "cacomp"))
@@ -122,6 +137,23 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' @param store_perm Logical. Whether permuted data should be stored in the CA object.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
+#'
+#' @examples
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#'
+#' # Calculate APL coordinates:
+#' ca <- apl_coords(ca, group = 1:10)
+#'
+#' # Rank genes by S-alpha score
+#' ca <- apl_score(ca, mat = cnts)
 apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=10, quant = 0.99, python = TRUE, store_perm = TRUE){
 
   if (!is(caobj,"cacomp")){
@@ -159,7 +191,7 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
     #permute rows and rerun cacomp
 
     if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
-      calist <- caobj@permuted_data[[k]][1:3]
+      calist <- caobj@permuted_data[[k]][seq_len(3)]
       mat <- caobj@permuted_data[[k]]$mat
       caobjp <- recompute(calist, mat)
 
@@ -193,7 +225,7 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
 
 
     caobjp <- apl_coords(caobj = caobjp, group = group, calc_cols = cc, calc_rows = cr)
-    idx <- ((1:row_num)+((k-1)*row_num))
+    idx <- ((seq_len(row_num)+((k-1)*row_num)))
 
     apl_perm[idx,] <- caobjp@apl_rows
 
@@ -216,10 +248,10 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
   score <- caobj@apl_rows[,1] - (caobj@apl_rows[,2] * cutoff_cotan)
   ranking <- data.frame("Rowname" = rownames(caobj@apl_rows),
                         "Score" = score,
-                        "Row_num" = 1:nrow(caobj@apl_rows))
+                        "Row_num" = seq_len(nrow(caobj@apl_rows)))
 
   ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
-  ranking$Rank <- 1:nrow(ranking)
+  ranking$Rank <- seq_len(nrow(ranking))
 
   caobj@APL_score <- ranking
 
@@ -257,7 +289,25 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
 #' @param store_perm Logical. Whether calculated cutoff should be stored. Default TRUE.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
-apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, store_perm = TRUE){
+#'
+#' @examples
+#'
+#' #' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#'
+#' # Calculate APL coordinates:
+#' ca <- apl_coords(ca, group = 1:10)
+#'
+#' # Rank genes by S-alpha score
+#' ca <- apl_score_rand(ca)
+apl_score_rand <- function(caobj, dims = caobj@dims, reps=300, quant = 0.99, python = TRUE, store_perm = TRUE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -304,7 +354,7 @@ apl_score_rand <- function(caobj, dims, reps=300, quant = 0.99, python = TRUE, s
       rowx[is.na(rowx)] <- 0
       rowy[is.na(rowy)] <- 0
 
-      idx <- ((1:row_num)+((k-1)*row_num))
+      idx <- ((seq_len(row_num)+((k-1)*row_num)))
       apl_perm[idx,] <- cbind("x"=rowx, "y"=rowy)
 
       setTxtProgressBar(pb, k)
@@ -408,7 +458,7 @@ apl_topGO <- function(caobj,
     } else if (ngenes == nrow(caobj@apl_rows)){
       warning("You have selected all available genes.\n")
     }
-    ranked_genes <- 1:nrow(caobj@apl_rows)
+    ranked_genes <- seq_len(nrow(caobj@apl_rows))
     names(ranked_genes) <- rownames(caobj@apl_rows)[order(caobj@apl_rows[,1], decreasing = TRUE)]
     sel <- ngenes
   } else {

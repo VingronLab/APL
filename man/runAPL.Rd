@@ -22,6 +22,10 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
+  show_cols = TRUE,
+  show_rows = TRUE,
+  score_cutoff = 1,
+  score_color = "rainbow",
   ...
 )
 
@@ -40,6 +44,10 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
+  show_cols = TRUE,
+  show_rows = TRUE,
+  score_cutoff = 1,
+  score_color = "rainbow",
   ...
 )
 
@@ -58,6 +66,10 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
+  show_cols = TRUE,
+  show_rows = TRUE,
+  score_cutoff = 1,
+  score_color = "rainbow",
   ...,
   assay = "counts"
 )
@@ -77,6 +89,10 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
+  show_cols = TRUE,
+  show_rows = TRUE,
+  score_cutoff = 1,
+  score_color = "rainbow",
   ...,
   assay = Seurat::DefaultAssay(obj),
   slot = "counts"
@@ -112,6 +128,14 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 \item{col_labs}{Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.}
 
 \item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".}
+
+\item{show_cols}{Logical. Whether column points should be plotted.}
+
+\item{show_rows}{Logical. Whether row points should be plotted.}
+
+\item{score_cutoff}{Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.}
+
+\item{score_color}{Either "rainbow" or "viridis".}
 
 \item{...}{Arguments forwarded to methods.}
 

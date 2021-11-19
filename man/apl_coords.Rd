@@ -28,3 +28,18 @@ Coordinates (x,y) of row vector \eqn{\vec{r}} are defined as
 \deqn{y(\vec{r}) := \left|\vec{r}\right|\sin(\phi(\vec{r}))}
 The x-direction is determined by calculating the centroid of the columns selected with the indices in "group".
 }
+\examples{
+set.seed(1234)
+# Simulate scRNAseq data.
+cnts <- data.frame(cell_1 = rpois(10, 5),
+                   cell_2 = rpois(10, 10),
+                   cell_3 = rpois(10, 20),
+                   cell_4 = rpois(10, 20))
+rownames(cnts) <- paste0("gene_", 1:10)
+cnts <- as.matrix(cnts)
+
+# Run correspondence analysis.
+ca <- cacomp(obj = cnts, princ_coords = 3)
+# Calculate APL coordinates:
+ca <- apl_coords(ca, group = 3:4)
+}

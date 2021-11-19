@@ -737,7 +737,7 @@ setMethod(f = "pick_dims",
     # Method 3: Graphical representation of explained inertias (scree plot)
     # the user can set the threshold based on the scree plot
 
-    df <- data.frame(dims = 1:max_num_dims,
+    df <- data.frame(dims = seq_len(max_num_dims),
                      inertia = expl_inertia)
 
     screeplot <- scree_plot(df)
@@ -768,7 +768,7 @@ setMethod(f = "pick_dims",
       mat <- as.matrix(mat)
       mat_perm <- apply(mat, 2, FUN=sample)
       colnames(mat_perm) <- colnames(mat)
-      rownames(mat_perm) <- 1:nrow(mat_perm)
+      rownames(mat_perm) <- seq_len(nrow(mat_perm))
 
       obj_perm <- cacomp(obj=mat_perm, top = obj@top_rows, dims = obj@dims, coords = FALSE, python = python)
 
@@ -776,7 +776,7 @@ setMethod(f = "pick_dims",
       expl_inertia_perm <- (ev_perm/sum(ev_perm))*100
 
       matrix_expl_inertia_perm[,k] <- expl_inertia_perm
-      colnames(matrix_expl_inertia_perm) <- paste0("perm",1:reps)
+      colnames(matrix_expl_inertia_perm) <- paste0("perm",seq_len(reps))
 
       setTxtProgressBar(pb, k)
 
@@ -785,14 +785,14 @@ setMethod(f = "pick_dims",
 
 
     if (return_plot == TRUE){
-      df <- data.frame(dims = 1:max_num_dims,
+      df <- data.frame(dims = seq_len(max_num_dims),
                        inertia = expl_inertia)
 
       df <- cbind(df, matrix_expl_inertia_perm)
 
       screeplot <- scree_plot(df)
 
-      for (k in 1:reps) {
+      for (k in seq_len(reps)) {
 
         colnm <- paste0("perm",k)
         screeplot <- screeplot +

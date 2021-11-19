@@ -2,29 +2,41 @@ Package: APL
 Type: Package
 Title: Association Plots
 Version: 0.99.0
-Author: Clemens Kohl and Ela Gralinska
-Maintainer: Clemens Kohl <kohl.clemens@gmail.com>
-Description: This package performs Correspondence Analysis (CA) and allows to visualize the results in Association Plots (APL) and biplots. For an APL genes can be scored and gene enrichment run for further insights.
+Authors@R:
+  c(person(given = "Clemens",
+           family = "Kohl",
+           role = c("cre", "aut"),
+           email = "kohl@molgen.mpg.de"),
+    person(given = "Elzbieta",
+           family = "Gralinska",
+           role = c("aut"),
+           email = "gralinska@molgen.mpg.de"),
+     person(given = "Martin",
+            family = "Vingron",
+            role = c("aut"),
+            email = "vingron@molgen.mpg.de"))
+Description: This package performs Correspondence Analysis (CA) and allows to visualize the results in Association Plots (APL) and biplots.
+    For an APL genes can be scored and gene enrichment run for further insights.
+biocViews: StatisticalMethod, DimensionReduction, SingleCell, Sequencing, RNASeq
 License: GPL (>= 3)
 Encoding: UTF-8
-LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Imports: 
     reticulate,
     ggrepel,
     ggplot2,
+    viridisLite,
     plotly,
     Seurat,
     SingleCellExperiment,
     magrittr,
     SummarizedExperiment,
-    viridisLite,
     topGO,
     methods,
     stats,
     utils
 Depends: 
-    R (>= 3.5)
+    R (>= 4.1)
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
