@@ -487,6 +487,7 @@ apl_topGO <- function(caobj,
 #' @param show_cols Logical. Whether column points should be plotted.
 #' @param show_rows Logical. Whether row points should be plotted.
 #' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.
+#' @param score_color Either "rainbow" or "viridis".
 #' @export
 apl <- function(caobj,
                 type="ggplot",
@@ -497,7 +498,8 @@ apl <- function(caobj,
                 show_score = FALSE,
                 show_cols = TRUE,
                 show_rows = TRUE,
-                score_cutoff = 1){
+                score_cutoff = 1,
+                score_color = "rainbow"){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -562,6 +564,8 @@ apl <- function(caobj,
     apl_rows.tmp$Score <- apl_scores
     idx <- which(apl_scores >= score_cutoff)
     apl_scored.tmp <- apl_rows.tmp[idx,]
+    apl_rows.tmp <- apl_rows.tmp[-idx,]
+
   }
 
 
@@ -571,39 +575,28 @@ apl <- function(caobj,
     p <- ggplot2::ggplot()
 
 
-    if (isTRUE(show_cols)){
-      p <- p +
-        ggplot2::geom_point(data=apl_cols.tmp,
-                            ggplot2::aes(x=x, y=y),
-                            color = "#006400",
-                            shape = 4) +
-        ggplot2::geom_point(data=apl_cols.tmp[caobj@group,],
-                            ggplot2::aes(x=x, y=y),
-                            color = "#990000",
-                            shape = 4)
-      if(col_labs == TRUE){
-        p <- p +
-          ggrepel::geom_text_repel(data=group_cols,
-                                   ggplot2::aes(x=x, y=y, label=rownms),
-                                   color = "#990000")
-      }
-    }
-
     if (isTRUE(show_rows)){
       p <- p +
         ggplot2::geom_point(data=apl_rows.tmp,
                             ggplot2::aes(x=x, y=y),
                             color = "#0066FF",
                             alpha = 0.7,
-                            shape = 16) #16 point, 1 circle.
+                            shape = 1) #16 point, 1 circle.
 
       if (isTRUE(show_score)){
         p <- p +
           ggplot2::geom_point(data=apl_scored.tmp,
                               ggplot2::aes(x=x, y=y, color = Score),
                               alpha = 0.7,
-                              shape = 16) +
-          ggplot2::scale_color_viridis_c(option = "D")
+                              shape = 19)
+        if (score_color == "rainbow"){
+          hex <- c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")
+          p <- p +
+            ggplot2::scale_colour_gradientn(colours = hex)
+        } else if (score_color == "viridis"){
+          p <- p +
+            ggplot2::scale_color_viridis_c(option = "D")
+        }
 
       }
 
@@ -621,6 +614,24 @@ apl <- function(caobj,
                                      color = "#FF0000",
                                      max.overlaps = Inf)
         }
+      }
+    }
+
+    if (isTRUE(show_cols)){
+      p <- p +
+        ggplot2::geom_point(data=apl_cols.tmp,
+                            ggplot2::aes(x=x, y=y),
+                            color = "#006400",
+                            shape = 4) +
+        ggplot2::geom_point(data=apl_cols.tmp[caobj@group,],
+                            ggplot2::aes(x=x, y=y),
+                            color = "#990000",
+                            shape = 4)
+      if(col_labs == TRUE){
+        p <- p +
+          ggrepel::geom_text_repel(data=group_cols,
+                                   ggplot2::aes(x=x, y=y, label=rownms),
+                                   color = "#990000")
       }
     }
 
@@ -648,66 +659,116 @@ apl <- function(caobj,
 
     }
 
-    p <- plotly::plot_ly() %>%
-      plotly::add_trace(data=apl_cols.tmp,
-                x = ~x,
-                y =  ~y,
-                mode = 'markers',
-                text = apl_cols.tmp$rownms,
-                textposition = "left",
-                marker = list(color = '#124429',
-                              symbol = 'x',
-                              size = 5),
-                name = 'samples',
-                hoverinfo = 'text',
-                type = 'scatter') %>%
-      plotly::add_trace(data = apl_rows.tmp,
-                x = ~x,
-                y = ~y,
-                mode = 'markers',
-                text = apl_rows.tmp$rownms,
-                opacity = 0.7,
-                textposition = "left",
-                marker = list(color = color_fix, # '#0066FF'
-                              colorscale = colors_fun,
-                              symbol = sym,
-                              colorbar = color_bar,
-                              size = 5),
-                name = 'genes',
-                hoverinfo = 'text',
-                type = 'scatter')
+    p <- plotly::plot_ly()
 
-    if (is.numeric(rows_idx)){
+    if(isTRUE(show_rows)){
 
-      p <- p %>% plotly::add_trace(data = group_rows,
-                                   x = ~x,
-                                   y = ~y,
-                                   mode = rlabs,
-                                   text = group_rows$rownms,
-                                   textposition = "left",
-                                   textfont=rowfont,
-                                   marker = list(symbol = 'circle',
-                                                 color = '#FF0000',
-                                                 size = 5),
-                                   name = 'marked genes',
-                                   hoverinfo = 'text',
-                                   type = 'scatter')
+      color_fix <- '#0066FF'
+      colors_fun <- NULL
+      color_bar <- NULL
+      sym <- "circle-open"
+
+      p <- p %>%
+        plotly::add_trace(data = apl_rows.tmp,
+                          x = ~x,
+                          y = ~y,
+                          mode = 'markers',
+                          text = apl_rows.tmp$rownms,
+                          opacity = 0.7,
+                          textposition = "left",
+                          marker = list(color = color_fix, # '#0066FF'
+                                        colorscale = colors_fun,
+                                        symbol = sym,
+                                        colorbar = color_bar,
+                                        size = 5),
+                          name = 'genes',
+                          hoverinfo = 'text',
+                          type = 'scatter')
+
+      if (isTRUE(show_score)){
+
+        if (score_color == "rainbow"){
+          # color <- c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")
+          # colors_fun <- NULL
+          colors_fun <- "Jet"
+        } else if (score_color == "viridis"){
+          colors_fun <- 'Viridis'
+        }
+
+        color_fix <- as.formula("~Score")
+        color_bar <- list(title = "Score", len=0.5)
+        sym <- "circle"
+
+        p <- p %>%
+          plotly::add_trace(data = apl_scored.tmp,
+                            x = ~x,
+                            y = ~y,
+                            mode = 'markers',
+                            text = apl_scored.tmp$rownms,
+                            opacity = 0.7,
+                            textposition = "left",
+                            marker = list(color = color_fix,
+                                          colorscale = colors_fun,
+                                          symbol = sym,
+                                          colorbar = color_bar,
+                                          size = 5),
+                            name = 'genes',
+                            hoverinfo = 'text',
+                            type = 'scatter')
+
+      }
+
+      if (is.numeric(rows_idx)){
+
+        p <- p %>%
+          plotly::add_trace(data = group_rows,
+                           x = ~x,
+                           y = ~y,
+                           mode = rlabs,
+                           text = group_rows$rownms,
+                           textposition = "left",
+                           textfont=rowfont,
+                           marker = list(symbol = 'circle',
+                                         color = '#FF0000',
+                                         size = 5),
+                           name = 'marked genes',
+                           hoverinfo = 'text',
+                           type = 'scatter')
+      }
     }
-   if (is.numeric(cols_idx)){
-     p <- p %>% plotly::add_trace(data = group_cols,
-                                  x = ~x,
-                                  y = ~y,
-                                  mode = clabs,
-                                  text = group_cols$rownms,
-                                  textposition = "left",
-                                  textfont=colfont,
-                                  marker = list(symbol = 'x',
-                                                color = '#990000',
-                                                size = 5),
-                                  name = 'marked samples',
-                                  hoverinfo = 'text',
-                                  type = 'scatter')
+
+    if(isTRUE(show_cols)){
+      p <- p %>%
+        plotly::add_trace(data=apl_cols.tmp,
+                          x = ~x,
+                          y =  ~y,
+                          mode = 'markers',
+                          text = apl_cols.tmp$rownms,
+                          textposition = "left",
+                          marker = list(color = '#124429',
+                                        symbol = 'x',
+                                        size = 5),
+                          name = 'samples',
+                          hoverinfo = 'text',
+                          type = 'scatter')
+
+      if (is.numeric(cols_idx)){
+        p <- p %>% plotly::add_trace(data = group_cols,
+                                     x = ~x,
+                                     y = ~y,
+                                     mode = clabs,
+                                     text = group_cols$rownms,
+                                     textposition = "left",
+                                     textfont=colfont,
+                                     marker = list(symbol = 'x',
+                                                   color = '#990000',
+                                                   size = 5),
+                                     name = 'marked samples',
+                                     hoverinfo = 'text',
+                                     type = 'scatter')
+      }
     }
+
 
     p <- p %>% plotly::layout(title = paste('Association Plot \n', ncol(caobj@U), ' first dimensions, ', length(caobj@group),' samples.\n'),
              xaxis = list(title = 'Distance from origin (x)', rangemode = "tozero"),
@@ -751,6 +812,10 @@ apl <- function(caobj,
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".
+#' @param show_cols Logical. Whether column points should be plotted.
+#' @param show_rows Logical. Whether row points should be plotted.
+#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.
+#' @param score_color Either "rainbow" or "viridis".
 #' @param ... Arguments forwarded to methods.
 #' @export
 setGeneric("runAPL", function(obj,
@@ -767,6 +832,10 @@ setGeneric("runAPL", function(obj,
                                  row_labs = TRUE,
                                  col_labs = TRUE,
                                  type = "plotly",
+                                 show_cols = TRUE,
+                                 show_rows = TRUE,
+                                 score_cutoff = 1,
+                                 score_color = "rainbow",
                                  ...) {
   standardGeneric("runAPL")
 })
@@ -789,6 +858,10 @@ setMethod(f = "runAPL",
                    row_labs = TRUE,
                    col_labs = TRUE,
                    type = "plotly",
+                   show_cols = TRUE,
+                   show_rows = TRUE,
+                   score_cutoff = 1,
+                   score_color = "rainbow",
                    ...){
 
   if (!is(obj, "matrix")){
@@ -876,7 +949,11 @@ setMethod(f = "runAPL",
            cols_idx = mark_cols,
            row_labs = row_labs,
            col_labs = col_labs,
-           show_score = score)
+           show_score = score,
+           show_cols = show_cols,
+           show_rows = show_rows,
+           score_cutoff = score_cutoff,
+           score_color = score_color)
 
   return(p)
 })
@@ -906,6 +983,10 @@ setMethod(f = "runAPL",
                    row_labs = TRUE,
                    col_labs = TRUE,
                    type = "plotly",
+                   show_cols = TRUE,
+                   show_rows = TRUE,
+                   score_cutoff = 1,
+                   score_color = "rainbow",
                    ...,
                    assay = "counts"){
 
@@ -930,7 +1011,11 @@ setMethod(f = "runAPL",
         python = python,
         row_labs = row_labs,
         col_labs = col_labs,
-        type = type)
+        type = type,
+        show_cols = show_cols,
+        show_rows = show_rows,
+        score_cutoff = score_cutoff,
+        score_color = score_color)
 
 })
 
@@ -958,6 +1043,10 @@ setMethod(f = "runAPL",
                    row_labs = TRUE,
                    col_labs = TRUE,
                    type = "plotly",
+                   show_cols = TRUE,
+                   show_rows = TRUE,
+                   score_cutoff = 1,
+                   score_color = "rainbow",
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts"){
@@ -986,5 +1075,9 @@ setMethod(f = "runAPL",
         nrow = nrow,
         row_labs = row_labs,
         col_labs = col_labs,
-        type = type)
+        type = type,
+        show_cols = show_cols,
+        show_rows = show_rows,
+        score_cutoff = score_cutoff,
+        score_color = score_color)
 })
