@@ -1,4 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
-^\R\test.R
+^.git
+^.Rhistory
+^.gitignore

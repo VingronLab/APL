@@ -7,8 +7,8 @@
 apl_score(
   caobj,
   mat,
-  dims,
-  group,
+  dims = caobj@dims,
+  group = caobj@group,
   reps = 10,
   quant = 0.99,
   python = TRUE,
@@ -46,4 +46,21 @@ The score is calculated by permuting the values of each row to determine the cut
 \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
 By default the permutation is repeated 10 times, but for very large matrices this can be reduced.
 If store_perm is TRUE the permuted data is stored in the cacomp object and can be used for future scoring.
+}
+\examples{
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# Run correspondence analysis.
+ca <- cacomp(obj = cnts, princ_coords = 3)
+
+# Calculate APL coordinates:
+ca <- apl_coords(ca, group = 1:10)
+
+# Rank genes by S-alpha score
+ca <- apl_score(ca, mat = cnts)
 }

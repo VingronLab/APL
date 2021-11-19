@@ -3,11 +3,28 @@
 \docType{class}
 \name{cacomp-class}
 \alias{cacomp-class}
+\alias{new_cacomp}
 \title{An S4 class that contains all elements needed for CA.}
+\usage{
+new_cacomp(...)
+}
+\arguments{
+\item{...}{slot names and objects for new cacomp object.}
+}
+\value{
+cacomp object
+}
 \description{
 This class contains elements necessary to computer CA coordinates or Association Plot coordinates,
 as well as other informative data such as row/column inertia, gene-wise APL-scores, etc. ...
+
+Creates new cacomp object.
 }
+\section{Functions}{
+\itemize{
+\item \code{new_cacomp}: Create new cacomp object.
+}}
+
 \section{Slots}{
 
 \describe{

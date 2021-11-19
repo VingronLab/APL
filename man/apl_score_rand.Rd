@@ -6,7 +6,7 @@
 \usage{
 apl_score_rand(
   caobj,
-  dims,
+  dims = caobj@dims,
   reps = 300,
   quant = 0.99,
   python = TRUE,
@@ -39,4 +39,22 @@ The score is calculated by choosing random directions in space to calculate APLs
 \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
 By default the permutation is repeated 300 times, and is independent of group size, so the same cutoff is applicable to all groups.
 If store_perm is TRUE the calculated cutoff is stored as an attribute to ca$permuted_data to prevent recalculation when running with identical parameters.
+}
+\examples{
+
+#' set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# Run correspondence analysis.
+ca <- cacomp(obj = cnts, princ_coords = 3)
+
+# Calculate APL coordinates:
+ca <- apl_coords(ca, group = 1:10)
+
+# Rank genes by S-alpha score
+ca <- apl_score_rand(ca)
 }

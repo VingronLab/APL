@@ -4,12 +4,14 @@
 \alias{recompute}
 \title{Recompute missing values of cacomp object.}
 \usage{
-recompute(calist, mat, ...)
+recompute(calist, mat, rm_zeros = TRUE, ...)
 }
 \arguments{
 \item{calist}{A list with std_coords_cols, the prin_coords_rows and D.}
 
 \item{mat}{A matrix from which the cacomp object derives from.}
+
+\item{rm_zeros}{Removes rows & columns containing only zeros.}
 
 \item{...}{Further arguments forwarded to cacomp.}
 }

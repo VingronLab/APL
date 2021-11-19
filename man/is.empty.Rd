@@ -9,6 +9,9 @@ is.empty(x)
 \arguments{
 \item{x}{object}
 }
+\value{
+TRUE if x has length 0 and is not NULL. FALSE otherwise
+}
 \description{
 Helper function to check if object is empty.
 }

@@ -9,6 +9,9 @@ check_cacomp(object)
 \arguments{
 \item{object}{A cacomp object.}
 }
+\value{
+TRUE if it is a valid cacomp object. FALSE otherwise.
+}
 \description{
 Checks if the slots in a cacomp object are of the correct size
 and whether they are coherent.
