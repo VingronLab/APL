@@ -122,7 +122,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' @param store_perm Logical. Whether permuted data should be stored in the CA object.
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @export
-apl_score <- function(caobj, mat, dims, group = caobj@group, reps=10, quant = 0.99, python = TRUE, store_perm = TRUE){
+apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=10, quant = 0.99, python = TRUE, store_perm = TRUE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -483,7 +483,10 @@ apl_topGO <- function(caobj,
 #' @param cols_idx numeric/character vector. Indices or names of the columns that should be labelled. Default is only to label columns making up the centroid: caobj@group.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
 #' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
-#' @param show_score Logical. Wheter the S-alpha score should be shown in the plot.
+#' @param show_score Logical. Whether the S-alpha score should be shown in the plot.
+#' @param show_cols Logical. Whether column points should be plotted.
+#' @param show_rows Logical. Whether row points should be plotted.
+#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.
 #' @export
 apl <- function(caobj,
                 type="ggplot",
@@ -491,7 +494,10 @@ apl <- function(caobj,
                 cols_idx = caobj@group,
                 row_labs = FALSE,
                 col_labs = TRUE,
-                show_score = FALSE){
+                show_score = FALSE,
+                show_cols = TRUE,
+                show_rows = TRUE,
+                score_cutoff = 1){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -545,66 +551,85 @@ apl <- function(caobj,
     colfont <- list(color='#000000')
 
   }
-  apl_scores <- caobj@APL_score$Score[order(caobj@APL_score$Row_num)]
 
   apl_rows.tmp <- data.frame(rownms = rownames(caobj@apl_rows),
-                             caobj@apl_rows, Score = apl_scores)
-
+                             caobj@apl_rows)
   apl_cols.tmp <- data.frame(rownms = rownames(caobj@apl_cols),
                              caobj@apl_cols)
+
+  if (isTRUE(show_score)) {
+    apl_scores <- caobj@APL_score$Score[order(caobj@APL_score$Row_num)]
+    apl_rows.tmp$Score <- apl_scores
+    idx <- which(apl_scores >= score_cutoff)
+    apl_scored.tmp <- apl_rows.tmp[idx,]
+  }
+
 
   if (type == "ggplot"){
 
 
-    p <- ggplot2::ggplot() +
-      ggplot2::geom_point(data=apl_cols.tmp,
-                          ggplot2::aes(x=x, y=y),
-                          color = "#006400",
-                          shape = 4)
+    p <- ggplot2::ggplot()
 
 
-      if (isTRUE(show_score)){
-        p <- p + ggplot2::geom_point(data=apl_rows.tmp,
-                                     ggplot2::aes(x=x, y=y, color = Score),
-                                     alpha = 0.7,
-                                     shape = 16) +
-                ggplot2::scale_color_viridis_c(option = "D")
-      } else {
-        p <- p + ggplot2::geom_point(data=apl_rows.tmp,
-                                     ggplot2::aes(x=x, y=y),
-                                     color = "#0066FF",
-                                     alpha = 0.7,
-                                     shape = 16)
-      }
-      p <- p +  ggplot2::geom_point(data=apl_cols.tmp[caobj@group,],
-                                    ggplot2::aes(x=x, y=y),
-                                    color = "#990000",
-                                    shape = 4) +
-                ggplot2::labs(title="Association Plot") +
-                ggplot2::theme_bw()
-
-    if(col_labs == TRUE){
+    if (isTRUE(show_cols)){
       p <- p +
-        ggrepel::geom_text_repel(data=group_cols,
-                                 ggplot2::aes(x=x, y=y, label=rownms),
-                                 color = "#990000")
-      }
-    if (is.numeric(rows_idx)){
-      p <- p +
-        ggplot2::geom_point(data=group_rows,
+        ggplot2::geom_point(data=apl_cols.tmp,
                             ggplot2::aes(x=x, y=y),
-                            color="#FF0000",
-                            shape = 16)
-
-      if(isTRUE(row_labs)){
+                            color = "#006400",
+                            shape = 4) +
+        ggplot2::geom_point(data=apl_cols.tmp[caobj@group,],
+                            ggplot2::aes(x=x, y=y),
+                            color = "#990000",
+                            shape = 4)
+      if(col_labs == TRUE){
         p <- p +
-          ggrepel::geom_text_repel(data = group_rows,
+          ggrepel::geom_text_repel(data=group_cols,
                                    ggplot2::aes(x=x, y=y, label=rownms),
-                                   color = "#FF0000",
-                                   max.overlaps = Inf)
+                                   color = "#990000")
       }
     }
+
+    if (isTRUE(show_rows)){
+      p <- p +
+        ggplot2::geom_point(data=apl_rows.tmp,
+                            ggplot2::aes(x=x, y=y),
+                            color = "#0066FF",
+                            alpha = 0.7,
+                            shape = 16) #16 point, 1 circle.
+
+      if (isTRUE(show_score)){
+        p <- p +
+          ggplot2::geom_point(data=apl_scored.tmp,
+                              ggplot2::aes(x=x, y=y, color = Score),
+                              alpha = 0.7,
+                              shape = 16) +
+          ggplot2::scale_color_viridis_c(option = "D")
+
+      }
+
+      if (is.numeric(rows_idx)){
+        p <- p +
+          ggplot2::geom_point(data=group_rows,
+                              ggplot2::aes(x=x, y=y),
+                              color="#FF0000",
+                              shape = 16)
+
+        if(isTRUE(row_labs)){
+          p <- p +
+            ggrepel::geom_text_repel(data = group_rows,
+                                     ggplot2::aes(x=x, y=y, label=rownms),
+                                     color = "#FF0000",
+                                     max.overlaps = Inf)
+        }
+      }
+    }
+
+
     rm(apl_rows.tmp, apl_cols.tmp)
+
+    p <- p +
+        ggplot2::labs(title="Association Plot") +
+        ggplot2::theme_bw()
 
     return(p)
 
