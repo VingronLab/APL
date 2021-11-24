@@ -2,7 +2,7 @@
 
 # APL
 
-When working with `r Rpackage("APL")` package please cite:
+When working with `APL` package please cite:
 ```
 Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
 Elzbieta Gralinska, Martin Vingron
@@ -13,6 +13,10 @@ bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 
     library(devtools)
     install_github("ClemensKohl/APL")
+    
+## Pytorch installation
+In order to speed up the singular value decomposition, we highly recommend the installation of pytorch.
+Users can instead also opt to instead use the slower R native SVD. For this please turn the argument `python = FALSE` wherever applicable in this vignette.
 
 ### Install pytorch with reticulate
 
