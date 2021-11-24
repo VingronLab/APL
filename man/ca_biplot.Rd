@@ -13,7 +13,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj@std_coords_cols)),
+  col_labels = NULL,
   type = "plotly",
   ...
 )
@@ -24,7 +24,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj@std_coords_cols)),
+  col_labels = NULL,
   type = "plotly",
   ...
 )
@@ -35,7 +35,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj@std_coords_cols)),
+  col_labels = NULL,
   type = "plotly",
   ...,
   assay = Seurat::DefaultAssay(obj),
@@ -48,7 +48,7 @@ ca_biplot(
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj@std_coords_cols)),
+  col_labels = NULL,
   type = "plotly",
   ...,
   assay = "counts"
@@ -62,12 +62,15 @@ or alternatively an object of class "Seurat" or "SingleCellExperiment" with a di
 
 \item{ydim}{Integer. The dimension for the y-axis. Default 2.}
 
-\item{princ_coords}{Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).}
+\item{princ_coords}{Integer. If 1 then principal coordinates are used for the rows,
+if 2 for the columns. Default 1 (rows).}
 
-\item{row_labels}{Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.}
+\item{row_labels}{Numeric vector. Indices for the rows for which a label should be added
+(label should be stored in rownames). Default NULL.}
 
-\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-Default seq(ncol(obj@std_coords_cols)) (all columns).}
+\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added
+(label should be stored in colnames).
+Default NULL (no columns).}
 
 \item{type}{String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".}
 
@@ -84,8 +87,22 @@ Plot of class "plotly" or "ggplot".
 Plots the first 2 dimensions of the rows and columns in the same plot.
 }
 \details{
-Choosing type "plotly" will generate an interactive html plot with the package plotly. Type "ggplot" generates a static plot.
-Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
+Choosing type "plotly" will generate an interactive html plot with the package plotly.
+Type "ggplot" generates a static plot.
+Depending on whether `princ_coords` is set to 1 or 2 either
+the principal coordinates of either the rows (1) or the columns (2)
 are chosen. For the other the standard coordinates are plotted (assymetric biplot).
 Labels for rows and columns should be stored in the row and column names respectively.
+}
+\examples{
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# Run correspondence analysis
+ca <- cacomp(obj = cnts, princ_coords = 3)
+
+ca_biplot(ca)
 }

@@ -3,6 +3,7 @@
 \name{as.cacomp}
 \alias{as.cacomp}
 \alias{as.cacomp,cacomp-method}
+\alias{as.cacomp,list-method}
 \alias{as.cacomp,Seurat-method}
 \alias{as.cacomp,SingleCellExperiment-method}
 \title{Create cacomp object from Seurat/SingleCellExperiment container}
@@ -10,6 +11,8 @@
 as.cacomp(obj, ...)
 
 \S4method{as.cacomp}{cacomp}(obj, ...)
+
+\S4method{as.cacomp}{list}(obj, ..., mat = NULL)
 
 \S4method{as.cacomp}{Seurat}(obj, ..., assay = "RNA", slot = "counts")
 
@@ -20,6 +23,8 @@ as.cacomp(obj, ...)
 with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.}
 
 \item{...}{Further arguments.}
+
+\item{mat}{Original input matrix.}
 
 \item{assay}{Character. The assay from which extract the count matrix,
 e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
@@ -35,6 +40,10 @@ If recompute = TRUE additional parameters are recomputed from the saved values w
 
 as.cacomp.cacomp returns input without any calculations.
 
+Recomputes missing values and returns cacomp object from a list.
+If you have a *complete* cacomp object in list form,
+use do.call(new_cacomp, obj).
+
 as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
 
 as.cacomp.SingleCellExperiment: Converts the values stored in the SingleCellExperiment reducedDim slot "CA" to an cacomp object.
@@ -43,4 +52,59 @@ as.cacomp.SingleCellExperiment: Converts the values stored in the SingleCellExpe
 By default extracts std_coords_cols, D, prin_coords_rows, top_rows and dims from obj and outputs a cacomp object.
 If recompute = TRUE the following are additionally recalculated (doesn't run SVD):
 U, V, std_coords_rows, row_masses, col_masses.
+}
+\examples{
+#########
+# lists #
+#########
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# Run correspondence analysis
+ca <- cacomp(obj = cnts, princ_coords = 3)
+ca_list <- as.list(ca)
+
+# Only keep subset of elements for demonstration
+ca_list <- ca_list[c("U", "std_coords_rows", "std_coords_cols")]
+
+# convert (incomplete) list to cacomp object.
+ca <- as.cacomp(ca_list, mat = cnts)
+
+##########
+# Seurat #
+##########
+library(Seurat)
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+seu <- CreateSeuratObject(counts = cnts)
+seu <- cacomp(seu, return_input = TRUE)
+
+ca <- as.cacomp(seu, assay = "RNA", slot = "counts")
+
+########################
+# SingleCellExperiment #
+########################
+library(SingleCellExperiment)
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+sce <- SingleCellExperiment(assays=list(counts=cnts))
+sce <- cacomp(sce, return_input = TRUE)
+
+ca <- as.cacomp(sce, assay = "counts")
 }

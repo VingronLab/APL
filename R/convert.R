@@ -1,5 +1,5 @@
-
-
+#' @include constructor.R
+NULL
 
 
 #' Recompute missing values of cacomp object.
@@ -15,7 +15,6 @@
 #' @param mat A matrix from which the cacomp object derives from.
 #' @param rm_zeros Removes rows & columns containing only zeros.
 #' @param ... Further arguments forwarded to cacomp.
-#' @export
 recompute <- function(calist, mat, rm_zeros = TRUE, ...){
   stopifnot(is(calist, "list"))
   stopifnot(is(mat, "matrix"))
@@ -246,11 +245,69 @@ setMethod(f = "as.cacomp", signature=(obj="cacomp"), function(obj, ...) {
   return(obj)
 })
 
+
+#' @description Recomputes missing values and returns cacomp object from a list.
+#' If you have a *complete* cacomp object in list form,
+#' use do.call(new_cacomp, obj).
+#' @param mat Original input matrix.
+#' @rdname as.cacomp
+#' @export
+#' @examples
+#' #########
+#' # lists #
+#' #########
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Run correspondence analysis
+#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#' ca_list <- as.list(ca)
+#'
+#' # Only keep subset of elements for demonstration
+#' ca_list <- ca_list[c("U", "std_coords_rows", "std_coords_cols")]
+#'
+#' # convert (incomplete) list to cacomp object.
+#' ca <- as.cacomp(ca_list, mat = cnts)
+setMethod(f = "as.cacomp", signature=(obj="list"), function(obj, ..., mat = NULL) {
+
+  try_obj <- try(do.call(new_cacomp, ca_list), silent = TRUE)
+  if (is(try_obj, "try-error")){
+    obj <- recompute(calist = obj, mat = mat)
+    return(obj)
+  } else if (is(try_obj, "cacomp")){
+    return(try_obj)
+  } else {
+    stop("Unexpected output from try().")
+  }
+})
+
 #' @description
 #' as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
 #' @param slot character. Slot of the Seurat assay to use. Default "counts".
 #' @rdname as.cacomp
 #' @export
+#' @examples
+#'
+#' ##########
+#' # Seurat #
+#' ##########
+#' library(Seurat)
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' seu <- CreateSeuratObject(counts = cnts)
+#' seu <- cacomp(seu, return_input = TRUE)
+#'
+#' ca <- as.cacomp(seu, assay = "RNA", slot = "counts")
 setMethod(f = "as.cacomp", signature=(obj="Seurat"), function(obj, ..., assay="RNA", slot = "counts") {
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
@@ -288,6 +345,24 @@ setMethod(f = "as.cacomp", signature=(obj="Seurat"), function(obj, ..., assay="R
 #'
 #' @rdname as.cacomp
 #' @export
+#' @examples
+#'
+#' ########################
+#' # SingleCellExperiment #
+#' ########################
+#' library(SingleCellExperiment)
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' sce <- SingleCellExperiment(assays=list(counts=cnts))
+#' sce <- cacomp(sce, return_input = TRUE)
+#'
+#' ca <- as.cacomp(sce, assay = "counts")
 setMethod(f = "as.cacomp",
           signature=(obj="SingleCellExperiment"),
           function(obj, ..., assay="counts") {

@@ -15,5 +15,30 @@ plot_enrichment(genenr, ntop = 10)
 Returns a ggplot plot.
 }
 \description{
-Generates plot for results from apl_topGO
+Plots the results form the data frame generated via apl_topGO.
+}
+\examples{
+library(Seurat)
+set.seed(1234)
+cnts <- GetAssayData(pbmc_small, slot = "counts")
+cnts <- as.matrix(cnts)
+
+# Run CA on example from Seurat
+
+ca <- cacomp(pbmc_small,
+             princ_coords = 3,
+             return_input = FALSE,
+             assay = "RNA",
+             slot = "counts")
+
+grp <- which(Idents(pbmc_small) == 2)
+ca <- apl_coords(ca, group = grp)
+ca <- apl_score(ca,
+                mat = cnts)
+
+enr <- apl_topGO(ca,
+                 ontology = "BP",
+                 organism = "hs")
+
+plot_enrichment(enr)
 }

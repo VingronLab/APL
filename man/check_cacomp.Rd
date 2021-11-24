@@ -16,3 +16,16 @@ TRUE if it is a valid cacomp object. FALSE otherwise.
 Checks if the slots in a cacomp object are of the correct size
 and whether they are coherent.
 }
+\examples{
+# Simulate scRNAseq data.
+cnts <- data.frame(cell_1 = rpois(10, 5),
+                   cell_2 = rpois(10, 10),
+                   cell_3 = rpois(10, 20))
+rownames(cnts) <- paste0("gene_", 1:10)
+cnts <- as.matrix(cnts)
+
+# Run correspondence analysis.
+ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
+
+check_cacomp(ca)
+}

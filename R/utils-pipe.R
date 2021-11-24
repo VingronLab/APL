@@ -8,7 +8,10 @@
 #' @export
 #' @param lhs A value or the magrittr placeholder.
 #' @param rhs A function call using the magrittr semantics.
-#' @return
+#' @return \code{magrittr::\link[magrittr:pipe]{\%>\%}}
 #' @importFrom magrittr %>%
 #' @usage lhs \%>\% rhs
+#' @examples
+#' x <- 1:100
+#' x %>% head()
 NULL

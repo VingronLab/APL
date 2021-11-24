@@ -4,3 +4,5 @@
 ^.git
 ^.Rhistory
 ^.gitignore
+^doc$
+^Meta$

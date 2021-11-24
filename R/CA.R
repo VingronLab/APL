@@ -1,21 +1,25 @@
-
+#' @include constructor.R
+NULL
 
 #' Compute Standard Residuals
 #'
 #' @description
-#' `comp_std_residuals` computes the standard Residuals matrix S, which isthe basis for correspondence analysis and serves as input for singular value decomposition.
+#' `comp_std_residuals` computes the standard Residuals matrix S,
+#' which is the basis for correspondence analysis and serves
+#' as input for singular value decomposition.
 #'
 #' @details
 #' Calculates standardized residual matrix S from the proportions matrix P and
 #' the expected values E according to \eqn{S = \frac{(P-E)}{sqrt(E)}}.
 #'
-#' @param mat A numerical matrix or coercible to one by `as.matrix()` Should have row and column names.
+#' @param mat A numerical matrix or coercible to one by `as.matrix()`.
+#' Should have row and column names.
 #' @return
-#' A named list with standard residual matrix "S", grand total of the original matrix "tot"
-#'  as well as row and column masses "rowm" and "colm" respectively.
+#' A named list with standard residual matrix "S",
+#' grand total of the original matrix "tot"
+#' as well as row and column masses "rowm" and "colm" respectively.
 #'
 comp_std_residuals <- function(mat){
-
 
   if (!is(mat, "matrix")){
     mat <- as.matrix(mat)
@@ -66,10 +70,24 @@ rm_zeros <- function(obj){
 #' @return
 #' Returns a matrix, which consists of the top variable rows of mat.
 #'
-#' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' @param mat A numeric matrix. For sequencing a count matrix,
+#' gene expression values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
 #' @param top Integer. Number of most variable rows to retain. Default 5000.
 #' @export
+#' @examples
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#'cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'               x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Choose top 5000 most variable genes
+#' cnts <- var_rows(mat = cnts, top = 5000)
+#'
+#'
 var_rows <- function(mat, top = 5000){
 
   res <-  comp_std_residuals(mat=mat)
@@ -80,15 +98,47 @@ var_rows <- function(mat, top = 5000){
   chisquare <- res$tot * (res$S^2)		# chi-square components matrix
   variances <- apply(chisquare,1,var) #row-wise variances
   ix_var <- order(-variances)
-  mat <- mat[ix_var[1:top],] # choose top rows
+  mat <- mat[ix_var[seq_len(top)],] # choose top rows
   return(mat)
 
 }
 
 
+#' Internal function for `cacomp`
+#'
+#' @description
+#' `run_cacomp` performs correspondence analysis on a matrix and returns the transformed data.
+#'
+#' @details
+#' The calculation is performed according to Greenacre. Singular value decomposition
+#' can be performed either with the base R function `svd` or preferably by the much faster
+#' pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
+#' principal coordinates should only computed when needed to save computational time.
+#'
+#' @return
+#' Returns a named list of class "cacomp" with components
+#' U, V and D: The results from the SVD.
+#' row_masses and col_masses: Row and columns masses.
+#' top_rows: How many of the most variable rows were retained for the analysis.
+#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
+#' @references
+#' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
+
+#' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' Should contain row and column names.
+#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
+#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
+#' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
+#' Default 1.
+#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
+#' @param top Integer. Number of most variable rows to retain. Default NULL.
+#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
+#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
+#' @param ... Arguments forwarded to methods.
 run_cacomp <- function(obj,
-                   coords=TRUE,
-                   princ_coords = 1,
+                   coords = TRUE,
+                   princ_coords = 3,
                    python = FALSE,
                    dims = NULL,
                    top = NULL,
@@ -214,7 +264,8 @@ run_cacomp <- function(obj,
 #' Correspondance Analysis
 #'
 #' @description
-#' `cacomp` performs correspondence analysis on a matrix or Seurat/SingleCellExperiment object and returns the transformed data.
+#' `cacomp` performs correspondence analysis on a matrix or
+#' Seurat/SingleCellExperiment object and returns the transformed data.
 #'
 #' @details
 #' The calculation is performed according to Greenacre. Singular value decomposition
@@ -227,11 +278,13 @@ run_cacomp <- function(obj,
 #' U, V and D: The results from the SVD.
 #' row_masses and col_masses: Row and columns masses.
 #' top_rows: How many of the most variable rows were retained for the analysis.
-#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
+#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE.
+#' Total, row and column inertia respectively.
 #' @references
 #' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
 
-#' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' @param obj A numeric matrix or Seurat/SingleCellExperiment object.
+#' For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
 #' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
 #' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
@@ -241,7 +294,8 @@ run_cacomp <- function(obj,
 #' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
 #' @param top Integer. Number of most variable rows to retain. Default NULL.
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
+#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed.
+#' Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
 #' @param ... Arguments forwarded to methods.
 #' @examples
 #' # Simulate scRNAseq data.
@@ -255,8 +309,8 @@ run_cacomp <- function(obj,
 #' ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
 #' @export
 setGeneric("cacomp", function(obj,
-                              coords=TRUE,
-                              princ_coords = 1,
+                              coords = TRUE,
+                              princ_coords = 3,
                               python = FALSE,
                               dims = NULL,
                               top = NULL,
@@ -272,8 +326,8 @@ setGeneric("cacomp", function(obj,
 setMethod(f = "cacomp",
           signature=(obj="matrix"),
           function(obj,
-                   coords=TRUE,
-                   princ_coords = 1,
+                   coords = TRUE,
+                   princ_coords = 3,
                    python = FALSE,
                    dims = NULL,
                    top = NULL,
@@ -316,20 +370,37 @@ setMethod(f = "cacomp",
 #' @param ... Other parameters
 #' @rdname cacomp
 #' @export
+#' @examples
+#' library(Seurat)
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Create Seurat object
+#' seu <- CreateSeuratObject(counts = cnts)
+#'
+#' # run CA and save in dim. reduction slot.
+#' seu <- cacomp(seu, return_input = TRUE, assay = "RNA", slot = "counts")
+#'
+#' # run CA and return cacomp object.
+#' ca <- cacomp(seu, return_input = FALSE, assay = "RNA", slot = "counts")
 setMethod(f = "cacomp",
           signature=(obj="Seurat"),
           function(obj,
-                    coords=TRUE,
-                    princ_coords = 1,
-                    python = FALSE,
-                    dims = NULL,
-                    top = NULL,
-                    inertia = TRUE,
-                    rm_zeros = TRUE,
-                    ...,
-                    assay = DefaultAssay(obj),
-                    slot = "counts",
-                    return_input = FALSE){
+                   coords = TRUE,
+                   princ_coords = 3,
+                   python = FALSE,
+                   dims = NULL,
+                   top = NULL,
+                   inertia = TRUE,
+                   rm_zeros = TRUE,
+                   ...,
+                   assay = DefaultAssay(obj),
+                   slot = "counts",
+                   return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
 
@@ -385,19 +456,38 @@ setMethod(f = "cacomp",
 #'  Otherwise returns a "cacomp". Default FALSE.
 #' @rdname cacomp
 #' @export
+#' @examples
+#' library(SingleCellExperiment)
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#' logcnts <- log2(cnts + 1)
+#'
+#' # Create SingleCellExperiment object
+#' sce <- SingleCellExperiment(assays=list(counts=cnts, logcounts=logcnts))
+#'
+#' # run CA and save in dim. reduction slot.
+#' sce <- cacomp(sce, return_input = TRUE, assay = "counts") # on counts
+#' sce <- cacomp(sce, return_input = TRUE, assay = "logcounts") # on logcounts
+#'
+#' # run CA and return cacomp object.
+#' ca <- cacomp(sce, return_input = FALSE, assay = "counts")
 setMethod(f = "cacomp",
           signature=(obj="SingleCellExperiment"),
           function(obj,
-                  coords=TRUE,
-                  princ_coords = 1,
-                  python = FALSE,
-                  dims = NULL,
-                  top = NULL,
-                  inertia = TRUE,
-                  rm_zeros = TRUE,
-                  ...,
-                  assay = "counts",
-                  return_input = FALSE){
+                   coords = TRUE,
+                   princ_coords = 3,
+                   python = FALSE,
+                   dims = NULL,
+                   top = NULL,
+                   inertia = TRUE,
+                   rm_zeros = TRUE,
+                   ...,
+                   assay = "counts",
+                   return_input = FALSE){
 
   stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
   stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
@@ -446,7 +536,8 @@ setMethod(f = "cacomp",
 #'
 #' @param caobj A caobj.
 #' @param dims Integer. Number of dimensions.
-#' #' # Simulate scRNAseq data.
+#' @examples
+#' # Simulate scRNAseq data.
 #' cnts <- data.frame(cell_1 = rpois(10, 5),
 #'                    cell_2 = rpois(10, 10),
 #'                    cell_3 = rpois(10, 20))
@@ -622,15 +713,15 @@ scree_plot <- function(df){
   screeplot <- ggplot2::ggplot(df, ggplot2::aes(x=dims, y=inertia)) +
     ggplot2::geom_col(fill="#4169E1") +
     ggplot2::geom_line(color="#B22222", size=1) +
-    ggplot2::geom_abline(slope = 0, intercept = avg_inertia, linetype=3, alpha=0.8, color ="#606060")+
+    # ggplot2::geom_abline(slope = 0, intercept = avg_inertia, linetype=3, alpha=0.8, color ="#606060")+
     ggplot2::labs(title = "Scree plot of explained inertia per dimensions and the average inertia",
          y="Explained inertia [%]",
          x="Dimension") +
-    ggplot2::annotate(
-      "text",
-      x = max_num_dims*0.9,
-      y = avg_inertia,
-      label = "avg. inertia")+
+    # ggplot2::annotate(
+      # "text",
+      # x = max_num_dims*0.9,
+      # y = avg_inertia,
+      # label = "avg. inertia")+
     ggplot2::theme_bw()
   return(screeplot)
 }
@@ -667,10 +758,10 @@ scree_plot <- function(df){
 #' This implementation dramatically speeds up computation compared to `svd()` in R.
 #' @param ... Arguments forwarded to methods.
 #' @examples
-#' # Example data from Seurat
-#' library(Seurat)
-#' cnts <- pbmc_small@assays$RNA@counts
-#' cnts <- as.matrix(cnts)
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 #'
 #' # Run correspondence analysis.
 #' ca <- cacomp(obj = cnts)
@@ -833,6 +924,30 @@ setMethod(f = "pick_dims",
 #'
 #' @rdname pick_dims
 #' @export
+#' @examples
+#'
+#' ################################
+#' # pick_dims for Seurat objects #
+#' ################################
+#' library(Seurat)
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Create Seurat object
+#' seu <- CreateSeuratObject(counts = cnts)
+#'
+#' # run CA and save in dim. reduction slot.
+#' seu <- cacomp(seu, return_input = TRUE, assay = "RNA", slot = "counts")
+#'
+#' # pick dimensions
+#' pd <- pick_dims(obj = seu,
+#'                 method = "maj_inertia",
+#'                 assay = "RNA",
+#'                 slot = "counts")
 setMethod(f = "pick_dims",
           signature=(obj="Seurat"),
           function(obj,
@@ -875,6 +990,30 @@ setMethod(f = "pick_dims",
 #'
 #' @rdname pick_dims
 #' @export
+#' @examples
+#'
+#' ##############################################
+#' # pick_dims for SingleCellExperiment objects #
+#' ##############################################
+#' library(SingleCellExperiment)
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Create SingleCellExperiment object
+#' sce <- SingleCellExperiment(assays=list(counts=cnts))
+#'
+#' # run CA and save in dim. reduction slot.
+#' sce <- cacomp(sce, return_input = TRUE, assay = "counts")
+#'
+#' # pick dimensions
+#' pd <- pick_dims(obj = sce,
+#'                 method = "maj_inertia",
+#'                 assay = "counts")
 setMethod(f = "pick_dims",
           signature=(obj="SingleCellExperiment"),
           function(obj,
@@ -884,7 +1023,7 @@ setMethod(f = "pick_dims",
                    python = TRUE,
                    return_plot = FALSE,
                    ...,
-                   assay){
+                   assay = "counts"){
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 

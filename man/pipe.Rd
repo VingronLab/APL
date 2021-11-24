@@ -12,9 +12,13 @@ lhs \%>\% rhs
 \item{rhs}{A function call using the magrittr semantics.}
 }
 \value{
-
+\code{magrittr::\link[magrittr:pipe]{\%>\%}}
 }
 \description{
 See \code{magrittr::\link[magrittr:pipe]{\%>\%}} for details.
+}
+\examples{
+x <- 1:100
+x \%>\% head()
 }
 \keyword{internal}

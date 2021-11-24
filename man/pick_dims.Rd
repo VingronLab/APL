@@ -47,7 +47,7 @@ pick_dims(
   python = TRUE,
   return_plot = FALSE,
   ...,
-  assay
+  assay = "counts"
 )
 }
 \arguments{
@@ -90,10 +90,10 @@ to estimate the number of dimensions that best represent the data.
  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
 }
 \examples{
-# Example data from Seurat
-library(Seurat)
-cnts <- pbmc_small@assays$RNA@counts
-cnts <- as.matrix(cnts)
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
 # Run correspondence analysis.
 ca <- cacomp(obj = cnts)
@@ -113,4 +113,50 @@ ca_sub <- subset_dims(ca, dims = pd$dims)
 pd <- pick_dims(obj = ca,
                 method = "maj_inertia")
 ca_sub <- subset_dims(ca, dims = pd)
+
+################################
+# pick_dims for Seurat objects #
+################################
+library(Seurat)
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# Create Seurat object
+seu <- CreateSeuratObject(counts = cnts)
+
+# run CA and save in dim. reduction slot.
+seu <- cacomp(seu, return_input = TRUE, assay = "RNA", slot = "counts")
+
+# pick dimensions
+pd <- pick_dims(obj = seu,
+                method = "maj_inertia",
+                assay = "RNA",
+                slot = "counts")
+
+##############################################
+# pick_dims for SingleCellExperiment objects #
+##############################################
+library(SingleCellExperiment)
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:20, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# Create SingleCellExperiment object
+sce <- SingleCellExperiment(assays=list(counts=cnts))
+
+# run CA and save in dim. reduction slot.
+sce <- cacomp(sce, return_input = TRUE, assay = "counts")
+
+# pick dimensions
+pd <- pick_dims(obj = sce,
+                method = "maj_inertia",
+                assay = "counts")
 }

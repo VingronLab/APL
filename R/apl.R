@@ -1,4 +1,5 @@
-
+#' @include constructor.R
+NULL
 
 #' Calculate Association Plot coordinates
 #'
@@ -221,9 +222,6 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
       }
     }
 
-
-
-
     caobjp <- apl_coords(caobj = caobjp, group = group, calc_cols = cc, calc_rows = cr)
     idx <- ((seq_len(row_num)+((k-1)*row_num)))
 
@@ -267,136 +265,6 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
 }
 
 
-#' Find rows most highly associated with a condition through random APLs.
-#'
-#' @description
-#' Ranks rows by a calculated score which balances the association of the row with the condition and how associated it is with other conditions.
-#'
-#' @details
-#' The score is calculated by choosing random directions in space to calculate APLs for the rows.
-#' \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
-#' By default the permutation is repeated 300 times, and is independent of group size, so the same cutoff is applicable to all groups.
-#' If store_perm is TRUE the calculated cutoff is stored as an attribute to ca$permuted_data to prevent recalculation when running with identical parameters.
-#' @return
-#' Returns the input "cacomp" object with "APL_score" component added.
-#' APL_score contains a data frame with ranked rows, their score and their original row number.
-#'
-#' @param caobj A "cacomp" object with principal row coordinates and standard column coordinates calculated.
-#' @param dims Integer. Number of CA dimensions to retain. Needs to be the same as in caobj!
-#' @param reps Integer. Number of permutations to perform. Default = 10.
-#' @param quant Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' @param store_perm Logical. Whether calculated cutoff should be stored. Default TRUE.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @export
-#'
-#' @examples
-#'
-#' #' set.seed(1234)
-#'
-#' # Simulate counts
-#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
-#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
-#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
-#'
-#' # Run correspondence analysis.
-#' ca <- cacomp(obj = cnts, princ_coords = 3)
-#'
-#' # Calculate APL coordinates:
-#' ca <- apl_coords(ca, group = 1:10)
-#'
-#' # Rank genes by S-alpha score
-#' ca <- apl_score_rand(ca)
-apl_score_rand <- function(caobj, dims = caobj@dims, reps=300, quant = 0.99, python = TRUE, store_perm = TRUE){
-
-  if (!is(caobj,"cacomp")){
-    stop("Not a CA object. Please run cacomp() and apl_coords() first!")
-  }
-
-  if (is.empty(caobj@apl_rows) || is.empty(caobj@apl_cols)){
-    stop("Please run apl_coords() first!")
-  }
-
-  row_num <- nrow(caobj@apl_rows)
-  margin <- 1
-  pc <- 1
-  cc <- FALSE
-  cr <- TRUE
-
-  if (caobj@dims == 1 && !is.empty(caobj@dims)){
-    row_num <- 1
-  }
-
-  apl_perm <- data.frame("x" = rep(0, row_num*reps), "y" = rep(0, row_num*reps)) #init. data frame
-
-  if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
-
-    cutoff_cotan <- attr(caobj@permuted_data,'cutoff')
-
-
-  } else {
-    pb <- txtProgressBar(min = 0, max = reps, style = 3)
-
-    rows <- t(caobj@prin_coords_rows)
-    cols <- t(caobj@std_coords_cols)
-
-    for (k in seq(reps)){
-
-      # avg_group_coords <- rowMeans(subgroup) # centroid vector.
-      avg_group_coords <- runif(n=dims, min=0, max = quantile(cols, 0.99))
-      length_vector_group <- sqrt(drop(avg_group_coords %*% avg_group_coords))
-      length_vector_rows <- sqrt(colSums(rows^2))
-
-      rowx <- drop(t(rows) %*% avg_group_coords)/length_vector_group
-      # pythagoras, y(r)=b²=c²-a²
-      rowy <- sqrt(length_vector_rows^2 - rowx^2)
-
-      rowx[is.na(rowx)] <- 0
-      rowy[is.na(rowy)] <- 0
-
-      idx <- ((seq_len(row_num)+((k-1)*row_num)))
-      apl_perm[idx,] <- cbind("x"=rowx, "y"=rowy)
-
-      setTxtProgressBar(pb, k)
-
-    }
-
-    close(pb)
-
-    apl_perm[,3] <- apl_perm[,1]/apl_perm[,2] # cotan between row and x axis
-    apl_perm[,3][is.na(apl_perm[,3])] <- 0
-
-    # cutoff from original code from Ela
-    # angles_vector <- sort(apl_perm[,3], decreasing = TRUE)
-    # cutoff_cotan <- angles_vector[ceiling(0.01 * length(angles_vector))]
-
-    # With 99% quantile, gives different results though!
-    cutoff_cotan <- quantile(apl_perm[,3], quant)
-
-  }
-
-  score <- caobj@apl_rows[,1] - (caobj@apl_rows[,2] * cutoff_cotan)
-  ranking <- data.frame("Rowname" = rownames(caobj@apl_rows),
-                        "Score" = score,
-                        "Row_num" = 1:nrow(caobj@apl_rows))
-
-  ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
-  ranking$Rank <- 1:nrow(ranking)
-
-  caobj@APL_score <- ranking
-
-  if(isTRUE(store_perm) & !identical(reps, attr(caobj@permuted_data,'reps'))){
-
-    if(is.empty(caobj@permuted_data))  caobj@permuted_data <- list()
-
-    attr(caobj@permuted_data,'cutoff') <- cutoff_cotan
-    attr(caobj@permuted_data,'reps') <- reps
-  }
-
-  stopifnot(validObject(caobj))
-  return(caobj)
-
-}
 
 
 #' Run Gene overrepresentation analysis with topGO
@@ -424,21 +292,40 @@ apl_score_rand <- function(caobj, dims = caobj@dims, reps=300, quant = 0.99, pyt
 #' @param top_res Numeric. Number of top scoring gene sets to plot.
 #'
 #' @export
+#' @examples
+#' library(Seurat)
+#' set.seed(1234)
+#' cnts <- GetAssayData(pbmc_small, slot = "counts")
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run CA on example from Seurat
+#'
+#' ca <- cacomp(pbmc_small,
+#'              princ_coords = 3,
+#'              return_input = FALSE,
+#'              assay = "RNA",
+#'              slot = "counts")
+#'
+#' grp <- which(Idents(pbmc_small) == 2)
+#' ca <- apl_coords(ca, group = grp)
+#' ca <- apl_score(ca,
+#'                 mat = cnts)
+#'
+#' enr <- apl_topGO(ca,
+#'                  ontology = "BP",
+#'                  organism = "hs")
+#'
+#' plot_enrichment(enr)
 apl_topGO <- function(caobj,
                       ontology,
                       organism="hs",
                       ngenes = 1000,
-                      score_cutoff = 1,
+                      score_cutoff = 0,
                       use_coords = FALSE,
                       return_plot = FALSE,
                       top_res = 15){
 
-  # requireNamespace("topGO")
   topGO::groupGOTerms()
-    # if(!is(gene_sets, "list")){
-  #   stop("gene_sets should be a list of gene sets, each gene set containing the gene symbols.")
-  # }
-
 
   if(!is.empty(caobj@APL_score) & !isTRUE(use_coords)){
 
@@ -448,7 +335,7 @@ apl_topGO <- function(caobj,
     ranked_genes <- seq_len(nrow(Score_ord))
     names(ranked_genes) <- Score_ord$Rowname
 
-  } else if (isTRUE(use_coords) | is.empty(caobj@APL_score)) {
+  } else if (isTRUE(use_coords) & is.empty(caobj@APL_score)) {
 
     if(is.empty(caobj@apl_rows)){
       stop("No APL coordinates found for rows. Please first run apl_coords.\n")
@@ -530,25 +417,46 @@ apl_topGO <- function(caobj,
 #' @param caobj  An object of class "cacomp" and "APL" with apl coordinates calculated.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".
 #' @param rows_idx numeric/character vector. Indices or names of the rows that should be labelled. Default NULL.
-#' @param cols_idx numeric/character vector. Indices or names of the columns that should be labelled. Default is only to label columns making up the centroid: caobj@group.
+#' @param cols_idx numeric/character vector. Indices or names of the columns that should be labelled. 
+#' Default is only to label columns making up the centroid: caobj@group.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
+#' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default FALSE.
 #' @param show_score Logical. Whether the S-alpha score should be shown in the plot.
 #' @param show_cols Logical. Whether column points should be plotted.
 #' @param show_rows Logical. Whether row points should be plotted.
 #' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.
 #' @param score_color Either "rainbow" or "viridis".
 #' @export
+#' @examples
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Run correspondence analysis
+#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#'
+#' # Calculate APL coordinates for arbitrary group
+#' ca <- apl_coords(ca, group = 1:10)
+#'
+#' # plot results
+#' # Note:
+#' # Due to random gene expression & group, no highly
+#' # associated genes are visible.
+#' apl(ca, type = "ggplot")
 apl <- function(caobj,
                 type="ggplot",
                 rows_idx = NULL,
                 cols_idx = caobj@group,
                 row_labs = FALSE,
-                col_labs = TRUE,
+                col_labs = FALSE,
                 show_score = FALSE,
                 show_cols = TRUE,
                 show_rows = TRUE,
-                score_cutoff = 1,
+                score_cutoff = 0,
                 score_color = "rainbow"){
 
   if (!is(caobj,"cacomp")){
@@ -613,8 +521,15 @@ apl <- function(caobj,
     apl_scores <- caobj@APL_score$Score[order(caobj@APL_score$Row_num)]
     apl_rows.tmp$Score <- apl_scores
     idx <- which(apl_scores >= score_cutoff)
-    apl_scored.tmp <- apl_rows.tmp[idx,]
-    apl_rows.tmp <- apl_rows.tmp[-idx,]
+
+    if (is.empty(idx)) {
+      show_score <- FALSE
+      warning(paste0("No rows with a Score >= score_cutoff of ",
+                     score_cutoff, ". Choose lower cutoff."))
+    } else {
+      apl_scored.tmp <- apl_rows.tmp[idx,]
+      apl_rows.tmp <- apl_rows.tmp[-idx,]
+    }
 
   }
 
@@ -655,7 +570,7 @@ apl <- function(caobj,
           ggplot2::geom_point(data=group_rows,
                               ggplot2::aes(x=x, y=y),
                               color="#FF0000",
-                              shape = 16)
+                              shape = 19)
 
         if(isTRUE(row_labs)){
           p <- p +
@@ -677,7 +592,7 @@ apl <- function(caobj,
                             ggplot2::aes(x=x, y=y),
                             color = "#990000",
                             shape = 4)
-      if(col_labs == TRUE){
+      if(col_labs == TRUE & is.numeric(cols_idx)){
         p <- p +
           ggrepel::geom_text_repel(data=group_cols,
                                    ggplot2::aes(x=x, y=y, label=rownms),
@@ -696,18 +611,7 @@ apl <- function(caobj,
 
   } else if (type == "plotly"){
 
-    if (isTRUE(show_score)){
-      colors_fun <- 'Viridis' #"YlGnBu"
-      color_fix <- as.formula("~Score")
-      color_bar <- list(title = "Score", len=0.5)
-      sym <- "circle"
-    } else {
-      color_fix <- '#0066FF'
-      colors_fun <- NULL
-      color_bar <- NULL
-      sym <- "circle-open"
 
-    }
 
     p <- plotly::plot_ly()
 
@@ -744,7 +648,6 @@ apl <- function(caobj,
         } else if (score_color == "viridis"){
           colors_fun <- 'Viridis'
         }
-
         color_fix <- as.formula("~Score")
         color_bar <- list(title = "Score", len=0.5)
         sym <- "circle"
@@ -864,34 +767,52 @@ apl <- function(caobj,
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".
 #' @param show_cols Logical. Whether column points should be plotted.
 #' @param show_rows Logical. Whether row points should be plotted.
-#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.
+#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff
+#' will be colored according to their score if show_score = TRUE.
 #' @param score_color Either "rainbow" or "viridis".
 #' @param ... Arguments forwarded to methods.
 #' @export
 setGeneric("runAPL", function(obj,
-                                 group,
-                                 caobj = NULL,
-                                 dims = NULL,
-                                 nrow = 10,
-                                 top = 5000,
-                                 score = TRUE,
-                                 mark_rows = NULL,
-                                 mark_cols = caobj@group,
-                                 reps = 3,
-                                 python = FALSE,
-                                 row_labs = TRUE,
-                                 col_labs = TRUE,
-                                 type = "plotly",
-                                 show_cols = TRUE,
-                                 show_rows = TRUE,
-                                 score_cutoff = 1,
-                                 score_color = "rainbow",
-                                 ...) {
+                              group,
+                              caobj = NULL,
+                              dims = NULL,
+                              nrow = 10,
+                              top = 5000,
+                              score = TRUE,
+                              mark_rows = NULL,
+                              mark_cols = caobj@group,
+                              reps = 3,
+                              python = FALSE,
+                              row_labs = TRUE,
+                              col_labs = TRUE,
+                              type = "plotly",
+                              show_cols = TRUE,
+                              show_rows = TRUE,
+                              score_cutoff = 0,
+                              score_color = "rainbow",
+                              ...) {
   standardGeneric("runAPL")
 })
 
 #' @export
 #' @rdname runAPL
+#' @examples
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # (nonsensical) APL
+#' runAPL(obj = cnts,
+#'        group = 1:10,
+#'        dims = 10,
+#'        top = 500,
+#'        score = TRUE,
+#'        show_cols = TRUE,
+#'        type = "ggplot")
 setMethod(f = "runAPL",
           signature=(obj="matrix"),
           function(obj,
@@ -910,7 +831,7 @@ setMethod(f = "runAPL",
                    type = "plotly",
                    show_cols = TRUE,
                    show_rows = TRUE,
-                   score_cutoff = 1,
+                   score_cutoff = 0,
                    score_color = "rainbow",
                    ...){
 
@@ -1017,6 +938,31 @@ setMethod(f = "runAPL",
 #'
 #' @rdname runAPL
 #' @export
+#' @examples
+#'
+#' ########################
+#' # SingleCellExperiment #
+#' ########################
+#' library(SingleCellExperiment)
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' sce <- SingleCellExperiment(assays=list(counts=cnts))
+#'
+#' # (nonsensical) APL
+#' runAPL(obj = sce,
+#'        group = 1:10,
+#'        dims = 10,
+#'        top = 500,
+#'        score = TRUE,
+#'        show_cols = TRUE,
+#'        type = "ggplot",
+#'        assay = "counts")
 setMethod(f = "runAPL",
           signature=(obj="SingleCellExperiment"),
           function(obj,
@@ -1035,7 +981,7 @@ setMethod(f = "runAPL",
                    type = "plotly",
                    show_cols = TRUE,
                    show_rows = TRUE,
-                   score_cutoff = 1,
+                   score_cutoff = 0,
                    score_color = "rainbow",
                    ...,
                    assay = "counts"){
@@ -1077,6 +1023,32 @@ setMethod(f = "runAPL",
 #' @param slot character. The Seurat assay slot from which to extract the count matrix.
 #' @rdname runAPL
 #' @export
+#' @examples
+#'
+#' ###########
+#' # Seurat  #
+#' ###########
+#' library(Seurat)
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' seu <- CreateSeuratObject(counts = cnts)
+#'
+#' # (nonsensical) APL
+#' runAPL(obj = seu,
+#'        group = 1:10,
+#'        dims = 10,
+#'        top = 500,
+#'        score = TRUE,
+#'        show_cols = TRUE,
+#'        type = "ggplot",
+#'        assay = "RNA",
+#'        slot = "counts")
 setMethod(f = "runAPL",
           signature=(obj="Seurat"),
           function(obj,
@@ -1095,7 +1067,7 @@ setMethod(f = "runAPL",
                    type = "plotly",
                    show_cols = TRUE,
                    show_rows = TRUE,
-                   score_cutoff = 1,
+                   score_cutoff = 0,
                    score_color = "rainbow",
                    ...,
                    assay = Seurat::DefaultAssay(obj),

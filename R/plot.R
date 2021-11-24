@@ -1,3 +1,5 @@
+#' @include constructor.R
+NULL
 
 #' Plot of the first 3 CA dimensions.
 #'
@@ -17,17 +19,30 @@
 #' @param zdim Integer. The dimension for the z-axis. Default 3.
 #' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
 #' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
+#' @param col_labels Numeric vector. Indices for the columns for which
+#' a label should be added (label should be stored in colnames).
+#' Default NULL (no columns).
 #' @param ... Further arguments.
-#' Default seq(ncol(obj@std_coords_cols)) (all columns).
+#'
 #' @export
+#' @examples
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Run correspondence analysis
+#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#'
+#' ca_3Dplot(ca)
 setGeneric("ca_3Dplot", function(obj,
                               xdim = 1,
                               ydim = 2,
                               zdim = 3,
                               princ_coords = 1,
                               row_labels = NULL,
-                              col_labels = seq(ncol(obj@std_coords_cols)),
+                              col_labels = NULL,
                               ...) {
   standardGeneric("ca_3Dplot")
 })
@@ -43,7 +58,7 @@ setMethod(f = "ca_3Dplot",
                    zdim = 3,
                    princ_coords = 1,
                    row_labels = NULL,
-                   col_labels = seq(ncol(obj@std_coords_cols)),
+                   col_labels = NULL,
                    ...){
 
   if (!is(obj,"cacomp")){
@@ -149,7 +164,7 @@ setMethod(f = "ca_3Dplot",
                    zdim = 3,
                    princ_coords = 1,
                    row_labels = NULL,
-                   col_labels = seq(ncol(caobj@std_coords_cols)),
+                   col_labels = NULL,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts"){
@@ -184,7 +199,7 @@ setMethod(f = "ca_3Dplot",
                    zdim = 3,
                    princ_coords = 1,
                    row_labels = NULL,
-                   col_labels = seq(ncol(caobj@std_coords_cols)),
+                   col_labels = NULL,
                    ...,
                    assay = "counts"){
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
@@ -211,8 +226,10 @@ setMethod(f = "ca_3Dplot",
 #' Plots the first 2 dimensions of the rows and columns in the same plot.
 #'
 #' @details
-#' Choosing type "plotly" will generate an interactive html plot with the package plotly. Type "ggplot" generates a static plot.
-#' Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
+#' Choosing type "plotly" will generate an interactive html plot with the package plotly.
+#' Type "ggplot" generates a static plot.
+#' Depending on whether `princ_coords` is set to 1 or 2 either
+#' the principal coordinates of either the rows (1) or the columns (2)
 #' are chosen. For the other the standard coordinates are plotted (assymetric biplot).
 #' Labels for rows and columns should be stored in the row and column names respectively.
 #' @return
@@ -222,19 +239,33 @@ setMethod(f = "ca_3Dplot",
 #'  or alternatively an object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved.
 #' @param xdim Integer. The dimension for the x-axis. Default 1.
 #' @param ydim Integer. The dimension for the y-axis. Default 2.
-#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).
-#' @param row_labels Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.
-#' @param col_labels Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).
-#' Default seq(ncol(obj@std_coords_cols)) (all columns).
+#' @param princ_coords Integer. If 1 then principal coordinates are used for the rows,
+#' if 2 for the columns. Default 1 (rows).
+#' @param row_labels Numeric vector. Indices for the rows for which a label should be added
+#' (label should be stored in rownames). Default NULL.
+#' @param col_labels Numeric vector. Indices for the columns for which a label should be added
+#' (label should be stored in colnames).
+#' Default NULL (no columns).
 #' @param type String. Type of plot to draw. Either "ggplot" or "plotly". Default "plotly".
 #' @param ... Further arguments.
 #' @export
+#' @examples
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Run correspondence analysis
+#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#'
+#' ca_biplot(ca)
 setGeneric("ca_biplot", function(obj,
                                  xdim = 1,
                                  ydim = 2,
                                  princ_coords = 1,
                                  row_labels = NULL,
-                                 col_labels = seq(ncol(obj@std_coords_cols)),
+                                 col_labels = NULL,
                                  type = "plotly",
                                  ...) {
   standardGeneric("ca_biplot")
@@ -251,7 +282,7 @@ setMethod(f = "ca_biplot",
                    ydim = 2,
                    princ_coords = 1,
                    row_labels = NULL,
-                   col_labels = seq(ncol(obj@std_coords_cols)),
+                   col_labels = NULL,
                    type = "plotly",
                    ...){
 
@@ -378,7 +409,7 @@ setMethod(f = "ca_biplot",
                    ydim = 2,
                    princ_coords = 1,
                    row_labels = NULL,
-                   col_labels = seq(ncol(caobj@std_coords_cols)),
+                   col_labels = NULL,
                    type = "plotly",
                    ...,
                    assay = Seurat::DefaultAssay(obj),
@@ -414,7 +445,7 @@ setMethod(f = "ca_biplot",
                    ydim = 2,
                    princ_coords = 1,
                    row_labels = NULL,
-                   col_labels = seq(ncol(caobj@std_coords_cols)),
+                   col_labels = NULL,
                    type = "plotly",
                    ...,
                    assay = "counts"){
@@ -440,6 +471,8 @@ setMethod(f = "ca_biplot",
 })
 
 #' Generates plot for results from apl_topGO
+#' @description
+#' Plots the results form the data frame generated via apl_topGO.
 #'
 #' @param genenr data.frame. gene enrichment results table.
 #' @param ntop numeric. Number of elements to plot.
@@ -447,6 +480,30 @@ setMethod(f = "ca_biplot",
 #' @return
 #' Returns a ggplot plot.
 #' @export
+#' @examples
+#' library(Seurat)
+#' set.seed(1234)
+#' cnts <- GetAssayData(pbmc_small, slot = "counts")
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run CA on example from Seurat
+#'
+#' ca <- cacomp(pbmc_small,
+#'              princ_coords = 3,
+#'              return_input = FALSE,
+#'              assay = "RNA",
+#'              slot = "counts")
+#'
+#' grp <- which(Idents(pbmc_small) == 2)
+#' ca <- apl_coords(ca, group = grp)
+#' ca <- apl_score(ca,
+#'                 mat = cnts)
+#'
+#' enr <- apl_topGO(ca,
+#'                  ontology = "BP",
+#'                  organism = "hs")
+#'
+#' plot_enrichment(enr)
 plot_enrichment <- function(genenr, ntop = 10){
 
   genenr$geneRatio <- genenr$Significant/genenr$Annotated
