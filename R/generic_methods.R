@@ -1,4 +1,5 @@
-
+#' @include constructor.R
+NULL
 
 #' Prints cacomp object
 #'
@@ -6,6 +7,18 @@
 #'
 #' @param object cacomp object to print
 #' @export
+#' @examples
+#' # Simulate scRNAseq data.
+#' cnts <- data.frame(cell_1 = rpois(10, 5),
+#'                    cell_2 = rpois(10, 10),
+#'                    cell_3 = rpois(10, 20))
+#' rownames(cnts) <- paste0("gene_", 1:10)
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
+#'
+#' ca
 show.cacomp <- function(object){
 
   if (!is.empty(object@V) && !is.empty(object@U) && !is.empty(object@D)){
@@ -16,10 +29,10 @@ show.cacomp <- function(object){
 
   cat("\nCalc. standard coord.: ", paste0("std_coords_rows"[!is.empty(object@std_coords_rows)],
                                          ifelse(!is.empty(object@std_coords_rows) && !is.empty(object@std_coords_cols), ", ", ""),
-                                         "std_coords_cols"[!is.null(object@std_coords_cols)]))
+                                         "std_coords_cols"[!is.empty(object@std_coords_cols)]))
 
   cat("\nCalc. principal coord.:", paste0("prin_coords_rows"[!is.empty(object@prin_coords_rows)],
-                                         ifelse(!is.null(object@prin_coords_rows) && !is.empty(object@prin_coords_cols), ", ", ""),
+                                         ifelse(!is.empty(object@prin_coords_rows) && !is.empty(object@prin_coords_cols), ", ", ""),
                                          "prin_coords_cols"[!is.empty(object@prin_coords_cols)]))
 
 
@@ -35,11 +48,27 @@ show.cacomp <- function(object){
 
 }
 
+#' @rdname show.cacomp
+#' @export
 setMethod(f = "show", signature(object = "cacomp"), function(object) {
   show.cacomp(object)
 })
 
-
+#' Convert cacomp object to list.
+#' @param x A cacomp object.
+#' @return A cacomp object.
+#' @export
+#' @examples
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # Run correspondence analysis
+#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#' ca_list <- as.list(ca)
 setMethod("as.list",signature(x="cacomp"),function(x) {
   mapply(function(y) {
 

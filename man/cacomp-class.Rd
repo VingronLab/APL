@@ -20,11 +20,6 @@ as well as other informative data such as row/column inertia, gene-wise APL-scor
 
 Creates new cacomp object.
 }
-\section{Functions}{
-\itemize{
-\item \code{new_cacomp}: Create new cacomp object.
-}}
-
 \section{Slots}{
 
 \describe{
@@ -70,3 +65,22 @@ the original row number and the rank of the row as determined by the score.}
 \item{\code{permuted_data}}{class "list". Storage slot for permuted data.}
 }}
 
+\examples{
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+res <-  APL:::comp_std_residuals(mat=cnts)
+SVD <- svd(res$S)
+names(SVD) <- c("D", "U", "V")
+SVD <- SVD[c(2, 1, 3)]
+
+ca <- new_cacomp(U = SVD$U,
+                 V = SVD$V,
+                 D = SVD$D,
+                 row_masses = res$rowm,
+                 col_masses = res$colm)
+}

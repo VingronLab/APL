@@ -5,11 +5,11 @@ Version: 0.99.0
 Authors@R:
   c(person(given = "Clemens",
            family = "Kohl",
-           role = c("cre", "aut"),
+           role = c("aut"),
            email = "kohl@molgen.mpg.de"),
     person(given = "Elzbieta",
            family = "Gralinska",
-           role = c("aut"),
+           role = c("cre", "aut"),
            email = "gralinska@molgen.mpg.de"),
      person(given = "Martin",
             family = "Vingron",
@@ -21,6 +21,7 @@ biocViews: StatisticalMethod, DimensionReduction, SingleCell, Sequencing, RNASeq
 License: GPL (>= 3)
 Encoding: UTF-8
 RoxygenNote: 7.1.2
+VignetteBuilder: knitr
 Imports: 
     reticulate,
     ggrepel,
@@ -36,7 +37,19 @@ Imports:
     stats,
     utils
 Depends: 
-    R (>= 4.1)
+    R (>= 4.0)
 Suggests: 
+    BiocStyle,
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Collate: 
+    'constructor.R'
+    'CA.R'
+    'apl.R'
+    'convert.R'
+    'generic_methods.R'
+    'import_packages.R'
+    'plot.R'
+    'utils-pipe.R'

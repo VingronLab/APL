@@ -12,6 +12,18 @@ is.empty <- function(x) return(isTRUE(length(x) == 0 & !is.null(x)))
 #' @param object A cacomp object.
 #' @return TRUE if it is a valid cacomp object. FALSE otherwise.
 #' @export
+#' @examples
+#' # Simulate scRNAseq data.
+#' cnts <- data.frame(cell_1 = rpois(10, 5),
+#'                    cell_2 = rpois(10, 10),
+#'                    cell_3 = rpois(10, 20))
+#' rownames(cnts) <- paste0("gene_", 1:10)
+#' cnts <- as.matrix(cnts)
+#'
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
+#'
+#' check_cacomp(ca)
 check_cacomp <- function(object) {
   errors <- character()
 
@@ -147,7 +159,8 @@ check_cacomp <- function(object) {
 }
 
 #' An S4 class that contains all elements needed for CA.
-#'
+#' @name cacomp-class
+#' @rdname cacomp-class
 #' @description
 #' This class contains elements necessary to computer CA coordinates or Association Plot coordinates,
 #' as well as other informative data such as row/column inertia, gene-wise APL-scores, etc. ...
@@ -221,12 +234,29 @@ setClass("cacomp",
 )
 
 #' Create new "cacomp" object.
-#' @describeIn cacomp Create new cacomp object.
 #' @description Creates new cacomp object.
 #'
 #' @param ... slot names and objects for new cacomp object.
 #' @return cacomp object
-#'
+#' @rdname cacomp-class
 #' @export
+#' @examples
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' res <-  APL:::comp_std_residuals(mat=cnts)
+#' SVD <- svd(res$S)
+#' names(SVD) <- c("D", "U", "V")
+#' SVD <- SVD[c(2, 1, 3)]
+#'
+#' ca <- new_cacomp(U = SVD$U,
+#'                  V = SVD$V,
+#'                  D = SVD$D,
+#'                  row_masses = res$rowm,
+#'                  col_masses = res$colm)
 new_cacomp <- function(...) new("cacomp",...)
 

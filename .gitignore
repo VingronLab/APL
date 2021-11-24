@@ -2,5 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+APL.Rproj
 
-
+/doc/
+/Meta/

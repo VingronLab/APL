@@ -10,7 +10,7 @@
 cacomp(
   obj,
   coords = TRUE,
-  princ_coords = 1,
+  princ_coords = 3,
   python = FALSE,
   dims = NULL,
   top = NULL,
@@ -22,7 +22,7 @@ cacomp(
 \S4method{cacomp}{matrix}(
   obj,
   coords = TRUE,
-  princ_coords = 1,
+  princ_coords = 3,
   python = FALSE,
   dims = NULL,
   top = NULL,
@@ -34,7 +34,7 @@ cacomp(
 \S4method{cacomp}{Seurat}(
   obj,
   coords = TRUE,
-  princ_coords = 1,
+  princ_coords = 3,
   python = FALSE,
   dims = NULL,
   top = NULL,
@@ -49,7 +49,7 @@ cacomp(
 \S4method{cacomp}{SingleCellExperiment}(
   obj,
   coords = TRUE,
-  princ_coords = 1,
+  princ_coords = 3,
   python = FALSE,
   dims = NULL,
   top = NULL,
@@ -61,7 +61,8 @@ cacomp(
 )
 }
 \arguments{
-\item{obj}{A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+\item{obj}{A numeric matrix or Seurat/SingleCellExperiment object.
+For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
 \item{coords}{Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE}
@@ -78,7 +79,8 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 
 \item{inertia}{Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.}
 
-\item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.}
+\item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be removed.
+Keeping zero only rows/cols might lead to unexpected results. Default TRUE.}
 
 \item{...}{Other parameters}
 
@@ -94,7 +96,8 @@ Returns a named list of class "cacomp" with components
 U, V and D: The results from the SVD.
 row_masses and col_masses: Row and columns masses.
 top_rows: How many of the most variable rows were retained for the analysis.
-tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
+tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE.
+Total, row and column inertia respectively.
 
 If return_imput = TRUE with Seurat container: Returns input obj of class "Seurat" with a new Dimensional Reduction Object named "CA".
 Standard coordinates of the cells are saved as embeddings,
@@ -111,7 +114,8 @@ reducedDim(obj, "CA"). Additionally, the matrix contains the following attribute
 To recompute a regular "cacomp" object from a SingleCellExperiment without rerunning cacomp use `as.cacomp()`.
 }
 \description{
-`cacomp` performs correspondence analysis on a matrix or Seurat/SingleCellExperiment object and returns the transformed data.
+`cacomp` performs correspondence analysis on a matrix or
+Seurat/SingleCellExperiment object and returns the transformed data.
 
 `cacomp.seurat` performs correspondence analysis on a assay from a Seurat container and stores the standard coordinates
  of the columns (= cells) and the principal coordinates of the rows (= genes) as a DimReduc Object in the Seurat container.
@@ -135,6 +139,40 @@ cnts <- as.matrix(cnts)
 
 # Run correspondence analysis.
 ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
+library(Seurat)
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# Create Seurat object
+seu <- CreateSeuratObject(counts = cnts)
+
+# run CA and save in dim. reduction slot.
+seu <- cacomp(seu, return_input = TRUE, assay = "RNA", slot = "counts")
+
+# run CA and return cacomp object.
+ca <- cacomp(seu, return_input = FALSE, assay = "RNA", slot = "counts")
+library(SingleCellExperiment)
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+logcnts <- log2(cnts + 1)
+
+# Create SingleCellExperiment object
+sce <- SingleCellExperiment(assays=list(counts=cnts, logcounts=logcnts))
+
+# run CA and save in dim. reduction slot.
+sce <- cacomp(sce, return_input = TRUE, assay = "counts") # on counts
+sce <- cacomp(sce, return_input = TRUE, assay = "logcounts") # on logcounts
+
+# run CA and return cacomp object.
+ca <- cacomp(sce, return_input = FALSE, assay = "counts")
 }
 \references{
 Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.

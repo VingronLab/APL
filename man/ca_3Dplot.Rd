@@ -14,7 +14,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj@std_coords_cols)),
+  col_labels = NULL,
   ...
 )
 
@@ -25,7 +25,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(obj@std_coords_cols)),
+  col_labels = NULL,
   ...
 )
 
@@ -36,7 +36,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj@std_coords_cols)),
+  col_labels = NULL,
   ...,
   assay = Seurat::DefaultAssay(obj),
   slot = "counts"
@@ -49,7 +49,7 @@ ca_3Dplot(
   zdim = 3,
   princ_coords = 1,
   row_labels = NULL,
-  col_labels = seq(ncol(caobj@std_coords_cols)),
+  col_labels = NULL,
   ...,
   assay = "counts"
 )
@@ -67,10 +67,11 @@ ca_3Dplot(
 
 \item{row_labels}{Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.}
 
-\item{col_labels}{Numeric vector. Indices for the columns for which a label should be added (label should be stored in colnames).}
+\item{col_labels}{Numeric vector. Indices for the columns for which
+a label should be added (label should be stored in colnames).
+Default NULL (no columns).}
 
-\item{...}{Further arguments.
-Default seq(ncol(obj@std_coords_cols)) (all columns).}
+\item{...}{Further arguments.}
 
 \item{assay}{SingleCellExperiment assay to obtain counts from.}
 
@@ -86,4 +87,16 @@ Plots the first 3 dimensions of the rows and columns in the same plot.
 Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
 are chosen. For the other the standard coordinates are plotted (assymetric biplot).
 Labels for rows and columns should be stored in the row- and columnnames respectively.
+}
+\examples{
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# Run correspondence analysis
+ca <- cacomp(obj = cnts, princ_coords = 3)
+
+ca_3Dplot(ca)
 }

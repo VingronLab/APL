@@ -9,7 +9,7 @@ apl_topGO(
   ontology,
   organism = "hs",
   ngenes = 1000,
-  score_cutoff = 1,
+  score_cutoff = 0,
   use_coords = FALSE,
   return_plot = FALSE,
   top_res = 15
@@ -44,4 +44,29 @@ For a chosen group of cells/samples,
 the top 'ngenes' group specific genes are used for gene overrepresentation analysis.
 The genes are ranked either by the precomputed APL score, or, if
 not available by their APL x-coordinates.
+}
+\examples{
+library(Seurat)
+set.seed(1234)
+cnts <- GetAssayData(pbmc_small, slot = "counts")
+cnts <- as.matrix(cnts)
+
+# Run CA on example from Seurat
+
+ca <- cacomp(pbmc_small,
+             princ_coords = 3,
+             return_input = FALSE,
+             assay = "RNA",
+             slot = "counts")
+
+grp <- which(Idents(pbmc_small) == 2)
+ca <- apl_coords(ca, group = grp)
+ca <- apl_score(ca,
+                mat = cnts)
+
+enr <- apl_topGO(ca,
+                 ontology = "BP",
+                 organism = "hs")
+
+plot_enrichment(enr)
 }

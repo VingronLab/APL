@@ -24,7 +24,7 @@ runAPL(
   type = "plotly",
   show_cols = TRUE,
   show_rows = TRUE,
-  score_cutoff = 1,
+  score_cutoff = 0,
   score_color = "rainbow",
   ...
 )
@@ -46,7 +46,7 @@ runAPL(
   type = "plotly",
   show_cols = TRUE,
   show_rows = TRUE,
-  score_cutoff = 1,
+  score_cutoff = 0,
   score_color = "rainbow",
   ...
 )
@@ -68,7 +68,7 @@ runAPL(
   type = "plotly",
   show_cols = TRUE,
   show_rows = TRUE,
-  score_cutoff = 1,
+  score_cutoff = 0,
   score_color = "rainbow",
   ...,
   assay = "counts"
@@ -91,7 +91,7 @@ runAPL(
   type = "plotly",
   show_cols = TRUE,
   show_rows = TRUE,
-  score_cutoff = 1,
+  score_cutoff = 0,
   score_color = "rainbow",
   ...,
   assay = Seurat::DefaultAssay(obj),
@@ -133,7 +133,8 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 
 \item{show_rows}{Logical. Whether row points should be plotted.}
 
-\item{score_cutoff}{Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.}
+\item{score_cutoff}{Numeric. Rows (genes) with a score >= score_cutoff
+will be colored according to their score if show_score = TRUE.}
 
 \item{score_color}{Either "rainbow" or "viridis".}
 
@@ -158,4 +159,71 @@ The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` a
 The chosen defaults are most useful for genomics experiments, but for more fine grained control the functions
 can be also run individually for the same results.
 If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
+}
+\examples{
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+# (nonsensical) APL
+runAPL(obj = cnts,
+       group = 1:10,
+       dims = 10,
+       top = 500,
+       score = TRUE,
+       show_cols = TRUE,
+       type = "ggplot")
+
+########################
+# SingleCellExperiment #
+########################
+library(SingleCellExperiment)
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+sce <- SingleCellExperiment(assays=list(counts=cnts))
+
+# (nonsensical) APL
+runAPL(obj = sce,
+       group = 1:10,
+       dims = 10,
+       top = 500,
+       score = TRUE,
+       show_cols = TRUE,
+       type = "ggplot",
+       assay = "counts")
+
+###########
+# Seurat  #
+###########
+library(Seurat)
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+
+seu <- CreateSeuratObject(counts = cnts)
+
+# (nonsensical) APL
+runAPL(obj = seu,
+       group = 1:10,
+       dims = 10,
+       top = 500,
+       score = TRUE,
+       show_cols = TRUE,
+       type = "ggplot",
+       assay = "RNA",
+       slot = "counts")
 }
