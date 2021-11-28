@@ -1,0 +1,20 @@
+## Input data: 39 rows x 20 columns
+
+## Analysess:
+
+#1. 39 genes and 19 dimensions
+#2. 39 genes and 4 dimensions
+#3. 20 genes and 4 dimensions
+
+# Sample IDs which I used to compute the AP:
+6, 7, 8, 10, 12 (counting of samples starts from 1)
+
+# Output:
+
+- "AP.jpg" - Association Plot
+- "2D.jpg" - 2D correspondence analysis
+- "AP_coordinates_genes.txt" - coordinates of genes in the AP - the order of genes is changed, see: genes_order.txt
+- "AP_coordinates_samples.txt" - coordinates of samples in the AP
+- "genes_order.txt" - the order of genes in AP_coodinates_genes.txt file
+- "gene_ranking.txt" - gene ranking according to the AP and Salpha scores (calculated based on 10 permutations) #There are also gene coordinates from AP, so probably this will be the best file to use for you
+
