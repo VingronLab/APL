@@ -1,0 +1,55 @@
+Package: APL
+Type: Package
+Title: Association Plots
+Version: 0.99.0
+Authors@R:
+  c(person(given = "Clemens",
+           family = "Kohl",
+           role = c("aut"),
+           email = "kohl@molgen.mpg.de"),
+    person(given = "Elzbieta",
+           family = "Gralinska",
+           role = c("cre", "aut"),
+           email = "gralinska@molgen.mpg.de"),
+     person(given = "Martin",
+            family = "Vingron",
+            role = c("aut"),
+            email = "vingron@molgen.mpg.de"))
+Description: This package performs correspondence analysis (CA) and allows to identify cluster-specific genes using Association Plots (AP).
+    Additionally, APL computes the cluster-specificity scores for all genes which allows to rank the genes by their specificity for a selected cell cluster of interest.
+biocViews: StatisticalMethod, DimensionReduction, SingleCell, Sequencing, RNASeq
+License: GPL (>= 3)
+Encoding: UTF-8
+RoxygenNote: 7.1.2
+VignetteBuilder: knitr
+Imports: 
+    reticulate,
+    ggrepel,
+    ggplot2,
+    viridisLite,
+    plotly,
+    Seurat,
+    SingleCellExperiment,
+    magrittr,
+    SummarizedExperiment,
+    topGO,
+    methods,
+    stats,
+    utils
+Depends: 
+    R (>= 4.0)
+Suggests: 
+    BiocStyle,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Collate: 
+    'constructor.R'
+    'CA.R'
+    'apl.R'
+    'convert.R'
+    'generic_methods.R'
+    'import_packages.R'
+    'plot.R'
+    'utils-pipe.R'
