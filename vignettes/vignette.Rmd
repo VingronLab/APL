@@ -280,6 +280,9 @@ ca <- subset_dims(ca, dims = pd)
 
 When working with single-cell transcriptomics data we are often interested in which genes are associated to a cluster of cells. To reveal such genes we can compute an Association Plot for a selected cluster of cells. In the following example we want to generate an Association Plot for the cluster of platelets:
 ```{r apl_platelets}
+# Specifying a cell cluster of interest
+platelets <- which(pbmc$cell_type == "8 - Platelet")
+
 # Calculate Association Plot coordinates for platelets from 3k PBMC data
 ca <- apl_coords(ca, group = platelets)
 ```
