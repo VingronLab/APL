@@ -12,7 +12,7 @@ bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 ## Installation
 
     library(devtools)
-    install_github(" elagralinska/APL-Rpackage")
+    install_github("VingronLab/APL")
     
 ## Pytorch installation
 
