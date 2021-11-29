@@ -2,13 +2,13 @@
 title: "Analyzing data with APL"
 author:
 - name: Elzbieta Gralinska
-  affiliation: Max Planck Institute for Molecular Genetics
+  affiliation: Max Planck Institute for Molecular Genetics, Berlin, Germany
   email: gralinska@molgen.mpg.de
 - name: Clemens Kohl
-  affiliation: Max Planck Institute for Molecular Genetics
+  affiliation: Max Planck Institute for Molecular Genetics, Berlin, Germany
   email: kohl@molgen.mpg.de
 - name: Martin Vingron
-  affiliation: Max Planck Institute for Molecular Genetics
+  affiliation: Max Planck Institute for Molecular Genetics, Berlin, Germany
   email: vingron@molgen.mpg.de
 package: APL
 output:
@@ -44,7 +44,7 @@ For a mathematical description of the method, please refer to the manuscript.
 The "APL" package requires R version >= 4.0.
 
 In order to decrease the computation time of the singular value decomposition (SVD), we highly recommend the installation of `pytorch`. More information on `pytorch` installation are given below.
-Instead, users can also opt to use the R native SVD. For this, please turn the argument `python = FALSE` wherever applicable in this vignette.
+Instead, users can also opt to use the R native SVD. For this, please use the argument `python = FALSE` wherever applicable in this vignette.
 
 
 ## Install pytorch with reticulate
@@ -110,7 +110,7 @@ pbmc <- subset(pbmc, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent
 ```
 
 ## Normalization, PCA & Clustering
-Association Plots from "APL" should be computed based on the normalized expression data. Therefore, we first normalize the counts from the 3k PBMC data. For now, "APL" requires the data to be clustered beforehand. That's why we also do the clustering.
+Association Plots from "APL" should be computed based on the normalized expression data. Therefore, we first normalize the counts from the 3k PBMC data. For now, "APL" requires the data to be clustered beforehand. That's why we also do the cell clustering.
 
 ```{r preprocessing}
 
@@ -174,7 +174,7 @@ runAPL(pbmc,
        dims = 220,
        show_cols = FALSE)
 ```
-The generated Association Plot is computed based on the log-normalized count matrix using 200 CA dimensions (parameter `dims`). The cluster-specificity score ($S_\alpha$) for each gene is also calculated (`score = TRUE`). More information on the choice of dimension number and the score $S_\alpha$ is present in the next section of the vignette.
+The generated Association Plot is computed based on the log-normalized count matrix using 200 CA dimensions (parameter `dims`). The cluster-specificity score ( \eqn{S_\alpha}) for each gene is also calculated (`score = TRUE`). More information on the choice of dimension number and the score \eqn{S_\alpha} is present in the next section of the vignette.
 
 # Step-by-step way of computing Association Plots
 
@@ -231,8 +231,11 @@ DimPlot(pbmc, reduction = "CA", label = FALSE, pt.size = 0.5)
 When working with high-dimensional data, after singular value decomposition there will be often many dimensions which will be representing the noise in the data. That's why generating Association Plots should be preceded by data dimension reduction step. 
 
 The number of dimensions to retain can be computed using the function `pick_dims`. This function offers three standard methods which we implemented:
+
 * elbow rule (`method = "elbow_rule"`) - the number of dimensions to retain is calculated based on scree plots generated for randomized data and corresponds to a point in the plot where the band of randomized singular values enters the band of the original singular values,
+ 
 * 80% rule (`method = "maj_inertia"`) - only those first dimensions are retained which in total account for >= 80% of total inertia,
+
 * average rule (`method = "avg_inertia"`) - only those dimensions are retained which account for more inertia than a single dimension on average.
 
 Additionally, the user can compute a scree plot to choose the number of dimensions by themselves:
@@ -243,7 +246,7 @@ pick_dims(ca,
   xlim(c(0,75))
 ```
 
-In the scree plot above we can see that the first dimension explains only ~0.75% of the total inertia and we observe the "jump" in the scree plot at roughly 10 dimensions. The first dimensions however explain only a small part of the total inertia. 
+In the scree plot above we can see that the first dimension explains only ~0.75% of the total inertia and we observe the "jump" in the scree plot at roughly 7 dimensions. The first dimensions however explain only a small part of the total inertia. 
 
 Here we compute the number of dimensions using elbow rule. For demonstration, only five data permutations are computed:
 
@@ -300,9 +303,9 @@ Additionally, it is possible to highlight in the Association Plot any set of gen
 
 By default we plot only the genes in the Association Plot. To also display the cells in the Association Plot, use the argument `show_cols = TRUE`. This way we can identify other cells which show similar expression profiles to the cells of interest. Cells that belong to the cluster of interest will be colored in red, and all remaining cells will be colored in green.
 
-## Association Plots with the $S_\alpha$ scores
+## Association Plots with the \eqn{S_\alpha} scores
 
-Computing the $S_\alpha$ scores, a measure of cluster-specificity of a gene, allows us to rank genes by their specificity for a selected cluster. The $S_\alpha$ scores can be computed using the `apl_score` function. To show the $S_\alpha$ scores in the Association Plot use the argument `show_score = TRUE` in the `apl` function:
+Computing the \eqn{S_\alpha} scores, a measure of cluster-specificity of a gene, allows us to rank genes by their specificity for a selected cluster. The \eqn{S_\alpha} scores can be computed using the `apl_score` function. To show the \eqn{S_\alpha} scores in the Association Plot use the argument `show_score = TRUE` in the `apl` function:
 
 ```{r apl_score, results = "hide"}
 # Compute Salpha score
@@ -323,12 +326,12 @@ apl(ca,
 By default, only genes that have a score larger than 0 are colored as these tend to be genes of interest.
 However, for some datasets this cutoff is not suitable and can easily be changed through the `score_cutoff` argument to `apl()`.
 
-The $S_\alpha$ scores are stored in `ca@APL_score`:
+The \eqn{S_\alpha} scores are stored in `ca@APL_score`:
 ```{r print_score}
 head(ca@APL_score)
 ```
 
-To see the expression of genes with the highest $S_\alpha$ scores (or any selected genes) across all cell types from the data we can use the functions provided by `r CRANpkg("Seurat")`:
+To see the expression of genes with the highest \eqn{S_\alpha} scores (or any selected genes) across all cell types from the data we can use the functions provided by `r CRANpkg("Seurat")`:
 
 ```{r seurat_apl, fig.wide = TRUE}
 VlnPlot(pbmc, features = head(ca@APL_score$Rowname,3))
@@ -366,7 +369,7 @@ The above described plots let us interactively explore the CA projection of the 
 
 # APL and GO enrichment analysis
 
-After computing an Association Plot and identifying a set of genes specific for a selected cluster of cells we might be interested in conducting a Gene Ontology (GO) enrichment analysis of the identified gene set. The GO enrichment analysis of the B-cell specific genes (cluster 3 from the input data) idenitfied using Association Plot we first need to compute the coordinates of the genes in the Association Plot for B cells, as way as the $S_\alpha$ score for each gene: 
+After computing an Association Plot and identifying a set of genes specific for a selected cluster of cells we might be interested in conducting a Gene Ontology (GO) enrichment analysis of the identified gene set. The GO enrichment analysis of the B-cell specific genes (cluster 3 from the input data) idenitfied using Association Plot we first need to compute the coordinates of the genes in the Association Plot for B cells, as way as the \eqn{S_\alpha} score for each gene: 
 
 ```{r cluster_three, results="hide"}
 # Get indices of cells in cluster 3 (B cells)
@@ -380,7 +383,7 @@ ca <- apl_score(ca,
                 python = TRUE)
 ```
 
-Now we can conduct GO enrichment analysis as implemented in the package `r Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot. By default we use all genes with the positive $S_alpha$ score, or 1,000 genes with the highest $S_\alpha$ score if there are more than 1,000 genes with the $S_\alpha$ above 0. 
+Now we can conduct GO enrichment analysis as implemented in the package `r Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot. By default we use all genes with the positive \eqn{S_\alpha} score, or 1,000 genes with the highest \eqn{S_\alpha} score if there are more than 1,000 genes with the \eqn{S_\alpha} above 0. 
 
 ```{r topGO, message=FALSE}
 enr <- apl_topGO(ca,
@@ -394,7 +397,7 @@ enr <- apl_topGO(ca,
 plot_enrichment(enr)
 ```
 
-Additionally, in the Association Plot we can highlight genes of interest identified for instance using the GO enrichment analysis. In the example below we highlight two B canonical B cell markers.
+Additionally, in the Association Plot we can highlight genes of interest identified for instance using the GO enrichment analysis. In the example below we highlight two canonical B cell markers.
 
 ```{r bcell_apl, fig.wide = TRUE}
 
