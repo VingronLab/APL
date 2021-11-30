@@ -42,17 +42,17 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 Returns a named list of class "cacomp" with components
 U, V and D: The results from the SVD.
 row_masses and col_masses: Row and columns masses.
-top_rows: How many of the most variable rows were retained for the analysis.
+top_rows: How many of the most variable rows/genes were retained for the analysis.
 tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
 }
 \description{
 `run_cacomp` performs correspondence analysis on a matrix and returns the transformed data.
 }
 \details{
-The calculation is performed according to Greenacre. Singular value decomposition
-can be performed either with the base R function `svd` or preferably by the much faster
-pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
-principal coordinates should only computed when needed to save computational time.
+The calculation is performed according to the work of Michael Greenacre. Singular value decomposition
+can be performed either with the base R function `svd` or preferably by the faster
+pytorch implementation (python = TRUE). When working with large matrices, CA coordinates and
+principal coordinates should only be computed when needed to save computational time.
 }
 \references{
 Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.

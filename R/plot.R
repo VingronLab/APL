@@ -170,7 +170,7 @@ setMethod(f = "ca_3Dplot",
                    slot = "counts"){
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
-  if ("CA" %in% Reductions(obj)){
+  if ("CA" %in% Seurat::Reductions(obj)){
     caobj <- as.cacomp(obj, assay = assay, slot = slot)
   } else {
     stop("No 'CA' dimension reduction object found. Please run cacomp(seurat_obj, assay) first.")
@@ -204,7 +204,7 @@ setMethod(f = "ca_3Dplot",
                    assay = "counts"){
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
-  if ("CA" %in% reducedDimNames(obj)){
+  if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
     caobj <- as.cacomp(obj, assay = assay)
   } else {
     stop("No 'CA' dimension reduction object found. Please run cacomp(sce, top, coords = FALSE, return_input=TRUE) first.")
@@ -417,7 +417,7 @@ setMethod(f = "ca_biplot",
 
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
-  if ("CA" %in% Reductions(obj)){
+  if ("CA" %in% Seurat::Reductions(obj)){
     caobj <- as.cacomp(obj, assay = assay, slot = slot)
   } else {
     stop("No 'CA' dim. reduction object found. Please run cacomp(seurat_obj, assay) first.")
@@ -452,7 +452,7 @@ setMethod(f = "ca_biplot",
 
   stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
 
-  if ("CA" %in% reducedDimNames(obj)){
+  if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
     caobj <- as.cacomp(obj, assay = assay)
   } else {
     stop("No 'CA' dimension reduction object found. Please run cacomp(sce, top, coords = FALSE, return_input=TRUE) first.")

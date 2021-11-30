@@ -15,6 +15,11 @@ NULL
 #' @return
 #' Returns input "cacomp" object and adds components "apl_rows" and/or "apl_cols" for row and column coordinates.
 #' In "group" the indices of the columns used to calculate the centroid are saved.
+#' 
+#' @references
+#' Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
+#' Elzbieta Gralinska, Martin Vingron
+#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 #'
 #' @param caobj A "cacomp" object with principal row coordinates and standardized column coordinates calculated.
 #' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
@@ -126,6 +131,11 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' @return
 #' Returns the input "cacomp" object with "APL_score" component added.
 #' APL_score contains a data frame with ranked rows, their score and their original row number.
+#' 
+#' @references
+#' Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
+#' Elzbieta Gralinska, Martin Vingron
+#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 #'
 #' @param caobj A "cacomp" object with principal row coordinates and standardized column coordinates calculated.
 #' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
@@ -236,11 +246,6 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
   apl_perm[,3] <- apl_perm[,1]/apl_perm[,2] # cotan between row and x axis
   apl_perm[,3][is.na(apl_perm[,3])] <- 0
 
-  # cutoff from original code from Ela
-  # angles_vector <- sort(apl_perm[,3], decreasing = TRUE)
-  # cutoff_cotan <- angles_vector[ceiling(0.01 * length(angles_vector))]
-
-  # With 99% quantile, gives different results though!
   cutoff_cotan <- quantile(apl_perm[,3], quant)
 
   score <- caobj@apl_rows[,1] - (caobj@apl_rows[,2] * cutoff_cotan)
@@ -281,6 +286,10 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
 #' @return
 #' A data.frame containing the gene sets with the highest overrepresentation.
 #'
+#' @references 
+#' Adrian Alexa and Jorg Rahnenfuhrer (2020). topGO: Enrichment Analysis for Gene Ontology. 
+#' R package version 2.42.0.
+#' 
 #' @param caobj A "cacomp" object with principal row coordinates and standardized column coordinates calculated.
 #' @param ontology Character string. Chooses GO sets for 'BP' (biological processes), 'CC' (cell compartment) or 'MF' (molecular function).
 #' @param organism Character string. Either 'hs' (homo sapiens), 'mm' (mus musculus) or the name of the organism package such as 'org.*.eg.db'.
@@ -290,7 +299,7 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
 #' Only recommended when no S-alpha score (see apl_score()) can be calculated.
 #' @param return_plot Logical. Whether a plot of significant gene sets should be additionally returned.
 #' @param top_res Numeric. Number of top scoring genes to plot.
-#'
+#' 
 #' @export
 #' @examples
 #' library(Seurat)
@@ -394,7 +403,7 @@ apl_topGO <- function(caobj,
       warning("More top nodes selected via top_res than available. Returning max. number of nodes instead.\n")
       top_res <- min(top_res, length(results_test@score))
     }
-    showSigOfNodes(GOdata, score(results_test), firstSigNodes = top_res, useInfo = 'def')
+    topGO::showSigOfNodes(GOdata, score(results_test), firstSigNodes = top_res, useInfo = 'def')
   }
 
   return(goEnrichment)
@@ -413,6 +422,11 @@ apl_topGO <- function(caobj,
 #'
 #' @return
 #' Either a ggplot or plotly object.
+#' 
+#' @references
+#' Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
+#' Elzbieta Gralinska, Martin Vingron
+#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 #'
 #' @param caobj  An object of class "cacomp" and "APL" with apl coordinates calculated.
 #' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".
@@ -454,7 +468,7 @@ apl <- function(caobj,
                 row_labs = FALSE,
                 col_labs = FALSE,
                 show_score = FALSE,
-                show_cols = TRUE,
+                show_cols = FALSE,
                 show_rows = TRUE,
                 score_cutoff = 0,
                 score_color = "rainbow"){
@@ -557,7 +571,8 @@ apl <- function(caobj,
         if (score_color == "rainbow"){
           hex <- c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")
           p <- p +
-            ggplot2::scale_colour_gradientn(colours = hex)
+            ggplot2::scale_colour_gradientn(colours = hex,
+                                            name = expression(S*alpha))
         } else if (score_color == "viridis"){
           p <- p +
             ggplot2::scale_color_viridis_c(option = "D")
@@ -649,7 +664,7 @@ apl <- function(caobj,
           colors_fun <- 'Viridis'
         }
         color_fix <- as.formula("~Score")
-        color_bar <- list(title = "Score", len=0.5)
+        color_bar <- list(title = "S\u03B1", len=0.5)
         sym <- "circle"
 
         p <- p %>%
@@ -665,7 +680,7 @@ apl <- function(caobj,
                                           symbol = sym,
                                           colorbar = color_bar,
                                           size = 5),
-                            name = 'genes',
+                            name = 'genes (scored)',
                             hoverinfo = 'text',
                             type = 'scatter')
 
@@ -748,6 +763,11 @@ apl <- function(caobj,
 #' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
 #' @return
 #' Association Plot (plotly object).
+#' 
+#' @references
+#' Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
+#' Elzbieta Gralinska, Martin Vingron
+#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 #'
 #' @param obj A numeric matrix, Seurat or SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
@@ -770,6 +790,11 @@ apl <- function(caobj,
 #' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff
 #' will be colored according to their score if show_score = TRUE.
 #' @param score_color Either "rainbow" or "viridis".
+#' @param pd_method Which method to use for pick_dims (\link[APL]{pick_dims}).
+#' @param pd_reps Number of repetitions performed when using "elbow_rule" in `pick_dims`.
+#' (\link[APL]{pick_dims})
+#' @param pd_use Whether to use `pick_dims` (\link[APL]{pick_dims}) to determine
+#' the number of dimensions. Ignored when `dims` is set by the user.
 #' @param ... Arguments forwarded to methods.
 #' @export
 setGeneric("runAPL", function(obj,
@@ -786,10 +811,13 @@ setGeneric("runAPL", function(obj,
                               row_labs = TRUE,
                               col_labs = TRUE,
                               type = "plotly",
-                              show_cols = TRUE,
+                              show_cols = FALSE,
                               show_rows = TRUE,
                               score_cutoff = 0,
                               score_color = "rainbow",
+                              pd_method = "elbow_rule",
+                              pd_reps = 1,
+                              pd_use = TRUE,
                               ...) {
   standardGeneric("runAPL")
 })
@@ -829,10 +857,13 @@ setMethod(f = "runAPL",
                    row_labs = TRUE,
                    col_labs = TRUE,
                    type = "plotly",
-                   show_cols = TRUE,
+                   show_cols = FALSE,
                    show_rows = TRUE,
                    score_cutoff = 0,
                    score_color = "rainbow",
+                   pd_method = "elbow_rule",
+                   pd_reps = 1,
+                   pd_use = TRUE,
                    ...){
 
   if (!is(obj, "matrix")){
@@ -847,14 +878,64 @@ setMethod(f = "runAPL",
                     princ_coords = 3,
                     dims = dims,
                     python = python)
+    
+    if(is.null(dims) & isTRUE(pd_use)){
+      
+      stopifnot("Cannot use scree plot to pick dimensions" = pd_method != "scree_plot")
+      pd <- pick_dims(obj = caobj,
+                      mat = obj,
+                      method = pd_method,
+                      reps = pd_reps,
+                      python = python,
+                      return_plot = FALSE)
+      
+      message(paste("\n Using", pd, "dimensions. Subsetting.", sep = " "))
+      dims <- pd
+      caobj <- subset_dims(caobj, dims)
+      
+    } else if (is.null(dims) & !isTRUE(pd_use)) {
+      dims <- caobj@dims
+      message(paste("\n Using", dims, "dimensions. No subsetting performed.", sep = " "))
+    } else if (!is.null(dims) & !isTRUE(pd_use)) {
+      message(paste("\n Using", dims, "dimensions.", sep = " "))
+    } else if(!is.null(dims) & isTRUE(pd_use)){
+      message("\nBoth dims and pd_use set. Using dimensions specified by dims.")
+      message(paste("\nUsing", dims, "dimensions.", sep = " "))
+    }
+    
 
   } else {
     if(!is.empty(caobj@dims) && is.null(dims)){
-      dims <- caobj@dims
+      if(isTRUE(pd_use)){
+        stopifnot("Cannot use scree plot to pick dimensions" = pd_method != "scree_plot")
+        pd <- pick_dims(obj = caobj,
+                        mat = obj,
+                        method = pd_method,
+                        reps = pd_reps,
+                        python = python,
+                        return_plot = FALSE)
+        
+        message(paste("\n Using", pd, "dimensions", sep = " "))
+        
+        dims <- pd
+        caobj <- subset_dims(caobj, dims)
+      } else {
+        dims <- caobj@dims
+        message(paste("\n Using", dims, "dimensions. No subsetting performed.", sep = " "))
+      }
+
+      
     } else if (!is.empty(caobj@dims) && !is.null(dims)) {
         # warning("The caobj was previously already subsetted to ", caobj@dims, " dimensions. Subsetting again!")
       if (dims < caobj@dims){
-        # caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = FALSE, princ_coords = 1)
+
+        if (!isTRUE(pd_use)) {
+          message(paste("\n Using", dims, "dimensions.", sep = " "))
+        } else if(isTRUE(pd_use)){
+          message("\nBoth dims and pd_use set. Using dimensions specified by dims.")
+          message(paste("\nUsing", dims, "dimensions.", sep = " "))
+        }
+        
         caobj <- subset_dims(caobj, dims = dims)
       } else if(dims > length(caobj@D)){
         warning("dims is larger than the number of available dimensions. Argument ignored")
@@ -979,10 +1060,13 @@ setMethod(f = "runAPL",
                    row_labs = TRUE,
                    col_labs = TRUE,
                    type = "plotly",
-                   show_cols = TRUE,
+                   show_cols = FALSE,
                    show_rows = TRUE,
                    score_cutoff = 0,
                    score_color = "rainbow",
+                   pd_method = "elbow_rule",
+                   pd_reps = 1,
+                   pd_use = TRUE,
                    ...,
                    assay = "counts"){
 
@@ -1011,7 +1095,10 @@ setMethod(f = "runAPL",
         show_cols = show_cols,
         show_rows = show_rows,
         score_cutoff = score_cutoff,
-        score_color = score_color)
+        score_color = score_color,
+        pd_method = pd_method,
+        pd_reps = pd_reps,
+        pd_use = pd_use)
 
 })
 
@@ -1065,10 +1152,13 @@ setMethod(f = "runAPL",
                    row_labs = TRUE,
                    col_labs = TRUE,
                    type = "plotly",
-                   show_cols = TRUE,
+                   show_cols = FALSE,
                    show_rows = TRUE,
                    score_cutoff = 0,
                    score_color = "rainbow",
+                   pd_method = "elbow_rule",
+                   pd_reps = 1,
+                   pd_use = TRUE,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts"){
@@ -1101,5 +1191,8 @@ setMethod(f = "runAPL",
         show_cols = show_cols,
         show_rows = show_rows,
         score_cutoff = score_cutoff,
-        score_color = score_color)
+        score_color = score_color,
+        pd_method = pd_method,
+        pd_reps = pd_reps,
+        pd_use = pd_use)
 })

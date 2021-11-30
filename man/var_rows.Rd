@@ -17,7 +17,7 @@ Should contain row and column names.}
 Returns a matrix, which consists of the top variable rows of mat.
 }
 \description{
-Calculates the variance of the chi-square components matrix and selects the top e.g 5000 rows.
+Calculates the variance of the chi-square component matrix and selects the rows with the highest variance, e.g. 5,000.
 }
 \examples{
 set.seed(1234)

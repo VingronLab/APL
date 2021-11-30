@@ -12,7 +12,7 @@ apl(
   row_labs = FALSE,
   col_labs = FALSE,
   show_score = FALSE,
-  show_cols = TRUE,
+  show_cols = FALSE,
   show_rows = TRUE,
   score_cutoff = 0,
   score_color = "rainbow"
@@ -46,10 +46,10 @@ Default is only to label columns making up the centroid: caobj@group.}
 Either a ggplot or plotly object.
 }
 \description{
-Plot an Association plot for the chosen columns.
+Plot an Association Plot for the chosen columns.
 }
 \details{
-For an interactive plot type="plotly" can be chosen, otherwise a static plot will returned.
+For an interactive plot type="plotly" can be chosen, otherwise a static plot will be returned.
 The row and column coordinates have to be already calculated by `apl_coords()`.
 }
 \examples{
@@ -72,4 +72,9 @@ ca <- apl_coords(ca, group = 1:10)
 # Due to random gene expression & group, no highly
 # associated genes are visible.
 apl(ca, type = "ggplot")
+}
+\references{
+Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
+Elzbieta Gralinska, Martin Vingron
+bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 }

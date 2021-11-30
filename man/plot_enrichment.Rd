@@ -15,7 +15,7 @@ plot_enrichment(genenr, ntop = 10)
 Returns a ggplot plot.
 }
 \description{
-Plots the results form the data frame generated via apl_topGO.
+Plots the results from the data frame generated via apl_topGO.
 }
 \examples{
 library(Seurat)

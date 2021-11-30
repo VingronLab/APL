@@ -16,7 +16,7 @@ apl_topGO(
 )
 }
 \arguments{
-\item{caobj}{A "cacomp" object with principal row coordinates and standard column coordinates calculated.}
+\item{caobj}{A "cacomp" object with principal row coordinates and standardized column coordinates calculated.}
 
 \item{ontology}{Character string. Chooses GO sets for 'BP' (biological processes), 'CC' (cell compartment) or 'MF' (molecular function).}
 
@@ -31,7 +31,7 @@ Only recommended when no S-alpha score (see apl_score()) can be calculated.}
 
 \item{return_plot}{Logical. Whether a plot of significant gene sets should be additionally returned.}
 
-\item{top_res}{Numeric. Number of top scoring gene sets to plot.}
+\item{top_res}{Numeric. Number of top scoring genes to plot.}
 }
 \value{
 A data.frame containing the gene sets with the highest overrepresentation.
@@ -69,4 +69,8 @@ enr <- apl_topGO(ca,
                  organism = "hs")
 
 plot_enrichment(enr)
+}
+\references{
+Adrian Alexa and Jorg Rahnenfuhrer (2020). topGO: Enrichment Analysis for Gene Ontology. 
+R package version 2.42.0.
 }

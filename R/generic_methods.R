@@ -6,6 +6,7 @@ NULL
 #' @description Provides more user friendly printing of cacomp objects.
 #'
 #' @param object cacomp object to print
+#' @returns prints summary information about cacomp object.
 #' @export
 #' @examples
 #' # Simulate scRNAseq data.

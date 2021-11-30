@@ -36,18 +36,38 @@ Association Plots: Visualizing associations in high-dimensional correspondence a
 Elzbieta Gralinska, Martin Vingron
 bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 ```
-
+A citation can also be obtained in R by running `citation("APL")`.
 For a mathematical description of the method, please refer to the manuscript.
 
 # Installation
 
-The "APL" package requires R version >= 4.0.
+The `r Rpackage("APL")` package requires R version >= 4.0.
+To install this package from Bioconductor, run:
 
-In order to decrease the computation time of the singular value decomposition (SVD), we highly recommend the installation of `pytorch`. More information on `pytorch` installation are given below.
-Instead, users can also opt to use the R native SVD. For this, please use the argument `python = FALSE` wherever applicable in this vignette.
+```{r bioc_install, eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
 
+BiocManager::install("APL")
+```
 
-## Install pytorch with reticulate
+Alternatively the package can also be installed from github:
+```{r git_install, eval=FALSE}
+library(devtools)
+install_github("VingronLab/APL")
+```
+
+To additionally build the package vignette, run instead
+```{r git_vignette, eval=FALSE}
+install_github("VingronLab/APL", build_vignettes = TRUE)
+```
+Building the vignette will however take considerable time.
+
+## pytorch installation
+In order to decrease the computation time of the singular value decomposition (SVD), we highly recommend the installation of `pytorch`. More information on the `pytorch` installation is given below.
+Instead of installing `pytorch`, users can also opt to use the R native SVD. For this, please use the argument `python = FALSE` wherever applicable in this vignette.
+
+### Install pytorch with reticulate
 ```{r reticulate, eval=FALSE}
 library(reticulate)
 install_miniconda() 
@@ -55,7 +75,7 @@ conda_install(envname = "r-reticulate", packages = "numpy")
 conda_install(envname = "r-reticulate", packages = "pytorch")
 ```
 
-## Manually install pytorch with conda
+### Manually install pytorch with conda
 To install `pytorch` please download the appropriate Miniconda installer for your system from [the conda website](https://docs.conda.io/en/latest/miniconda.html). 
 Follow the installation instructions on their website and make sure the R package `reticulate` is also installed before proceeding.
 Once installed, list all available conda environments via <br>
@@ -74,7 +94,7 @@ conda install pytorch
 # Preprocessing
 ## Setup
 In this vignette we will use the 3k Peripheral Blood Mononuclear Cell (PBMC) data from 10x Genomics as an example.
-The data necessary to follow the vignette can be downloaded from [here](https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz).
+To obtain the data necessary to follow the vignette we use the Bioconductor package `r Biocpkg("TENxPBMCData")`.
 
 Besides the package `r Rpackage("APL")` we will use the single-cell RNA-seq analysis suite `r CRANpkg("Seurat")` (V. 4.0.4) to preprocess the data, but the preprocessing could equally be done with `r Biocpkg("SingleCellExperiment")` and `r Biocpkg("scater")`\\`r Biocpkg("scran")`.
 For the preprocessing we follow the [Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) from the Seurat vignette. For details about the data preprocessing please refer to their website.
@@ -82,35 +102,39 @@ For the preprocessing we follow the [Guided Clustering Tutorial](https://satijal
 ```{r setup, message=FALSE, warning=FALSE}
 library(APL)
 library(Seurat)
+library(TENxPBMCData)
 library(ggplot2)
 set.seed(1234)
 
 ```
 
 ## Loading the data
-We start with the loading and preprocessing of the 3k PBMC data:
+We start with the loading and preprocessing of the 3k PBMC data. 
 
-**CHANGE FILE PATH OR FIND OTHER SOLUTION**
-```{r load_data, message=FALSE, warning=FALSE}
-# Load the PBMC dataset
-pbmc.data <- Read10X(data.dir = "/project/markers/CA/manuscript_scdata/sc_data_PBMC3k/original_data/pbmc3k_filtered_gene_bc_matrices/filtered_gene_bc_matrices/hg19/")
+```{r tenx, message=FALSE}
+sce <- TENxPBMCData(dataset = "pbmc3k")
+rownames(sce) <- rowData(sce)$Symbol_TENx
+colnames(sce) <- colData(sce)$Barcode
 
-# Remove genes not expressed in any gene
-no_zeros_rows <- rowSums(pbmc.data) > 0
-pbmc.data <- pbmc.data[no_zeros_rows,]
 
-# Initialize the Seurat object with the raw (non-normalized data)
-pbmc <- CreateSeuratObject(counts = pbmc.data, project = "pbmc3k", min.cells = 3, min.features = 200)
+pbmc <- CreateSeuratObject(counts = counts(sce),
+                          assay = "RNA",
+                          project = "pbmc3k",
+                          min.cells = 3,
+                          min.features = 200,
+                          meta.data = as.data.frame(colData(sce)))
 
 pbmc[["percent.mt"]] <- PercentageFeatureSet(pbmc, pattern = "^MT-")
 
 # Filter data
 pbmc <- subset(pbmc, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+no_zeros_rows <- rowSums(pbmc, slot = "counts") > 0
+pbmc <- pbmc[no_zeros_rows,]
 
 ```
 
 ## Normalization, PCA & Clustering
-Association Plots from "APL" should be computed based on the normalized expression data. Therefore, we first normalize the counts from the 3k PBMC data. For now, "APL" requires the data to be clustered beforehand. That's why we also do the cell clustering.
+Association Plots from `r Rpackage("APL")` should be computed based on the normalized expression data. Therefore, we first normalize the counts from the 3k PBMC data. For now, `r Rpackage("APL")` requires the data to be clustered beforehand. That's why we also do the cell clustering.
 
 ```{r preprocessing}
 
@@ -156,7 +180,7 @@ names(new.cluster.ids) <- levels(pbmc)
 pbmc <- RenameIdents(pbmc, new.cluster.ids)
 pbmc$cell_type <- Idents(pbmc)
 
-DimPlot(pbmc, reduction = "umap", label = F, pt.size = 0.5)
+DimPlot(pbmc, reduction = "umap", label = FALSE, pt.size = 0.5)
 ```
 
 # Fast way of computing Association Plots
@@ -165,16 +189,14 @@ The fastest way to compute the Association Plot for a selected cluster of cells 
 
 For example, to generate the Association Plot for the B cells (cluster: "3 - B") we can use the following command:
 
-```{r}
+```{r runAPL}
 runAPL(pbmc,
        assay = "RNA",
        slot = "data",
        group = which(pbmc$seurat_clusters == 3),
-       score = TRUE,
-       dims = 220,
-       show_cols = FALSE)
+       type = "ggplot")
 ```
-The generated Association Plot is computed based on the log-normalized count matrix using 200 CA dimensions (parameter `dims`). The cluster-specificity score ( \eqn{S_\alpha}) for each gene is also calculated (`score = TRUE`). More information on the choice of dimension number and the score \eqn{S_\alpha} is present in the next section of the vignette.
+The generated Association Plot is computed based on the log-normalized count matrix. The dimensionality of the CA is determined automatically by the elbow rule descibed below (see [here](#dim_reduc)). This default behaviour can be overriden by setting the dimensions manually (parameter `dims`). The cluster-specificity score ( \eqn{S_\alpha}) for each gene is also calculated (`score = TRUE`). In order to better explore the data, `type` can be set to `"plotly"` to obtain an interactive plot. `runAPL` has many arguments to further customize the output and fine tune the calculations. Please refer to the documentation (`?runAPL`) for more information. The following sections in this vignette will discuss the choice of dimensionality and the \eqn{S_\alpha}-score.
 
 # Step-by-step way of computing Association Plots
 
@@ -190,15 +212,15 @@ logcounts <- as.matrix(GetAssayData(pbmc, slot = "data"))
 ca <- cacomp(obj = logcounts,
              python = TRUE)
 
-# Above is equivalent to:
-ca <- cacomp(obj = pbmc,
-             assay = "RNA",
-             slot = "data",
-             python = TRUE)
+# The above is equivalent to:
+# ca <- cacomp(obj = pbmc,
+#              assay = "RNA",
+#              slot = "data",
+#              python = TRUE)
 
 ```
 
-The function `cacomp` accepts as an input any matrix with non-negative entries, be it a single-cell RNA-seq, bulk RNA-seq or other data. For ease of use, `cacomp` accepts also `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` objects, however for these we additionally have to specify via the `assay` and/or `slot` (for Seurat) parameter from where to extract the data. 
+The function `cacomp` accepts as an input any matrix with non-negative entries, be it a single-cell RNA-seq, bulk RNA-seq or other data. For ease of use, `cacomp` accepts also `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` objects, however for these we additionally have to specify via the `assay` and/or `slot` (for Seurat) parameter from where to extract the data. Importantly, in order to ensure the interpretability of the results `cacomp` (and related functions such as `runAPL`) requires that the input matrix contains both row and column names.
 
 When performing a feature selection before CA, we can set the argument `top` to the desired number of genes with the higest variance across cells from the input data to retain for further analysis. By default, 5,000 genes are kept.
 
@@ -226,8 +248,13 @@ DimPlot(pbmc, reduction = "CA", label = FALSE, pt.size = 0.5)
 
 ```
 
+However, some functions such as apl_coords() require information that cannot be stored in the single-cell container objects. It is therefore often easier to work with a `cacomp` object instead. We can convert `r CRANpkg("Seurat")` or `r Biocpkg("SingleCellExperiment")` objects which have CA results stored to a `cacomp` object using the function `as.cacomp()`:
+```{r convert}
+# Converting the object pbmc to cacomp
+ca <- as.cacomp(pbmc)
+```
 
-## Reducing the number of CA dimensions
+## Reducing the number of CA dimensions {#dim_reduc}
 When working with high-dimensional data, after singular value decomposition there will be often many dimensions which will be representing the noise in the data. That's why generating Association Plots should be preceded by data dimension reduction step. 
 
 The number of dimensions to retain can be computed using the function `pick_dims`. This function offers three standard methods which we implemented:
@@ -248,7 +275,7 @@ pick_dims(ca,
 
 In the scree plot above we can see that the first dimension explains only ~0.75% of the total inertia and we observe the "jump" in the scree plot at roughly 7 dimensions. The first dimensions however explain only a small part of the total inertia. 
 
-Here we compute the number of dimensions using elbow rule. For demonstration, only five data permutations are computed:
+Here we compute the number of dimensions using the elbow rule. For demonstration, only five data permutations are computed:
 
 ```{r pick_dims, results = "hide"}
 pd <- pick_dims(ca,
@@ -296,12 +323,12 @@ After computing the coordinates of genes and cells in the Association Plot we ar
 apl(ca,
     row_labs = TRUE,
     rows_idx = c("ITGA2B", "PF4", "GP1BA", "TUBB1"), #platelet marker genes
-    type = "ggplot")
+    type = "ggplot") # type = "plotly" for an interactive plot
 ```
 In the Association Plot all genes are represented by blue circles. The further to the right a gene is located the more associated it is with the chosen cluster of cells. Additionally, the lower the y-axis value, the more specific it is for the selected cluster.
 Additionally, it is possible to highlight in the Association Plot any set of genes. In the example above we additionally highlighted four genes ("ITGA2B", "PF4", "GP1BA", "TUBB1") which are known to be marker genes for platelets. As we can see in the plot, they are located in the right part of the plot, which confirms their specificity for platelets. 
 
-By default we plot only the genes in the Association Plot. To also display the cells in the Association Plot, use the argument `show_cols = TRUE`. This way we can identify other cells which show similar expression profiles to the cells of interest. Cells that belong to the cluster of interest will be colored in red, and all remaining cells will be colored in green.
+By default we plot only the genes in the Association Plot. To also display the cells in the Association Plot, use the argument `show_cols = TRUE`. This way we can identify other cells which show similar expression profiles to the cells of interest. Cells that belong to the cluster of interest will be colored in red, and all remaining cells will be colored in green. Furthermore, an interactive plot in which you can hover over genes to see their name can be created by setting `type = "plotly"`.
 
 ## Association Plots with the \eqn{S_\alpha} scores
 
@@ -319,8 +346,7 @@ ca <- apl_score(ca,
 apl(ca,
     show_score = TRUE,
     show_cols = FALSE,
-    type = "plotly")
-
+    type = "ggplot") 
 ```
 
 By default, only genes that have a score larger than 0 are colored as these tend to be genes of interest.
@@ -342,30 +368,25 @@ As expected, the 3 most highly scored genes are over-expressed in the platelet c
 
 
 ## Visualization of CA
-In addition to Association Plots "APL" produces also other forms of the output. For instance, we can use "APL" to generate a two- and three-dimensional correspondence analysis projection of the data. The so-called biplot visualizes then both cells and genes from the input data. To generate such biplots a `cacomp` object is required. We can convert `r CRANpkg("Seurat")` or `r Biocpkg("SingleCellExperiment")` objects, which have the CA results stored, to a `cacomp` object using the function `as.cacomp()`:
+In addition to Association Plots "APL" produces also other forms of the output. For instance, we can use "APL" to generate a two- and three-dimensional correspondence analysis projection of the data. The so-called biplot visualizes both cells and genes from the input data and can be created using the function `ca_biplot`. Alternatively. a three-dimensional data projection plot can be generated using the function `ca_3Dplot`. To generate such biplots a `cacomp` object is required.
 
 ```{r biplot, fig.wide = TRUE}
-# Converting the object pbmc
-ca <- as.cacomp(pbmc)
 
 # Specifying a cell cluster of interest
 platelets <- which(pbmc$cell_type == "8 - Platelet")
 
 # Creating a static plot
-# ca_biplot(ca, type = "ggplot", col_labels = platelets)
+ca_biplot(ca, col_labels = platelets, type = "ggplot")
 
 # Creating an interactive plot
-ca_biplot(ca, col_labels = platelets)
+# ca_biplot(ca, type = "plotly", col_labels = platelets)
+
+# 3D plot
+# ca_3Dplot(ca, col_labels = platelets)
 
 ```
-A three-dimensional data projection plot can be generated using the function `ca_3Dplot`:
-```{r 3dplot, fig.wide = TRUE}
-ca_3Dplot(ca, col_labels = platelets)
 
-```
-
-The above described plots let us interactively explore the CA projection of the data. For a static version of the plot the paramter `type = "ggplot"` should be used. This option is available for all plotting functions with interactive plots (except for the three-dimensional data projection).
-
+The above described plots give us a quick overview of the first 2 dimensions of the data (more dimensions can be plotted). To interactively explore the projection of the data, `type = "plotly"` can be set. 
 
 # APL and GO enrichment analysis
 
@@ -383,7 +404,7 @@ ca <- apl_score(ca,
                 python = TRUE)
 ```
 
-Now we can conduct GO enrichment analysis as implemented in the package `r Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot. By default we use all genes with the positive \eqn{S_\alpha} score, or 1,000 genes with the highest \eqn{S_\alpha} score if there are more than 1,000 genes with the \eqn{S_\alpha} above 0. 
+Now we can conduct GO enrichment analysis as implemented in the package `r Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot. By default we use all genes with an \eqn{S_\alpha} score higher than 0, but the cutoff may have to be adjusted depending on the dataset. In the example below we restrict it to genes with a \eqn{S_\alpha} score higher than 1 to restrict it to truly significant genes. In case that no \eqn{S_\alpha} scores were calculated, one can also choose to use the `ngenes` (by default 1000) genes with the highest x-coordinates by setting `use_coords = FALSE`.
 
 ```{r topGO, message=FALSE}
 enr <- apl_topGO(ca,
@@ -407,7 +428,6 @@ apl(ca,
     show_score = TRUE,
     col_labs = FALSE,
     row_labs = TRUE,
-    show_cols = FALSE,
     score_cutoff = 1,
     rows_idx = bcell_markers,
     type = "ggplot")

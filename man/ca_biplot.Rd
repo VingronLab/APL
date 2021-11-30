@@ -5,7 +5,7 @@
 \alias{ca_biplot,cacomp-method}
 \alias{ca_biplot,Seurat-method}
 \alias{ca_biplot,SingleCellExperiment-method}
-\title{Plot of the first 2 CA dimensions.}
+\title{Plot of 2D CA projection of the data.}
 \usage{
 ca_biplot(
   obj,
@@ -55,7 +55,7 @@ ca_biplot(
 )
 }
 \arguments{
-\item{obj}{An object of class "cacomp" with the relevant standard and principal coordinates calculated,
+\item{obj}{An object of class "cacomp" with the relevant standardized and principal coordinates calculated,
 or alternatively an object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved.}
 
 \item{xdim}{Integer. The dimension for the x-axis. Default 1.}

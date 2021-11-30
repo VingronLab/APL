@@ -11,13 +11,31 @@ bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 
 ## Installation
 
+The `APL` package requires R version >= 4.0.
+To install this package from Bioconductor, run:
+
+
+    if (!requireNamespace("BiocManager", quietly = TRUE))
+        install.packages("BiocManager")
+    
+    BiocManager::install("APL")
+
+Alternatively the package can also be installed from github:
+
     library(devtools)
     install_github("VingronLab/APL")
+
+
+To additionally build the package vignette, run instead
+
+    install_github("VingronLab/APL", build_vignettes = TRUE)
+    
+Building the vignette will however take considerable time.
     
 ## Pytorch installation
 
 In order to speed up the singular value decomposition, we highly recommend the installation of `pytorch`.
-Users can instead also opt to use the slower R native SVD. For this, please turn the argument `python = FALSE` wherever applicable in this vignette.
+Users can instead also opt to use the slower R native SVD. For this, please set the argument `python = FALSE` wherever applicable in the package vignette.
 
 ### Install pytorch with reticulate
 
@@ -47,4 +65,4 @@ Please run
     
     vignette("APL")
 
-after installation for an introduction into the package.
+after installation with `build_vignettes = TRUE` for an introduction into the package.

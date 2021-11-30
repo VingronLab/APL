@@ -16,7 +16,7 @@ apl_score(
 )
 }
 \arguments{
-\item{caobj}{A "cacomp" object with principal row coordinates and standard column coordinates calculated.}
+\item{caobj}{A "cacomp" object with principal row coordinates and standardized column coordinates calculated.}
 
 \item{mat}{A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
@@ -63,4 +63,9 @@ ca <- apl_coords(ca, group = 1:10)
 
 # Rank genes by S-alpha score
 ca <- apl_score(ca, mat = cnts)
+}
+\references{
+Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
+Elzbieta Gralinska, Martin Vingron
+bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 }

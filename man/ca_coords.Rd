@@ -16,19 +16,19 @@ All elements of caobj (where applicable) will be reduced to the given number of 
 Default 3.}
 
 \item{princ_only}{Logical, whether only principal coordinates should be calculated.
-Or, in other words, whether the standard coordinates are already calculated and stored in `caobj`. Default `FALSE`.}
+Or, in other words, whether the standardized coordinates are already calculated and stored in `caobj`. Default `FALSE`.}
 }
 \value{
 Returns input object with coordinates added.
-std_coords_rows/std_coords_cols: Standard coordinates of rows/columns.
+std_coords_rows/std_coords_cols: Standardized coordinates of rows/columns.
 prin_coords_rows/prin_coords_cols: Principal coordinates of rows/columns.
 }
 \description{
-`ca_coords` calculates the standard and principal coordinates of the rows and columns in CA space.
+`ca_coords` calculates the standardized and principal coordinates of the rows and columns in CA space.
 }
 \details{
-Takes a "cacomp" object and calculates standard and principal coordinates for the visualisation of CA results in a biplot or
-to subsequently calculate coordinates in an association plot.
+Takes a "cacomp" object and calculates standardized and principal coordinates for the visualization of CA results in a biplot or
+to subsequently calculate coordinates in an Association Plot.
 }
 \examples{
 # Simulate scRNAseq data.

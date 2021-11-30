@@ -29,17 +29,17 @@ Creates new cacomp object.
 
 \item{\code{D}}{class "numeric". Singular values of the original inpt matrix.}
 
-\item{\code{std_coords_rows}}{class "matrix". Standard CA coordinates of the rows.}
+\item{\code{std_coords_rows}}{class "matrix". Standardized CA coordinates of the rows.}
 
-\item{\code{std_coords_cols}}{class "matrix". Standard CA coordinates of the columns.}
+\item{\code{std_coords_cols}}{class "matrix". Standardized CA coordinates of the columns.}
 
 \item{\code{prin_coords_rows}}{class "matrix". Principal CA coordinates of the rows.}
 
 \item{\code{prin_coords_cols}}{class "matrix". Principal CA coordinates of the columns.}
 
-\item{\code{apl_rows}}{class "matrix". Association plot coordinates of the rows for the direction defined in slot "group"}
+\item{\code{apl_rows}}{class "matrix". Association Plot coordinates of the rows for the direction defined in slot "group"}
 
-\item{\code{apl_cols}}{class "matrix". Association plot coordinates of the columns for the direction defined in slot "group"}
+\item{\code{apl_cols}}{class "matrix". Association Plot coordinates of the columns for the direction defined in slot "group"}
 
 \item{\code{APL_score}}{class "data.frame". Contains rows sorted by the APL score.
 Columns: Rowname (gene name in the case of gene expression data),

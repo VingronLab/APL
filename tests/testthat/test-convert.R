@@ -6,7 +6,7 @@ ca <- cacomp(smoke, princ_coords = 3)
 
 test_that("check recompute function", {
 
-  calist <- as.list(ca)
+  calist <- APL::as.list(ca)
 
   calist_sub <- calist[c("D", "std_coords_cols", "std_coords_rows")]
   expect_equal(recompute(calist_sub, smoke), ca)

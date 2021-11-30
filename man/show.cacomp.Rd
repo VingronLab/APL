@@ -12,6 +12,9 @@ show.cacomp(object)
 \arguments{
 \item{object}{cacomp object to print}
 }
+\value{
+prints summary information about cacomp object.
+}
 \description{
 Provides more user friendly printing of cacomp objects.
 }

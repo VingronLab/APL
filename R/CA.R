@@ -43,7 +43,7 @@ comp_std_residuals <- function(mat){
 #' removes 0-only rows and columns in a matrix.
 #'
 #' @param obj A matrix.
-#'
+#' @return Input matrix with rows & columns consisting of only 0 removed.
 rm_zeros <- function(obj){
   stopifnot(is(obj, "matrix"))
 
@@ -371,6 +371,10 @@ setMethod(f = "cacomp",
 #' @rdname cacomp
 #' @export
 #' @examples
+#' 
+#' ###########
+#' # Seurat  #
+#' ###########
 #' library(Seurat)
 #' set.seed(1234)
 #'
@@ -398,7 +402,7 @@ setMethod(f = "cacomp",
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    ...,
-                   assay = DefaultAssay(obj),
+                   assay = Seurat::DefaultAssay(obj),
                    slot = "counts",
                    return_input = FALSE){
 
@@ -457,6 +461,10 @@ setMethod(f = "cacomp",
 #' @rdname cacomp
 #' @export
 #' @examples
+#' 
+#' ########################
+#' # SingleCellExperiment #
+#' ########################
 #' library(SingleCellExperiment)
 #' set.seed(1234)
 #'
@@ -509,7 +517,7 @@ setMethod(f = "cacomp",
 
   if (return_input == TRUE){
     prinInertia <- caobj@D^2
-    percentInertia <- prinInertia / sum(prinInertia) * 100 #TODO IS THIS CORRECT ??
+    percentInertia <- prinInertia / sum(prinInertia) * 100
 
     # Saving the results
     ca <- caobj@std_coords_cols
@@ -551,7 +559,11 @@ setMethod(f = "cacomp",
 subset_dims <- function(caobj, dims){
 
   stopifnot(is(caobj, "cacomp"))
-
+  
+  if (is.null(dims)){
+    return(caobj)
+  }
+  
   if(dims > length(caobj@D)){
     warning("dims is larger than the number of available dimensions. Argument ignored")
   } else if (dims == length(caobj@D)){
@@ -904,7 +916,7 @@ setMethod(f = "pick_dims",
     }else{
       dim_number <- length(tmp[cumsum(tmp == 0)<1 & tmp!=0])		# result: if the lines intersect at 1 or more than 1 positions, choose the intersection with the lowest (BEFORE: it was with highest) x-coordinate (:= the first intersection!)
     }
-    #TODO if permutations have higher average inertia in the beginning this results in 0.
+    
     if (return_plot == FALSE){
       return(dim_number)
     } else {

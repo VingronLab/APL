@@ -46,7 +46,7 @@ use do.call(new_cacomp, obj).
 
 as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
 
-as.cacomp.SingleCellExperiment: Converts the values stored in the SingleCellExperiment reducedDim slot "CA" to an cacomp object.
+as.cacomp.SingleCellExperiment: Converts the values stored in the SingleCellExperiment reducedDim slot "CA" to a cacomp object.
 }
 \details{
 By default extracts std_coords_cols, D, prin_coords_rows, top_rows and dims from obj and outputs a cacomp object.

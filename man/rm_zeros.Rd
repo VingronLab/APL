@@ -9,6 +9,9 @@ rm_zeros(obj)
 \arguments{
 \item{obj}{A matrix.}
 }
+\value{
+Input matrix with rows & columns consisting of only 0 removed.
+}
 \description{
 removes 0-only rows and columns in a matrix.
 }

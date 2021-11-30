@@ -62,14 +62,14 @@ Should contain row and column names.}
 
 \item{reps}{Integer. Number of permutations to perform when choosing "elbow_rule". Default 3.}
 
-\item{python}{A logical value indicating whether to use singular-value decomposition from the python package torch.
+\item{python}{A logical value indicating whether to use singular value decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to `svd()` in R.}
 
 \item{return_plot}{TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.}
 
 \item{...}{Arguments forwarded to methods.}
 
-\item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+\item{assay}{Character. The assay from which to extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
 
 \item{slot}{Character. Data slot of the Seurat assay. E.g. "data" or "counts". Default "counts".}
 }
@@ -86,7 +86,7 @@ to estimate the number of dimensions that best represent the data.
 "avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
 "maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80\% of the total inertia.
 "scree_plot" plots a scree plot.
-"elbow_rule" Formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
+"elbow_rule" formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
 }
 \examples{
@@ -109,7 +109,7 @@ pd <- pick_dims(obj = ca,
 pd$plot
 ca_sub <- subset_dims(ca, dims = pd$dims)
 
-# pick dimensions with cumulatively >80\% of total inertia. Returns vector.
+# pick dimensions which explain cumulatively >80\% of total inertia. Returns vector.
 pd <- pick_dims(obj = ca,
                 method = "maj_inertia")
 ca_sub <- subset_dims(ca, dims = pd)

@@ -5,7 +5,7 @@
 \alias{ca_3Dplot,cacomp-method}
 \alias{ca_3Dplot,Seurat-method}
 \alias{ca_3Dplot,SingleCellExperiment-method}
-\title{Plot of the first 3 CA dimensions.}
+\title{Plot of the first 3D CA projection of the data.}
 \usage{
 ca_3Dplot(
   obj,
@@ -85,8 +85,8 @@ Plots the first 3 dimensions of the rows and columns in the same plot.
 }
 \details{
 Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-are chosen. For the other the standard coordinates are plotted (assymetric biplot).
-Labels for rows and columns should be stored in the row- and columnnames respectively.
+are chosen. For the other the standardized coordinates are plotted (assymetric biplot).
+Labels for rows and columns should be stored in the row- and column names respectively.
 }
 \examples{
 # Simulate counts

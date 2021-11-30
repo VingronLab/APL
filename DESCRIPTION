@@ -35,13 +35,16 @@ Imports:
     topGO,
     methods,
     stats,
-    utils
+    utils,
+    org.Hs.eg.db,
+    org.Mm.eg.db
 Depends: 
     R (>= 4.0)
 Suggests: 
     BiocStyle,
     knitr,
     rmarkdown,
+    TENxPBMCData,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Collate: 
@@ -53,3 +56,4 @@ Collate:
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
+SystemRequirements: python, pytorch, numpy

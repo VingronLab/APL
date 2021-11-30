@@ -7,7 +7,7 @@
 apl_coords(caobj, group, calc_rows = TRUE, calc_cols = TRUE)
 }
 \arguments{
-\item{caobj}{A "cacomp" object with principal row coordinates and standard column coordinates calculated.}
+\item{caobj}{A "cacomp" object with principal row coordinates and standardized column coordinates calculated.}
 
 \item{group}{Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.}
 
@@ -20,7 +20,7 @@ Returns input "cacomp" object and adds components "apl_rows" and/or "apl_cols" f
 In "group" the indices of the columns used to calculate the centroid are saved.
 }
 \description{
-Calculates the association plot coordinates for either the rows, columns or both (default).
+Calculates the Association Plot coordinates for either the rows, columns or both (default).
 }
 \details{
 Coordinates (x,y) of row vector \eqn{\vec{r}} are defined as
@@ -30,7 +30,7 @@ The x-direction is determined by calculating the centroid of the columns selecte
 }
 \examples{
 set.seed(1234)
-# Simulate scRNAseq data.
+# Simulate scRNAseq data
 cnts <- data.frame(cell_1 = rpois(10, 5),
                    cell_2 = rpois(10, 10),
                    cell_3 = rpois(10, 20),
@@ -38,8 +38,13 @@ cnts <- data.frame(cell_1 = rpois(10, 5),
 rownames(cnts) <- paste0("gene_", 1:10)
 cnts <- as.matrix(cnts)
 
-# Run correspondence analysis.
+# Run correspondence analysis
 ca <- cacomp(obj = cnts, princ_coords = 3)
-# Calculate APL coordinates:
+# Calculate APL coordinates
 ca <- apl_coords(ca, group = 3:4)
+}
+\references{
+Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
+Elzbieta Gralinska, Martin Vingron
+bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 }

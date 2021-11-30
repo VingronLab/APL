@@ -41,7 +41,7 @@ cacomp(
   inertia = TRUE,
   rm_zeros = TRUE,
   ...,
-  assay = DefaultAssay(obj),
+  assay = Seurat::DefaultAssay(obj),
   slot = "counts",
   return_input = FALSE
 )
@@ -106,7 +106,7 @@ the singular values (= square root of principal intertias/eigenvalues)
 are stored as stdev.
 To recompute a regular "cacomp" object without rerunning cacomp use `as.cacomp()`.
 
-If return_input =TRUE for SingleCellExperiment input returns a SingleCellExperiment object with a matrix of standard coordinates of the columns in
+If return_input =TRUE for SingleCellExperiment input returns a SingleCellExperiment object with a matrix of standardized coordinates of the columns in
 reducedDim(obj, "CA"). Additionally, the matrix contains the following attributes:
 "prin_coords_rows": Principal coordinates of the rows.
 "singval": Singular values. For the explained inertia of each principal axis calculate singval^2.
@@ -117,17 +117,17 @@ To recompute a regular "cacomp" object from a SingleCellExperiment without rerun
 `cacomp` performs correspondence analysis on a matrix or
 Seurat/SingleCellExperiment object and returns the transformed data.
 
-`cacomp.seurat` performs correspondence analysis on a assay from a Seurat container and stores the standard coordinates
+`cacomp.seurat` performs correspondence analysis on an assay from a Seurat container and stores the standardized coordinates
  of the columns (= cells) and the principal coordinates of the rows (= genes) as a DimReduc Object in the Seurat container.
 
-`cacomp.SingleCellExperiment` performs correspondence analysis on an assay from a SingleCellExperiment and stores the standard coordinates
+`cacomp.SingleCellExperiment` performs correspondence analysis on an assay from a SingleCellExperiment and stores the standardized coordinates
  of the columns (= cells) and the principal coordinates of the rows (= genes) as a matrix in the SingleCellExperiment container.
 }
 \details{
-The calculation is performed according to Greenacre. Singular value decomposition
-can be performed either with the base R function `svd` or preferably by the much faster
-pytorch implementation (python = TRUE). When working on large matrices, CA coordinates and
-principal coordinates should only computed when needed to save computational time.
+The calculation is performed according to the work of Michael Greenacre. Singular value decomposition
+can be performed either with the base R function `svd` or preferably by the faster
+pytorch implementation (python = TRUE). When working with large matrices, CA coordinates and
+principal coordinates should only be computed when needed to save computational time.
 }
 \examples{
 # Simulate scRNAseq data.
@@ -139,6 +139,10 @@ cnts <- as.matrix(cnts)
 
 # Run correspondence analysis.
 ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
+
+###########
+# Seurat  #
+###########
 library(Seurat)
 set.seed(1234)
 
@@ -150,11 +154,15 @@ colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 # Create Seurat object
 seu <- CreateSeuratObject(counts = cnts)
 
-# run CA and save in dim. reduction slot.
+# Run CA and save in dim. reduction slot
 seu <- cacomp(seu, return_input = TRUE, assay = "RNA", slot = "counts")
 
-# run CA and return cacomp object.
+# Run CA and return cacomp object
 ca <- cacomp(seu, return_input = FALSE, assay = "RNA", slot = "counts")
+
+########################
+# SingleCellExperiment #
+########################
 library(SingleCellExperiment)
 set.seed(1234)
 

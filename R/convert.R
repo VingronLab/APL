@@ -313,7 +313,7 @@ setMethod(f = "as.cacomp", signature=(obj="Seurat"), function(obj, ..., assay="R
   stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
   stopifnot("obj doesn't contain a DimReduc object named 'CA'. Try running cacomp()." = "CA" %in% names(obj@reductions))
 
-  if (is.null(assay)) assay <- DefaultAssay(obj)
+  if (is.null(assay)) assay <- Seurat::DefaultAssay(obj)
 
   ca_list <- list("std_coords_cols" = Seurat::Embeddings(obj, reduction = "CA"),
                   "D" = Seurat::Stdev(obj, reduction = "CA"),
