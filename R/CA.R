@@ -132,7 +132,7 @@ var_rows <- function(mat, top = 5000){
 #' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
 #' Default 1.
 #' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default NULL.
+#' @param top Integer. Number of most variable rows to retain. Default 5000.
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
 #' @param ... Arguments forwarded to methods.
@@ -141,7 +141,7 @@ run_cacomp <- function(obj,
                    princ_coords = 3,
                    python = FALSE,
                    dims = NULL,
-                   top = NULL,
+                   top = 5000,
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    ...){
@@ -292,7 +292,7 @@ run_cacomp <- function(obj,
 #' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
 #' Default 1.
 #' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default NULL.
+#' @param top Integer. Number of most variable rows to retain. Default 5000. (set NULL to keep all).
 #' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
 #' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed.
 #' Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
@@ -313,7 +313,7 @@ setGeneric("cacomp", function(obj,
                               princ_coords = 3,
                               python = FALSE,
                               dims = NULL,
-                              top = NULL,
+                              top = 5000,
                               inertia = TRUE,
                               rm_zeros = TRUE,
                               ...) {
@@ -330,7 +330,7 @@ setMethod(f = "cacomp",
                    princ_coords = 3,
                    python = FALSE,
                    dims = NULL,
-                   top = NULL,
+                   top = 5000,
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    ...){
@@ -398,7 +398,7 @@ setMethod(f = "cacomp",
                    princ_coords = 3,
                    python = FALSE,
                    dims = NULL,
-                   top = NULL,
+                   top = 5000,
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    ...,
@@ -490,7 +490,7 @@ setMethod(f = "cacomp",
                    princ_coords = 3,
                    python = FALSE,
                    dims = NULL,
-                   top = NULL,
+                   top = 5000,
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    ...,

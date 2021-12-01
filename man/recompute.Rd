@@ -4,7 +4,7 @@
 \alias{recompute}
 \title{Recompute missing values of cacomp object.}
 \usage{
-recompute(calist, mat, rm_zeros = TRUE, ...)
+recompute(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...)
 }
 \arguments{
 \item{calist}{A list with std_coords_cols, the prin_coords_rows and D.}
@@ -12,6 +12,8 @@ recompute(calist, mat, rm_zeros = TRUE, ...)
 \item{mat}{A matrix from which the cacomp object is derived from.}
 
 \item{rm_zeros}{Removes rows & columns containing only zeros.}
+
+\item{top}{number of most variable rows to keep when running cacomp. Default is nrow(mat).}
 
 \item{...}{Further arguments forwarded to cacomp.}
 }

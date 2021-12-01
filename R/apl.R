@@ -775,7 +775,7 @@ apl <- function(caobj,
 #' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).
 #' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
 #' @param nrow Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.
-#' @param top Integer. Number of most variable rows to retain. Default 5000.
+#' @param top Integer. Number of most variable rows to retain. Default 5000 rows (set NULL to keep all).
 #' @param score Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.
 #' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.
 #' @param mark_cols Character vector. Names of cols that should be highlighted in the plot.

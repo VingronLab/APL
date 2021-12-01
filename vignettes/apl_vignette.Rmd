@@ -14,7 +14,8 @@ package: APL
 output:
   BiocStyle::html_document
 abstract: |
-  Description of your vignette
+  This package performs correspondence analysis (CA) and allows to identify cluster-specific genes using Association Plots (AP).
+  Additionally, APL computes the cluster-specificity scores for all genes which allows to rank the genes by their specificity for a selected cell cluster of interest.
 vignette: |
   %\VignetteIndexEntry{Analyzing data with APL}
   %\VignetteEngine{knitr::rmarkdown}
@@ -59,7 +60,7 @@ install_github("VingronLab/APL")
 
 To additionally build the package vignette, run instead
 ```{r git_vignette, eval=FALSE}
-install_github("VingronLab/APL", build_vignettes = TRUE)
+install_github("VingronLab/APL", build_vignettes = TRUE, dependencies = TRUE)
 ```
 Building the vignette will however take considerable time.
 
@@ -117,7 +118,7 @@ rownames(sce) <- rowData(sce)$Symbol_TENx
 colnames(sce) <- colData(sce)$Barcode
 
 
-pbmc <- CreateSeuratObject(counts = counts(sce),
+pbmc <- CreateSeuratObject(counts = as.matrix(counts(sce)),
                           assay = "RNA",
                           project = "pbmc3k",
                           min.cells = 3,
@@ -145,7 +146,7 @@ pbmc <- NormalizeData(pbmc,
                       verbose = FALSE)
 
 pbmc <- FindVariableFeatures(pbmc,
-                             selection.method = "vst",
+                             # selection.method = "vst",
                              nfeatures = 2000,
                              verbose = FALSE)
 
@@ -193,10 +194,11 @@ For example, to generate the Association Plot for the B cells (cluster: "3 - B")
 runAPL(pbmc,
        assay = "RNA",
        slot = "data",
+       top = nrow(pbmc),
        group = which(pbmc$seurat_clusters == 3),
        type = "ggplot")
 ```
-The generated Association Plot is computed based on the log-normalized count matrix. The dimensionality of the CA is determined automatically by the elbow rule descibed below (see [here](#dim_reduc)). This default behaviour can be overriden by setting the dimensions manually (parameter `dims`). The cluster-specificity score ( \eqn{S_\alpha}) for each gene is also calculated (`score = TRUE`). In order to better explore the data, `type` can be set to `"plotly"` to obtain an interactive plot. `runAPL` has many arguments to further customize the output and fine tune the calculations. Please refer to the documentation (`?runAPL`) for more information. The following sections in this vignette will discuss the choice of dimensionality and the \eqn{S_\alpha}-score.
+The generated Association Plot is computed based on the log-normalized count matrix. By default `runAPL` uses the top 5000 most variable genes in the data, but the data can be subset to any number of genes by changing the value for the argument `top`. In the above example we keep all genes to ensure that marker genes for smaller clusters are also included. The dimensionality of the CA is determined automatically by the elbow rule descibed below (see [here](#dim_reduc)). This default behaviour can be overriden by setting the dimensions manually (parameter `dims`). The cluster-specificity score ( \eqn{S_\alpha}) for each gene is also calculated (`score = TRUE`). In order to better explore the data, `type` can be set to `"plotly"` to obtain an interactive plot. `runAPL` has many arguments to further customize the output and fine tune the calculations. Please refer to the documentation (`?runAPL`) for more information. The following sections in this vignette will discuss the choice of dimensionality and the \eqn{S_\alpha}-score.
 
 # Step-by-step way of computing Association Plots
 
@@ -210,6 +212,7 @@ In this example we perform CA on the log-normalized count matrix from the 3k PBM
 # Computing CA on logcounts
 logcounts <- as.matrix(GetAssayData(pbmc, slot = "data"))
 ca <- cacomp(obj = logcounts,
+             top = nrow(pbmc),
              python = TRUE)
 
 # The above is equivalent to:
@@ -222,7 +225,7 @@ ca <- cacomp(obj = logcounts,
 
 The function `cacomp` accepts as an input any matrix with non-negative entries, be it a single-cell RNA-seq, bulk RNA-seq or other data. For ease of use, `cacomp` accepts also `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` objects, however for these we additionally have to specify via the `assay` and/or `slot` (for Seurat) parameter from where to extract the data. Importantly, in order to ensure the interpretability of the results `cacomp` (and related functions such as `runAPL`) requires that the input matrix contains both row and column names.
 
-When performing a feature selection before CA, we can set the argument `top` to the desired number of genes with the higest variance across cells from the input data to retain for further analysis. By default, 5,000 genes are kept.
+When performing a feature selection before CA, we can set the argument `top` to the desired number of genes with the highest variance across cells from the input data to retain for further analysis. By default, only the top 5000 most variable genes are kept. For this vignette we keep all genes in the data to ensure that also genes from smaller clusters such as the platelets are kept. In many cases however 5,000 genes are a good compromise between computational time and keeping most relevant genes.
 
 The output of `cacomp` is an object of class `cacomp`:
 ```{r print_cacomp}
@@ -241,6 +244,7 @@ In the case of `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` obj
 pbmc <- cacomp(obj = pbmc,
                assay = "RNA",
                slot = "data",
+               top = nrow(pbmc),
                return_input = TRUE,
                python = TRUE)
 

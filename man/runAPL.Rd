@@ -122,7 +122,7 @@ Should contain row and column names.}
 
 \item{nrow}{Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.}
 
-\item{top}{Integer. Number of most variable rows to retain. Default 5000.}
+\item{top}{Integer. Number of most variable rows to retain. Default 5000 rows (set NULL to keep all).}
 
 \item{score}{Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.}
 

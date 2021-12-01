@@ -28,7 +28,7 @@ Alternatively the package can also be installed from github:
 
 To additionally build the package vignette, run instead
 
-    install_github("VingronLab/APL", build_vignettes = TRUE)
+    install_github("VingronLab/APL", build_vignettes = TRUE, dependencies = TRUE)
     
 Building the vignette will however take considerable time.
     

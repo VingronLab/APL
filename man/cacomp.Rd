@@ -13,7 +13,7 @@ cacomp(
   princ_coords = 3,
   python = FALSE,
   dims = NULL,
-  top = NULL,
+  top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
   ...
@@ -25,7 +25,7 @@ cacomp(
   princ_coords = 3,
   python = FALSE,
   dims = NULL,
-  top = NULL,
+  top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
   ...
@@ -37,7 +37,7 @@ cacomp(
   princ_coords = 3,
   python = FALSE,
   dims = NULL,
-  top = NULL,
+  top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
   ...,
@@ -52,7 +52,7 @@ cacomp(
   princ_coords = 3,
   python = FALSE,
   dims = NULL,
-  top = NULL,
+  top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
   ...,
@@ -75,7 +75,7 @@ This implementation dramatically speeds up computation compared to `svd()` in R.
 
 \item{dims}{Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).}
 
-\item{top}{Integer. Number of most variable rows to retain. Default NULL.}
+\item{top}{Integer. Number of most variable rows to retain. Default 5000. (set NULL to keep all).}
 
 \item{inertia}{Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.}
 

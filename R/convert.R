@@ -14,15 +14,16 @@ NULL
 #' @param calist A list with std_coords_cols, the prin_coords_rows and D.
 #' @param mat A matrix from which the cacomp object is derived from.
 #' @param rm_zeros Removes rows & columns containing only zeros.
+#' @param top number of most variable rows to keep when running cacomp. Default is nrow(mat).
 #' @param ... Further arguments forwarded to cacomp.
-recompute <- function(calist, mat, rm_zeros = TRUE, ...){
+recompute <- function(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...){
   stopifnot(is(calist, "list"))
   stopifnot(is(mat, "matrix"))
 
   if(isTRUE(rm_zeros)){
     mat <- rm_zeros(mat)
   }
-
+  
   # make stock of what we have
 
   std_rows <- is.null(calist$std_coords_rows)
@@ -174,7 +175,7 @@ recompute <- function(calist, mat, rm_zeros = TRUE, ...){
 
   if(isTRUE(call_svd)){
     message("Calling cacomp to recompute from matrix.")
-    ca <- cacomp(mat, princ_coords = 3, ...)
+    ca <- cacomp(mat, princ_coords = 3, top = top, ...)
     return(ca)
   } else {
 
