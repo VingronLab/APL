@@ -17,7 +17,7 @@ Authors@R:
             email = "vingron@molgen.mpg.de"))
 Description: This package performs correspondence analysis (CA) and allows to identify cluster-specific genes using Association Plots (AP).
     Additionally, APL computes the cluster-specificity scores for all genes which allows to rank the genes by their specificity for a selected cell cluster of interest.
-biocViews: StatisticalMethod, DimensionReduction, SingleCell, Sequencing, RNASeq
+biocViews: StatisticalMethod, DimensionReduction, SingleCell, Sequencing, RNASeq, GeneExpression
 License: GPL (>= 3)
 Encoding: UTF-8
 RoxygenNote: 7.1.2
@@ -39,7 +39,7 @@ Imports:
     org.Hs.eg.db,
     org.Mm.eg.db
 Depends: 
-    R (>= 4.0)
+    R (>= 4.2)
 Suggests: 
     BiocStyle,
     knitr,
