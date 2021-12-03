@@ -507,24 +507,13 @@ apl <- function(caobj,
                            y = caobj@apl_rows[rows_idx,"y"],
                            row.names = NULL)
   }
+  
+  rows_color <- "#0066FF"
+  rows_high_color <- "#FF0000"
+  cols_color <- "#601A4A"
+  cols_grp_color <- "#EE442F"
 
-  if (row_labs == FALSE){
-    rlabs <- 'markers'
-    rowfont <- NULL
-  } else {
-    rlabs <- 'markers+text'
-    rowfont <- list(color='#FF0000')
 
-  }
-
-  if (col_labs == FALSE){
-    clabs <- 'markers'
-    colfont <- NULL
-  } else {
-    clabs <- 'markers+text'
-    colfont <- list(color='#000000')
-
-  }
 
   apl_rows.tmp <- data.frame(rownms = rownames(caobj@apl_rows),
                              caobj@apl_rows)
@@ -558,20 +547,21 @@ apl <- function(caobj,
       p <- p +
         ggplot2::geom_point(data=apl_rows.tmp,
                             ggplot2::aes(x=x, y=y),
-                            color = "#0066FF",
+                            color = rows_color,
                             alpha = 0.7,
                             shape = 1) #16 point, 1 circle.
 
       if (isTRUE(show_score)){
         p <- p +
           ggplot2::geom_point(data=apl_scored.tmp,
-                              ggplot2::aes(x=x, y=y, color = Score),
+                              ggplot2::aes(x=x, y=y, fill = Score),
                               alpha = 0.7,
-                              shape = 19)
+                              shape = 21,
+                              stroke = 0.5)
         if (score_color == "rainbow"){
           hex <- c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")
           p <- p +
-            ggplot2::scale_colour_gradientn(colours = hex,
+            ggplot2::scale_fill_gradientn(colours = hex,
                                             name = expression(S*alpha))
         } else if (score_color == "viridis"){
           p <- p +
@@ -584,14 +574,14 @@ apl <- function(caobj,
         p <- p +
           ggplot2::geom_point(data=group_rows,
                               ggplot2::aes(x=x, y=y),
-                              color="#FF0000",
+                              color = rows_high_color,
                               shape = 19)
 
         if(isTRUE(row_labs)){
           p <- p +
             ggrepel::geom_text_repel(data = group_rows,
                                      ggplot2::aes(x=x, y=y, label=rownms),
-                                     color = "#FF0000",
+                                     color = rows_high_color,
                                      max.overlaps = Inf)
         }
       }
@@ -601,17 +591,17 @@ apl <- function(caobj,
       p <- p +
         ggplot2::geom_point(data=apl_cols.tmp,
                             ggplot2::aes(x=x, y=y),
-                            color = "#006400",
+                            color = cols_color,
                             shape = 4) +
         ggplot2::geom_point(data=apl_cols.tmp[caobj@group,],
                             ggplot2::aes(x=x, y=y),
-                            color = "#990000",
+                            color = cols_grp_color,
                             shape = 4)
       if(col_labs == TRUE & is.numeric(cols_idx)){
         p <- p +
           ggrepel::geom_text_repel(data=group_cols,
                                    ggplot2::aes(x=x, y=y, label=rownms),
-                                   color = "#990000")
+                                   color = cols_grp_color)
       }
     }
 
@@ -626,13 +616,28 @@ apl <- function(caobj,
 
   } else if (type == "plotly"){
 
-
+    if (row_labs == FALSE){
+      rlabs <- 'markers'
+      rowfont <- NULL
+    } else {
+      rlabs <- 'markers+text'
+      rowfont <- list(color=rows_high_color)
+      
+    }
+    
+    if (col_labs == FALSE){
+      clabs <- 'markers'
+      colfont <- NULL
+    } else {
+      clabs <- 'markers+text'
+      colfont <- list(color = cols_grp_color)
+    }
 
     p <- plotly::plot_ly()
 
     if(isTRUE(show_rows)){
 
-      color_fix <- '#0066FF'
+      color_fix <- rows_color
       colors_fun <- NULL
       color_bar <- NULL
       sym <- "circle-open"
@@ -645,7 +650,7 @@ apl <- function(caobj,
                           text = apl_rows.tmp$rownms,
                           opacity = 0.7,
                           textposition = "left",
-                          marker = list(color = color_fix, # '#0066FF'
+                          marker = list(color = color_fix, 
                                         colorscale = colors_fun,
                                         symbol = sym,
                                         colorbar = color_bar,
@@ -657,8 +662,6 @@ apl <- function(caobj,
       if (isTRUE(show_score)){
 
         if (score_color == "rainbow"){
-          # color <- c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")
-          # colors_fun <- NULL
           colors_fun <- "Jet"
         } else if (score_color == "viridis"){
           colors_fun <- 'Viridis'
@@ -679,7 +682,9 @@ apl <- function(caobj,
                                           colorscale = colors_fun,
                                           symbol = sym,
                                           colorbar = color_bar,
-                                          size = 5),
+                                          size = 5,
+                                          line = list(color = '#000000', #black
+                                                      width = 0.5)),
                             name = 'genes (scored)',
                             hoverinfo = 'text',
                             type = 'scatter')
@@ -697,7 +702,7 @@ apl <- function(caobj,
                            textposition = "left",
                            textfont=rowfont,
                            marker = list(symbol = 'circle',
-                                         color = '#FF0000',
+                                         color = rows_high_color,
                                          size = 5),
                            name = 'marked genes',
                            hoverinfo = 'text',
@@ -713,7 +718,7 @@ apl <- function(caobj,
                           mode = 'markers',
                           text = apl_cols.tmp$rownms,
                           textposition = "left",
-                          marker = list(color = '#124429',
+                          marker = list(color = cols_color,
                                         symbol = 'x',
                                         size = 5),
                           name = 'samples',
@@ -729,7 +734,7 @@ apl <- function(caobj,
                                      textposition = "left",
                                      textfont=colfont,
                                      marker = list(symbol = 'x',
-                                                   color = '#990000',
+                                                   color = cols_grp_color,
                                                    size = 5),
                                      name = 'marked samples',
                                      hoverinfo = 'text',

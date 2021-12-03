@@ -39,7 +39,6 @@ Imports:
     org.Hs.eg.db,
     org.Mm.eg.db
 Depends: 
-    R
 Suggests: 
     BiocStyle,
     knitr,

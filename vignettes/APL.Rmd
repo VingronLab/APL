@@ -332,7 +332,7 @@ apl(ca,
 In the Association Plot all genes are represented by blue circles. The further to the right a gene is located the more associated it is with the chosen cluster of cells. Additionally, the lower the y-axis value, the more specific it is for the selected cluster.
 Additionally, it is possible to highlight in the Association Plot any set of genes. In the example above we additionally highlighted four genes ("ITGA2B", "PF4", "GP1BA", "TUBB1") which are known to be marker genes for platelets. As we can see in the plot, they are located in the right part of the plot, which confirms their specificity for platelets. 
 
-By default we plot only the genes in the Association Plot. To also display the cells in the Association Plot, use the argument `show_cols = TRUE`. This way we can identify other cells which show similar expression profiles to the cells of interest. Cells that belong to the cluster of interest will be colored in red, and all remaining cells will be colored in green. Furthermore, an interactive plot in which you can hover over genes to see their name can be created by setting `type = "plotly"`.
+By default we plot only the genes in the Association Plot. To also display the cells in the Association Plot, use the argument `show_cols = TRUE`. This way we can identify other cells which show similar expression profiles to the cells of interest. Cells that belong to the cluster of interest will be colored in red, and all remaining cells will be colored in violet. Furthermore, an interactive plot in which you can hover over genes to see their name can be created by setting `type = "plotly"`.
 
 ## Association Plots with the \eqn{S_\alpha} scores
 
