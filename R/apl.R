@@ -45,19 +45,18 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
   stopifnot(is(caobj, "cacomp"))
 
-
-
-  rows <- t(caobj@prin_coords_rows)
-  cols <- t(caobj@std_coords_cols)
+  rows <- caobj@prin_coords_rows
+  cols <- caobj@std_coords_cols
   cent <- cols
 
 
   if (is(group, "numeric")){
-    subgroup <- cent[,group]
+    subgroup <- cent[group,]
   } else if (is(group, "character")){
-    idx <- match(group, colnames(cent))
+    idx <- match(group, rownames(cent))
     idx <- na.omit(idx)
-    subgroup <- cent[,idx]
+    group <- idx
+    subgroup <- cent[idx,]
 
     if (anyNA(idx)){
       warning("Not all names in 'group' are contained in the column names. Non-matching values were ignored.")
@@ -69,17 +68,17 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
   if (length(group) == 1){
     avg_group_coords <- subgroup # single sample
   } else {
-    avg_group_coords <- rowMeans(subgroup) # centroid vector.
+    avg_group_coords <- colMeans(subgroup) # centroid vector.
   }
   length_vector_group <- sqrt(drop(avg_group_coords %*% avg_group_coords))
-  length_vector_rows <- sqrt(colSums(rows^2))
-  length_vector_cols <- sqrt(colSums(cols^2))
+  length_vector_rows <- sqrt(rowSums(rows^2))
+  length_vector_cols <- sqrt(rowSums(cols^2))
 
   if (calc_rows == TRUE){
     # message("Calculating APL row coordinates ...")
     # r⋅X = |r|*|X|*cosθ
     # x(r) = (r⋅X)/|X| = |r|*cosθ
-    rowx <- drop(t(rows) %*% avg_group_coords)/length_vector_group
+    rowx <- drop(rows %*% avg_group_coords)/length_vector_group
     # pythagoras, y(r)=b²=c²-a²
     rowy <- sqrt(length_vector_rows^2 - rowx^2)
 
@@ -95,7 +94,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
   if (calc_cols == TRUE){
     # message("Calculating APL column coordinates ...")
 
-    colx <- drop(t(cols) %*% avg_group_coords)/length_vector_group
+    colx <- drop(cols %*% avg_group_coords)/length_vector_group
     coly <- sqrt(length_vector_cols^2 - colx^2)
 
     colx[is.na(colx)] <- 0
@@ -109,7 +108,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
   if (is(group, "numeric")){
     caobj@group <- group
   } else if (is(group, "character")){
-    idx <- match(group, colnames(cols))
+    idx <- match(group, rownames(cols))
     idx <- na.omit(idx)
     caobj@group <- idx
   }
