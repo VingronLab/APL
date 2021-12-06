@@ -219,6 +219,7 @@ ca <- cacomp(obj = logcounts,
 # ca <- cacomp(obj = pbmc,
 #              assay = "RNA",
 #              slot = "data",
+#              top = nrow(pbmc),
 #              python = TRUE)
 
 ```
@@ -235,7 +236,7 @@ ca
 As can be seen in the summarized output, by default both types of coordinates in the CA space (principal and standardized) are calculated.
 Once the coordinates for the Association Plot are calculate, they will also be shown in the output of `cacomp`. Slots are accessed similarly to other S4 classes:
 ```{r std_coords}
-ca@std_coords_cols[1:5,1:5]
+ca@std_coords_cols[1:5, 1:5]
 ```
 
 In the case of `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` objects, we can alternatively set `return_input = TRUE` to get the input object back, with the CA results computed by "APL" and stored in the appropriate slot for dimension reduction. This also allows for using the plotting functions that come with these packages:
@@ -298,7 +299,8 @@ In this case the elbow rule leads to a much higher number of dimensions.
 # Compute the amount of inertia explained by each of the dimensions
 expl_inertia <- (ca@D^2/sum(ca@D^2))*100
 
-# Compute the amount of intertia explained by number of dimensions defined by elbow rule
+# Compute the amount of intertia explained 
+# by the number of dimensions defined by elbow rule
 sum(expl_inertia[seq_len(pd)])
 ```
 
@@ -326,7 +328,7 @@ After computing the coordinates of genes and cells in the Association Plot we ar
 # Plot APL
 apl(ca,
     row_labs = TRUE,
-    rows_idx = c("ITGA2B", "PF4", "GP1BA", "TUBB1"), #platelet marker genes
+    rows_idx = c("ITGA2B", "PF4", "GP1BA", "TUBB1"), # platelet marker genes
     type = "ggplot") # type = "plotly" for an interactive plot
 ```
 In the Association Plot all genes are represented by blue circles. The further to the right a gene is located the more associated it is with the chosen cluster of cells. Additionally, the lower the y-axis value, the more specific it is for the selected cluster.
@@ -339,7 +341,7 @@ By default we plot only the genes in the Association Plot. To also display the c
 Computing the \eqn{S_\alpha} scores, a measure of cluster-specificity of a gene, allows us to rank genes by their specificity for a selected cluster. The \eqn{S_\alpha} scores can be computed using the `apl_score` function. To show the \eqn{S_\alpha} scores in the Association Plot use the argument `show_score = TRUE` in the `apl` function:
 
 ```{r apl_score, results = "hide"}
-# Compute Salpha score
+# Compute S-alpha score
 # For the calculation the input matrix is also required.
 ca <- apl_score(ca,
                 mat = as.matrix(GetAssayData(object = pbmc, slot = "data")),
@@ -349,7 +351,6 @@ ca <- apl_score(ca,
 ```{r apl_plot_platelets, fig.wide = TRUE}
 apl(ca,
     show_score = TRUE,
-    show_cols = FALSE,
     type = "ggplot") 
 ```
 
@@ -390,7 +391,7 @@ ca_biplot(ca, col_labels = platelets, type = "ggplot")
 
 ```
 
-The above described plots give us a quick overview of the first 2 dimensions of the data (more dimensions can be plotted). To interactively explore the projection of the data, `type = "plotly"` can be set. 
+The above described plots give us a quick overview of the first 2 dimensions of the data (more dimensions can be plotted). As shown in the commented out code, to interactively explore the projection of the data `type = "plotly"` can be set. 
 
 # APL and GO enrichment analysis
 
@@ -412,9 +413,9 @@ Now we can conduct GO enrichment analysis as implemented in the package `r Biocp
 
 ```{r topGO, message=FALSE}
 enr <- apl_topGO(ca,
-          ontology = "BP",
-          organism = "hs",
-          score_cutoff = 1)
+                 ontology = "BP",
+                 organism = "hs",
+                 score_cutoff = 1)
 ```
 
 
