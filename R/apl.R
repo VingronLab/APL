@@ -4,27 +4,36 @@ NULL
 #' Calculate Association Plot coordinates
 #'
 #' @description
-#' Calculates the Association Plot coordinates for either the rows, columns or both (default).
+#' Calculates the Association Plot coordinates for either the rows, 
+#' columns or both (default).
 #'
 #' @details
 #' Coordinates (x,y) of row vector \eqn{\vec{r}} are defined as
 #' \deqn{x(\vec{r}) := \left|\vec{r}\right|\cos(\phi(\vec{r}))}
 #' \deqn{y(\vec{r}) := \left|\vec{r}\right|\sin(\phi(\vec{r}))}
-#' The x-direction is determined by calculating the centroid of the columns selected with the indices in "group".
+#' The x-direction is determined by calculating the centroid of the columns 
+#' selected with the indices in "group".
 #'
 #' @return
-#' Returns input "cacomp" object and adds components "apl_rows" and/or "apl_cols" for row and column coordinates.
-#' In "group" the indices of the columns used to calculate the centroid are saved.
+#' Returns input "cacomp" object and adds components "apl_rows" and/or 
+#' "apl_cols" for row and column coordinates.
+#' In "group" the indices of the columns used to calculate the 
+#' centroid are saved.
 #' 
 #' @references
-#' Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
+#' Association Plots: Visualizing associations in high-dimensional 
+#' correspondence analysis biplots
 #' Elzbieta Gralinska, Martin Vingron
 #' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 #'
-#' @param caobj A "cacomp" object with principal row coordinates and standardized column coordinates calculated.
-#' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
-#' @param calc_rows TRUE/FALSE. Whether apl row coordinates should be calculated. Default TRUE.
-#' @param calc_cols TRUE/FALSE. Whether apl column coordinates should be calculated. Default TRUE.
+#' @param caobj A "cacomp" object with principal row coordinates and 
+#' standardized column coordinates calculated.
+#' @param group Numeric/Character. Vector of indices or column names of 
+#' the columns to calculate centroid/x-axis direction.
+#' @param calc_rows TRUE/FALSE. Whether apl row coordinates should 
+#' be calculated. Default TRUE.
+#' @param calc_cols TRUE/FALSE. Whether apl column coordinates should 
+#' be calculated. Default TRUE.
 #' @export
 #'
 #' @examples
@@ -59,7 +68,8 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     subgroup <- cent[idx,]
 
     if (anyNA(idx)){
-      warning("Not all names in 'group' are contained in the column names. Non-matching values were ignored.")
+      warning(paste0("Not all names in 'group' are contained in the column ",
+                     "names. Non-matching values were ignored."))
     }
   } else {
     stop("Parameter group has to be either of type 'numeric' or 'character'.")
@@ -120,39 +130,54 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' Find rows most highly associated with a condition
 #'
 #' @description
-#' Ranks rows by a calculated score which balances the association of the row with the condition and how associated it is with other conditions.
+#' Ranks rows by a calculated score which balances the association of the row 
+#' with the condition and how associated it is with other conditions.
 #'
 #' @details
-#' The score is calculated by permuting the values of each row to determine the cutoff angle of the 99% quantile.
+#' The score is calculated by permuting the values of each row to determine the 
+#' cutoff angle of the 99% quantile.
 #' \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
-#' By default the permutation is repeated 10 times, but for very large matrices this can be reduced.
-#' If store_perm is TRUE the permuted data is stored in the cacomp object and can be used for future scoring.
+#' By default the permutation is repeated 10 times, but for very large matrices 
+#' this can be reduced.
+#' If store_perm is TRUE the permuted data is stored in the cacomp object and 
+#' can be used for future scoring.
 #' @return
 #' Returns the input "cacomp" object with "APL_score" component added.
-#' APL_score contains a data frame with ranked rows, their score and their original row number.
+#' APL_score contains a data frame with ranked rows, their score and their 
+#' original row number.
 #' 
 #' @references
-#' Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
-#' Elzbieta Gralinska, Martin Vingron
+#' Association Plots: Visualizing associations in high-dimensional 
+#' correspondence analysis biplots \cr
+#' Elzbieta Gralinska, Martin Vingron \cr
 #' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 #'
-#' @param caobj A "cacomp" object with principal row coordinates and standardized column coordinates calculated.
-#' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' @param caobj A "cacomp" object with principal row coordinates and 
+#' standardized column coordinates calculated.
+#' @param mat A numeric matrix. For sequencing a count matrix, gene expression 
+#' values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
-#' @param dims Integer. Number of CA dimensions to retain. Needs to be the same as in caobj!
-#' @param group Vector of indices of the columns to calculate centroid/x-axis direction.
+#' @param dims Integer. Number of CA dimensions to retain. Needs to be the same 
+#' as in caobj!
+#' @param group Vector of indices of the columns to calculate centroid/x-axis 
+#' direction.
 #' @param reps Integer. Number of permutations to perform. Default = 10.
-#' @param quant Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' @param store_perm Logical. Whether permuted data should be stored in the CA object.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @param quant Numeric. Single number between 0 and 1 indicating the quantile 
+#' used to calculate the cutoff. Default 0.99.
+#' @param python A logical value indicating whether to use singular-value 
+#' decomposition from the python package torch.
+#' @param store_perm Logical. Whether permuted data should be stored in the CA 
+#' object.
+#' This implementation dramatically speeds up computation compared to `svd()` 
+#' in R.
 #' @export
 #'
 #' @examples
 #' set.seed(1234)
 #'
 #' # Simulate counts
-#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:20, 50, replace = TRUE))
 #' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 #' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 #'
@@ -164,7 +189,14 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #'
 #' # Rank genes by S-alpha score
 #' ca <- apl_score(ca, mat = cnts)
-apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=10, quant = 0.99, python = TRUE, store_perm = TRUE){
+apl_score <- function(caobj,
+                      mat,
+                      dims = caobj@dims,
+                      group = caobj@group,
+                      reps=10,
+                      quant = 0.99,
+                      python = TRUE,
+                      store_perm = TRUE){
 
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -191,12 +223,12 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
     row_num <- 1
   }
 
-  apl_perm <- data.frame("x" = rep(0, row_num*reps), "y" = rep(0, row_num*reps)) #init. data frame
+  apl_perm <- data.frame("x" = rep(0, row_num*reps),
+                         "y" = rep(0, row_num*reps))
   saved_ca <- list()
   pb <- txtProgressBar(min = 0, max = reps, style = 3)
 
   for (k in seq(reps)){
-    # message("\nRunning permutation ", k, " out of ", reps, " to calculate row/column scores ...")
 
     #permute rows and rerun cacomp
 
@@ -223,15 +255,16 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
                   "std_coords_rows" = caobjp@std_coords_rows,
                   "D" = caobjp@D,
                   "mat" = mat_perm)
-        # x <- recompute(x, mat_perm)
 
-        # saved_ca[[k]] <- caobjp
         saved_ca[[k]] <- x
 
       }
     }
 
-    caobjp <- apl_coords(caobj = caobjp, group = group, calc_cols = cc, calc_rows = cr)
+    caobjp <- apl_coords(caobj = caobjp,
+                         group = group,
+                         calc_cols = cc,
+                         calc_rows = cr)
     idx <- ((seq_len(row_num)+((k-1)*row_num)))
 
     apl_perm[idx,] <- caobjp@apl_rows
@@ -274,11 +307,13 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
 #' Run Gene overrepresentation analysis with topGO
 #'
 #' @description
-#' This function uses the Kolmogorov-Smirnov test as implemented by the package topGO to test for overrepresentation in Gene Ontology gene sets.
+#' This function uses the Kolmogorov-Smirnov test as implemented by the package 
+#' topGO to test for overrepresentation in Gene Ontology gene sets.
 #'
 #' @details
 #' For a chosen group of cells/samples,
-#' the top 'ngenes' group specific genes are used for gene overrepresentation analysis.
+#' the top 'ngenes' group specific genes are used for gene overrepresentation 
+#' analysis.
 #' The genes are ranked either by the precomputed APL score, or, if
 #' not available by their APL x-coordinates.
 #'
@@ -286,17 +321,25 @@ apl_score <- function(caobj, mat, dims = caobj@dims, group = caobj@group, reps=1
 #' A data.frame containing the gene sets with the highest overrepresentation.
 #'
 #' @references 
-#' Adrian Alexa and Jorg Rahnenfuhrer (2020). topGO: Enrichment Analysis for Gene Ontology. 
+#' Adrian Alexa and Jorg Rahnenfuhrer (2020). topGO: Enrichment Analysis for 
+#' Gene Ontology. 
 #' R package version 2.42.0.
 #' 
-#' @param caobj A "cacomp" object with principal row coordinates and standardized column coordinates calculated.
-#' @param ontology Character string. Chooses GO sets for 'BP' (biological processes), 'CC' (cell compartment) or 'MF' (molecular function).
-#' @param organism Character string. Either 'hs' (homo sapiens), 'mm' (mus musculus) or the name of the organism package such as 'org.*.eg.db'.
-#' @param ngenes Numeric. Number of top ranked genes to test for overrepresentation.
-#' @param score_cutoff numeric. S-alpha score cutoff. Only genes with a score larger will be tested.
-#' @param use_coords Logical. Whether the x-coordinates of the row APL coordinates should be used for ranking.
+#' @param caobj A "cacomp" object with principal row coordinates and 
+#' standardized column coordinates calculated.
+#' @param ontology Character string. Chooses GO sets for 'BP' 
+#' (biological processes), 'CC' (cell compartment) or 'MF' (molecular function).
+#' @param organism Character string. Either 'hs' (homo sapiens), 'mm' 
+#' (mus musculus) or the name of the organism package such as 'org.*.eg.db'.
+#' @param ngenes Numeric. Number of top ranked genes to test for 
+#' overrepresentation.
+#' @param score_cutoff numeric. S-alpha score cutoff. Only genes with a score 
+#' larger will be tested.
+#' @param use_coords Logical. Whether the x-coordinates of the row APL 
+#' coordinates should be used for ranking.
 #' Only recommended when no S-alpha score (see apl_score()) can be calculated.
-#' @param return_plot Logical. Whether a plot of significant gene sets should be additionally returned.
+#' @param return_plot Logical. Whether a plot of significant gene sets should 
+#' be additionally returned.
 #' @param top_res Numeric. Number of top scoring genes to plot.
 #' 
 #' @export
@@ -354,7 +397,8 @@ apl_topGO <- function(caobj,
       warning("You have selected all available genes.\n")
     }
     ranked_genes <- seq_len(nrow(caobj@apl_rows))
-    names(ranked_genes) <- rownames(caobj@apl_rows)[order(caobj@apl_rows[,1], decreasing = TRUE)]
+    names(ranked_genes) <- rownames(caobj@apl_rows)[order(caobj@apl_rows[,1],
+                                                          decreasing = TRUE)]
     sel <- ngenes
   } else {
     stop("APL scores not present but use_coords set to FALSE.\n")
@@ -387,22 +431,24 @@ apl_topGO <- function(caobj,
                 geneSelectionFun = function(x) x<sel,
                 nodeSize=5)
 
-  results_test <- topGO::runTest(GOdata, algorithm = "elim", statistic = "fisher")
+  results_test <- topGO::runTest(GOdata,
+                                 algorithm = "elim",
+                                 statistic = "fisher")
 
-  # results_test <- topGO::runTest(GOdata, algorithm="classic", statistic="ks")
-
-
-  # goEnrichment <- topGO::GenTable(GOdata, KS=results_test, orderBy="KS", topNodes = top_res)
   goEnrichment <- topGO::GenTable(GOdata,
                                   raw.p.value = results_test,
-                                  topNodes = length(results_test@score)) #, numChar = 1200
+                                  topNodes = length(results_test@score))
   if (isTRUE(return_plot)){
 
     if(top_res > length(results_test@score)){
-      warning("More top nodes selected via top_res than available. Returning max. number of nodes instead.\n")
+      warning(paste0("More top nodes selected via top_res than available.",
+              " Returning max. number of nodes instead.\n"))
       top_res <- min(top_res, length(results_test@score))
     }
-    topGO::showSigOfNodes(GOdata, score(results_test), firstSigNodes = top_res, useInfo = 'def')
+    topGO::showSigOfNodes(GOdata,
+                          score(results_test),
+                          firstSigNodes = top_res,
+                          useInfo = 'def')
   }
 
   return(goEnrichment)
@@ -416,28 +462,39 @@ apl_topGO <- function(caobj,
 #' Plot an Association Plot for the chosen columns.
 #'
 #' @details
-#' For an interactive plot type="plotly" can be chosen, otherwise a static plot will be returned.
-#' The row and column coordinates have to be already calculated by `apl_coords()`.
+#' For an interactive plot type="plotly" can be chosen, otherwise a static plot 
+#' will be returned.
+#' The row and column coordinates have to be already calculated by 
+#' `apl_coords()`.
 #'
 #' @return
 #' Either a ggplot or plotly object.
 #' 
 #' @references
-#' Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
-#' Elzbieta Gralinska, Martin Vingron
-#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
+#' Association Plots: Visualizing associations in high-dimensional 
+#' correspondence analysis biplots \cr
+#' Elzbieta Gralinska, Martin Vingron \cr
+#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
 #'
-#' @param caobj  An object of class "cacomp" and "APL" with apl coordinates calculated.
-#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".
-#' @param rows_idx numeric/character vector. Indices or names of the rows that should be labelled. Default NULL.
-#' @param cols_idx numeric/character vector. Indices or names of the columns that should be labelled. 
+#' @param caobj  An object of class "cacomp" and "APL" with apl 
+#' coordinates calculated.
+#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", 
+#' for an interactive plot "plotly". Default "ggplot".
+#' @param rows_idx numeric/character vector. 
+#' Indices or names of the rows that should be labelled. Default NULL.
+#' @param cols_idx numeric/character vector. 
+#' Indices or names of the columns that should be labelled. 
 #' Default is only to label columns making up the centroid: caobj@group.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default FALSE.
-#' @param show_score Logical. Whether the S-alpha score should be shown in the plot.
+#' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
+#' should be labeled with text. Default TRUE.
+#' @param col_labs Logical. Whether labels for columns indicated by cols_idx 
+#' shouls be labeled with text. Default FALSE.
+#' @param show_score Logical. Whether the S-alpha score should be shown in 
+#' the plot.
 #' @param show_cols Logical. Whether column points should be plotted.
 #' @param show_rows Logical. Whether row points should be plotted.
-#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.
+#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff will 
+#' be colored according to their score if show_score = TRUE.
 #' @param score_color Either "rainbow" or "viridis".
 #' @export
 #' @examples
@@ -558,7 +615,15 @@ apl <- function(caobj,
                               shape = 21,
                               stroke = 0.5)
         if (score_color == "rainbow"){
-          hex <- c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")
+          hex <- c("#00007F",
+                   "blue",
+                   "#007FFF",
+                   "cyan",
+                   "#7FFF7F",
+                   "yellow",
+                   "#FF7F00",
+                   "red",
+                   "#7F0000")
           p <- p +
             ggplot2::scale_fill_gradientn(colours = hex,
                                             name = expression(S*alpha))
@@ -742,15 +807,23 @@ apl <- function(caobj,
     }
 
 
-    p <- p %>% plotly::layout(title = paste('Association Plot \n', ncol(caobj@U), ' first dimensions, ', length(caobj@group),' samples.\n'),
-             xaxis = list(title = 'Distance from origin (x)', rangemode = "tozero"),
-             yaxis = list(title = 'Distance from gene to sample line (y)', rangemode = "tozero"), showlegend = TRUE)
+    p <- p %>% plotly::layout(title = paste('Association Plot \n',
+                                            ncol(caobj@U),
+                                            ' first dimensions, ',
+                                            length(caobj@group),
+                                            ' samples.\n'),
+             xaxis = list(title = 'Distance from origin (x)',
+                          rangemode = "tozero"),
+             yaxis = list(title = 'Distance from gene to sample line (y)',
+                          rangemode = "tozero"),
+             showlegend = TRUE)
 
     rm(apl_rows.tmp, apl_cols.tmp)
 
     return(p)
   } else {
-    stop("Please specify plot = \"ggplot\" or \"plotly\". Other options are not accepted.")
+    stop(paste0("Please specify plot = \"ggplot\" or \"plotly\".",
+                " Other options are not accepted."))
   }
 
 }
@@ -758,22 +831,29 @@ apl <- function(caobj,
 #' Compute and plot Association Plot
 #'
 #' @description
-#' Computes singular value decomposition and coordinates for the Association Plot.
+#' Computes singular value decomposition and coordinates for 
+#' the Association Plot.
 #'
 #' @details
-#' The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.
-#' The chosen defaults are most useful for genomics experiments, but for more fine grained control the functions
+#' The function is a wrapper that calls `cacomp()`, `apl_coords()`, 
+#' `apl_score()` and finally `apl()` for ease of use.
+#' The chosen defaults are most useful for genomics experiments, but for more 
+#' fine grained control the functions
 #' can be also run individually for the same results.
-#' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
+#' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score 
+#' is treated as if FALSE.
 #' @return
 #' Association Plot (plotly object).
 #' 
 #' @references
-#' Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
-#' Elzbieta Gralinska, Martin Vingron
-#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
+#' Association Plots: Visualizing associations in high-dimensional 
+#' correspondence analysis biplots \cr
+#' Elzbieta Gralinska, Martin Vingron \cr
+#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
 #'
-#' @param obj A numeric matrix, Seurat or SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' @param obj A numeric matrix, Seurat or SingleCellExperiment object. For 
+#' sequencing a count matrix, gene expression values with genes in rows and 
+#' samples/cells in columns.
 #' Should contain row and column names.
 #' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.
 #' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).

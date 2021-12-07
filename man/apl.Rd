@@ -19,26 +19,34 @@ apl(
 )
 }
 \arguments{
-\item{caobj}{An object of class "cacomp" and "APL" with apl coordinates calculated.}
+\item{caobj}{An object of class "cacomp" and "APL" with apl 
+coordinates calculated.}
 
-\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "ggplot".}
+\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", 
+for an interactive plot "plotly". Default "ggplot".}
 
-\item{rows_idx}{numeric/character vector. Indices or names of the rows that should be labelled. Default NULL.}
+\item{rows_idx}{numeric/character vector. 
+Indices or names of the rows that should be labelled. Default NULL.}
 
-\item{cols_idx}{numeric/character vector. Indices or names of the columns that should be labelled. 
+\item{cols_idx}{numeric/character vector. 
+Indices or names of the columns that should be labelled. 
 Default is only to label columns making up the centroid: caobj@group.}
 
-\item{row_labs}{Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.}
+\item{row_labs}{Logical. Whether labels for rows indicated by rows_idx 
+should be labeled with text. Default TRUE.}
 
-\item{col_labs}{Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default FALSE.}
+\item{col_labs}{Logical. Whether labels for columns indicated by cols_idx 
+shouls be labeled with text. Default FALSE.}
 
-\item{show_score}{Logical. Whether the S-alpha score should be shown in the plot.}
+\item{show_score}{Logical. Whether the S-alpha score should be shown in 
+the plot.}
 
 \item{show_cols}{Logical. Whether column points should be plotted.}
 
 \item{show_rows}{Logical. Whether row points should be plotted.}
 
-\item{score_cutoff}{Numeric. Rows (genes) with a score >= score_cutoff will be colored according to their score if show_score = TRUE.}
+\item{score_cutoff}{Numeric. Rows (genes) with a score >= score_cutoff will 
+be colored according to their score if show_score = TRUE.}
 
 \item{score_color}{Either "rainbow" or "viridis".}
 }
@@ -49,8 +57,10 @@ Either a ggplot or plotly object.
 Plot an Association Plot for the chosen columns.
 }
 \details{
-For an interactive plot type="plotly" can be chosen, otherwise a static plot will be returned.
-The row and column coordinates have to be already calculated by `apl_coords()`.
+For an interactive plot type="plotly" can be chosen, otherwise a static plot 
+will be returned.
+The row and column coordinates have to be already calculated by 
+`apl_coords()`.
 }
 \examples{
 set.seed(1234)
@@ -74,7 +84,8 @@ ca <- apl_coords(ca, group = 1:10)
 apl(ca, type = "ggplot")
 }
 \references{
-Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
-Elzbieta Gralinska, Martin Vingron
-bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
+Association Plots: Visualizing associations in high-dimensional 
+correspondence analysis biplots \cr
+Elzbieta Gralinska, Martin Vingron \cr
+bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
 }

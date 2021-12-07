@@ -111,7 +111,9 @@ runAPL(
 )
 }
 \arguments{
-\item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+\item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For 
+sequencing a count matrix, gene expression values with genes in rows and 
+samples/cells in columns.
 Should contain row and column names.}
 
 \item{group}{Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.}
@@ -168,17 +170,21 @@ the number of dimensions. Ignored when `dims` is set by the user.}
 Association Plot (plotly object).
 }
 \description{
-Computes singular value decomposition and coordinates for the Association Plot.
+Computes singular value decomposition and coordinates for 
+the Association Plot.
 
 runAPL.SingleCellExperiment: Computes singular value decomposition and coordinates for the Association Plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
 
 runAPL.Seurat: Computes singular value decomposition and coordinates for the Association Plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
 }
 \details{
-The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.
-The chosen defaults are most useful for genomics experiments, but for more fine grained control the functions
+The function is a wrapper that calls `cacomp()`, `apl_coords()`, 
+`apl_score()` and finally `apl()` for ease of use.
+The chosen defaults are most useful for genomics experiments, but for more 
+fine grained control the functions
 can be also run individually for the same results.
-If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
+If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score 
+is treated as if FALSE.
 }
 \examples{
 set.seed(1234)
@@ -248,7 +254,8 @@ runAPL(obj = seu,
        slot = "counts")
 }
 \references{
-Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
-Elzbieta Gralinska, Martin Vingron
-bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
+Association Plots: Visualizing associations in high-dimensional 
+correspondence analysis biplots \cr
+Elzbieta Gralinska, Martin Vingron \cr
+bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
 }

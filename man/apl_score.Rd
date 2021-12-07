@@ -16,42 +16,56 @@ apl_score(
 )
 }
 \arguments{
-\item{caobj}{A "cacomp" object with principal row coordinates and standardized column coordinates calculated.}
+\item{caobj}{A "cacomp" object with principal row coordinates and 
+standardized column coordinates calculated.}
 
-\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression 
+values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
-\item{dims}{Integer. Number of CA dimensions to retain. Needs to be the same as in caobj!}
+\item{dims}{Integer. Number of CA dimensions to retain. Needs to be the same 
+as in caobj!}
 
-\item{group}{Vector of indices of the columns to calculate centroid/x-axis direction.}
+\item{group}{Vector of indices of the columns to calculate centroid/x-axis 
+direction.}
 
 \item{reps}{Integer. Number of permutations to perform. Default = 10.}
 
-\item{quant}{Numeric. Single number between 0 and 1 indicating the quantile used to calculate the cutoff. Default 0.99.}
+\item{quant}{Numeric. Single number between 0 and 1 indicating the quantile 
+used to calculate the cutoff. Default 0.99.}
 
-\item{python}{A logical value indicating whether to use singular-value decomposition from the python package torch.}
+\item{python}{A logical value indicating whether to use singular-value 
+decomposition from the python package torch.}
 
-\item{store_perm}{Logical. Whether permuted data should be stored in the CA object.
-This implementation dramatically speeds up computation compared to `svd()` in R.}
+\item{store_perm}{Logical. Whether permuted data should be stored in the CA 
+object.
+This implementation dramatically speeds up computation compared to `svd()` 
+in R.}
 }
 \value{
 Returns the input "cacomp" object with "APL_score" component added.
-APL_score contains a data frame with ranked rows, their score and their original row number.
+APL_score contains a data frame with ranked rows, their score and their 
+original row number.
 }
 \description{
-Ranks rows by a calculated score which balances the association of the row with the condition and how associated it is with other conditions.
+Ranks rows by a calculated score which balances the association of the row 
+with the condition and how associated it is with other conditions.
 }
 \details{
-The score is calculated by permuting the values of each row to determine the cutoff angle of the 99% quantile.
+The score is calculated by permuting the values of each row to determine the 
+cutoff angle of the 99% quantile.
 \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
-By default the permutation is repeated 10 times, but for very large matrices this can be reduced.
-If store_perm is TRUE the permuted data is stored in the cacomp object and can be used for future scoring.
+By default the permutation is repeated 10 times, but for very large matrices 
+this can be reduced.
+If store_perm is TRUE the permuted data is stored in the cacomp object and 
+can be used for future scoring.
 }
 \examples{
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
@@ -65,7 +79,8 @@ ca <- apl_coords(ca, group = 1:10)
 ca <- apl_score(ca, mat = cnts)
 }
 \references{
-Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
-Elzbieta Gralinska, Martin Vingron
+Association Plots: Visualizing associations in high-dimensional 
+correspondence analysis biplots \cr
+Elzbieta Gralinska, Martin Vingron \cr
 bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 }
