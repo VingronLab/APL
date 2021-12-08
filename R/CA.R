@@ -24,8 +24,10 @@ comp_std_residuals <- function(mat){
   if (!is(mat, "matrix")){
     mat <- as.matrix(mat)
   }
-  stopifnot("Input matrix does not have any rownames!" = !is.null(rownames(mat)))
-  stopifnot("Input matrix does not have any colnames!" = !is.null(colnames(mat)))
+  stopifnot(
+    "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
+  stopifnot(
+    "Input matrix does not have any colnames!" = !is.null(colnames(mat)))
 
   tot <- sum(mat)
   P <- mat/tot               # proportions matrix
@@ -51,12 +53,16 @@ rm_zeros <- function(obj){
   no_zeros_cols <- colSums(obj) > 0
   if (sum(!no_zeros_rows) != 0){
     ## Delete genes with only zero values across all columns
-    warning("Matrix contains rows with only 0s. These rows were removed. If undesired set rm_zeros = FALSE.")
+    warning("Matrix contains rows with only 0s. ",
+            "These rows were removed. ",
+            "If undesired set rm_zeros = FALSE.")
     obj <- obj[no_zeros_rows,]
   }
   if (sum(!no_zeros_cols) != 0){
     ## Delete cells with only zero values across all genes
-    warning("Matrix contains columns with only 0s. These columns were removed. If undesired set rm_zeros = FALSE.")
+    warning("Matrix contains columns with only 0s. ",
+            "These columns were removed. ",
+            "If undesired set rm_zeros = FALSE.")
     obj <- obj[,no_zeros_cols]
   }
 
@@ -65,7 +71,8 @@ rm_zeros <- function(obj){
 #' Find most variable rows
 #'
 #' @description
-#' Calculates the variance of the chi-square component matrix and selects the rows with the highest variance, e.g. 5,000.
+#' Calculates the variance of the chi-square component matrix and selects the 
+#' rows with the highest variance, e.g. 5,000.
 #'
 #' @return
 #' Returns a matrix, which consists of the top variable rows of mat.
@@ -92,7 +99,11 @@ var_rows <- function(mat, top = 5000){
 
   res <-  comp_std_residuals(mat=mat)
 
-  if(top>nrow(mat)) warning("Top is larger than the number of rows in matrix. Top was set to nrow(mat).")
+  if(top>nrow(mat)) {
+    warning("Top is larger than the number of rows in matrix. ",
+            "Top was set to nrow(mat).")
+  }
+  
   top <- min(nrow(mat), top)
 
   chisquare <- res$tot * (res$S^2)		# chi-square components matrix
@@ -107,34 +118,52 @@ var_rows <- function(mat, top = 5000){
 #' Internal function for `cacomp`
 #'
 #' @description
-#' `run_cacomp` performs correspondence analysis on a matrix and returns the transformed data.
+#' `run_cacomp` performs correspondence analysis on a matrix and returns the 
+#' transformed data.
 #'
 #' @details
-#' The calculation is performed according to the work of Michael Greenacre. Singular value decomposition
-#' can be performed either with the base R function `svd` or preferably by the faster
-#' pytorch implementation (python = TRUE). When working with large matrices, CA coordinates and
-#' principal coordinates should only be computed when needed to save computational time.
+#' The calculation is performed according to the work of Michael Greenacre. 
+#' Singular value decomposition
+#' can be performed either with the base R function `svd` or preferably by the 
+#' faster
+#' pytorch implementation (python = TRUE). When working with large matrices, 
+#' CA coordinates and
+#' principal coordinates should only be computed when needed to save 
+#' computational time.
 #'
 #' @return
 #' Returns a named list of class "cacomp" with components
 #' U, V and D: The results from the SVD.
 #' row_masses and col_masses: Row and columns masses.
-#' top_rows: How many of the most variable rows/genes were retained for the analysis.
-#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, row and column inertia respectively.
+#' top_rows: How many of the most variable rows/genes were retained for the 
+#' analysis.
+#' tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, 
+#' row and column inertia respectively.
 #' @references
 #' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
 
-#' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For 
+#' sequencing a count matrix, gene expression values with genes in rows and 
+#' samples/cells in columns.
 #' Should contain row and column names.
-#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
+#' @param coords Logical. Indicates whether CA standard coordinates should be 
+#' calculated. Default TRUE
+#' @param python A logical value indicating whether to use singular-value 
+#' decomposition from the python package torch.
+#' This implementation dramatically speeds up computation compared to `svd()` 
+#' in R.
+#' @param princ_coords Integer. Number indicating whether principal 
+#' coordinates should be calculated for the rows (=1), columns (=2), 
+#' both (=3) or none (=0).
 #' Default 1.
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
+#' @param dims Integer. Number of CA dimensions to retain. Default NULL 
+#' (keeps all dimensions).
 #' @param top Integer. Number of most variable rows to retain. Default 5000.
-#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed. Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
+#' @param inertia Logical.. Whether total, row and column inertias should be 
+#' calculated and returned. Default TRUE.
+#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be 
+#' removed. Keeping zero only rows/cols might lead to unexpected results. 
+#' Default TRUE.
 #' @param ... Arguments forwarded to methods.
 run_cacomp <- function(obj,
                    coords = TRUE,
@@ -146,8 +175,10 @@ run_cacomp <- function(obj,
                    rm_zeros = TRUE,
                    ...){
 
-  stopifnot("Input matrix does not have any rownames!" = !is.null(rownames(obj)))
-  stopifnot("Input matrix does not have any colnames!" = !is.null(colnames(obj)))
+  stopifnot("Input matrix does not have any rownames!" =
+              !is.null(rownames(obj)))
+  stopifnot("Input matrix does not have any colnames!" = 
+              !is.null(colnames(obj)))
 
   if (rm_zeros == TRUE){
     obj <- rm_zeros(obj)
@@ -159,10 +190,11 @@ run_cacomp <- function(obj,
     res <-  comp_std_residuals(mat=obj)
     toptmp <- nrow(obj)
   } else if (!is.null(top) && top < nrow(obj)){
-    # message("Subsetting matrix by the top ", top," most variable rows (chisquare variances) ...")
+
     obj <- var_rows(mat = obj, top = top)
     res <-  comp_std_residuals(mat=obj)
     toptmp <- top
+    
   } else if (top > nrow(obj)) {
     warning("\nParameter top is >nrow(obj) and therefore ignored.")
     res <-  comp_std_residuals(mat=obj)
@@ -178,9 +210,6 @@ run_cacomp <- function(obj,
   rowm <- res$rowm
   colm <- res$colm
   rm(res)
-
-  # n <- nrow(S)
-  # p <- ncol(S)
 
   k <- min(dim(S))-1
 
@@ -237,7 +266,9 @@ run_cacomp <- function(obj,
     if(!is.null(dims)){
       if (dims >= length(SVD@D)){
         if (dims > length(SVD@D)){
-          warning("Chosen number of dimensions is larger than the number of dimensions obtained from the singular value decomposition. Argument ignored.")
+          warning("Chosen number of dimensions is larger than the ",
+                  "number of dimensions obtained from the singular ",
+                  "value decomposition. Argument ignored.")
         }
         SVD@dims <- length(SVD@D)
       } else {
@@ -268,10 +299,12 @@ run_cacomp <- function(obj,
 #' Seurat/SingleCellExperiment object and returns the transformed data.
 #'
 #' @details
-#' The calculation is performed according to the work of Michael Greenacre. Singular value decomposition
-#' can be performed either with the base R function `svd` or preferably by the faster
-#' pytorch implementation (python = TRUE). When working with large matrices, CA coordinates and
-#' principal coordinates should only be computed when needed to save computational time.
+#' The calculation is performed according to the work of Michael Greenacre. 
+#' Singular value decomposition can be performed either with the base R 
+#' function `svd` or preferably by the faster pytorch implementation 
+#' (python = TRUE). When working with large matrices, CA coordinates and
+#' principal coordinates should only be computed when needed to save 
+#' computational time.
 #'
 #' @return
 #' Returns a named list of class "cacomp" with components
@@ -284,17 +317,27 @@ run_cacomp <- function(obj,
 #' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
 
 #' @param obj A numeric matrix or Seurat/SingleCellExperiment object.
-#' For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' For sequencing a count matrix, gene expression values with genes in rows 
+#' and samples/cells in columns.
 #' Should contain row and column names.
-#' @param coords Logical. Indicates whether CA standard coordinates should be calculated. Default TRUE
-#' @param python A logical value indicating whether to use singular-value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
+#' @param coords Logical. Indicates whether CA standard coordinates should be 
+#' calculated. Default TRUE
+#' @param python A logical value indicating whether to use singular-value 
+#' decomposition from the python package torch.
+#' This implementation dramatically speeds up computation compared to `svd()` 
+#' in R.
+#' @param princ_coords Integer. Number indicating whether principal 
+#' coordinates should be calculated for the rows (=1), columns (=2), 
+#' both (=3) or none (=0).
 #' Default 1.
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default 5000. (set NULL to keep all).
-#' @param inertia Logical.. Whether total, row and column inertias should be calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be removed.
+#' @param dims Integer. Number of CA dimensions to retain. Default NULL 
+#' (keeps all dimensions).
+#' @param top Integer. Number of most variable rows to retain. 
+#' Default 5000. (set NULL to keep all).
+#' @param inertia Logical.. Whether total, row and column inertias should be 
+#' calculated and returned. Default TRUE.
+#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be 
+#' removed.
 #' Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
 #' @param ... Arguments forwarded to methods.
 #' @examples
@@ -353,20 +396,28 @@ setMethod(f = "cacomp",
 #' Correspondance Analysis for Seurat objects
 #'
 #' @description
-#' `cacomp.seurat` performs correspondence analysis on an assay from a Seurat container and stores the standardized coordinates
-#'  of the columns (= cells) and the principal coordinates of the rows (= genes) as a DimReduc Object in the Seurat container.
+#' `cacomp.seurat` performs correspondence analysis on an assay from a Seurat 
+#' container and stores the standardized coordinates of the columns (= cells) 
+#' and the principal coordinates of the rows (= genes) as a DimReduc Object in 
+#' the Seurat container.
 #'
 #' @return
-#' If return_imput = TRUE with Seurat container: Returns input obj of class "Seurat" with a new Dimensional Reduction Object named "CA".
+#' If return_imput = TRUE with Seurat container: Returns input obj of class 
+#' "Seurat" with a new Dimensional Reduction Object named "CA".
 #' Standard coordinates of the cells are saved as embeddings,
 #' the principal coordinates of the genes as loadings and
 #' the singular values (= square root of principal intertias/eigenvalues)
 #' are stored as stdev.
-#' To recompute a regular "cacomp" object without rerunning cacomp use `as.cacomp()`.
-#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' To recompute a regular "cacomp" object without rerunning cacomp use 
+#' `as.cacomp()`.
+#' @param assay Character. The assay from which extract the count matrix for 
+#' SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+#' SingleCellExperiments.
 #' @param slot character. The slot of the Seurat assay. Default "counts".
-#' @param return_input Logical. If TRUE returns the input (SingleCellExperiment/Seurat object) with the CA results saved in the reducedDim/DimReduc slot "CA".
-#'  Otherwise returns a "cacomp". Default FALSE.
+#' @param return_input Logical. If TRUE returns the input 
+#' (SingleCellExperiment/Seurat object) with the CA results saved in the 
+#' reducedDim/DimReduc slot "CA".
+#' Otherwise returns a "cacomp". Default FALSE.
 #' @param ... Other parameters
 #' @rdname cacomp
 #' @export
@@ -379,7 +430,8 @@ setMethod(f = "cacomp",
 #' set.seed(1234)
 #'
 #' # Simulate counts
-#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                      x = sample(1:20, 50, replace = TRUE))
 #' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 #' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 #'
@@ -445,18 +497,29 @@ setMethod(f = "cacomp",
 #' Correspondance Analysis for SingleCellExperiment objects
 #'
 #' @description
-#' `cacomp.SingleCellExperiment` performs correspondence analysis on an assay from a SingleCellExperiment and stores the standardized coordinates
-#'  of the columns (= cells) and the principal coordinates of the rows (= genes) as a matrix in the SingleCellExperiment container.
+#' `cacomp.SingleCellExperiment` performs correspondence analysis on an assay 
+#' from a SingleCellExperiment and stores the standardized coordinates
+#'  of the columns (= cells) and the principal coordinates of the rows 
+#'  (= genes) as a matrix in the SingleCellExperiment container.
 #'
 #' @return
-#' If return_input =TRUE for SingleCellExperiment input returns a SingleCellExperiment object with a matrix of standardized coordinates of the columns in
-#' reducedDim(obj, "CA"). Additionally, the matrix contains the following attributes:
+#' If return_input =TRUE for SingleCellExperiment input returns a 
+#' SingleCellExperiment object with a matrix of standardized coordinates of 
+#' the columns in
+#' reducedDim(obj, "CA"). Additionally, the matrix contains the following 
+#' attributes:
 #' "prin_coords_rows": Principal coordinates of the rows.
-#' "singval": Singular values. For the explained inertia of each principal axis calculate singval^2.
+#' "singval": Singular values. For the explained inertia of each principal 
+#' axis calculate singval^2.
 #' "percInertia": Percent explained inertia of each principal axis.
-#' To recompute a regular "cacomp" object from a SingleCellExperiment without rerunning cacomp use `as.cacomp()`.
-#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
-#' @param return_input Logical. If TRUE returns the input (SingleCellExperiment/Seurat object) with the CA results saved in the reducedDim/DimReduc slot "CA".
+#' To recompute a regular "cacomp" object from a SingleCellExperiment without 
+#' rerunning cacomp use `as.cacomp()`.
+#' @param assay Character. The assay from which extract the count matrix for 
+#' SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+#' SingleCellExperiments.
+#' @param return_input Logical. If TRUE returns the input 
+#' (SingleCellExperiment/Seurat object) with the CA results saved in the 
+#' reducedDim/DimReduc slot "CA".
 #'  Otherwise returns a "cacomp". Default FALSE.
 #' @rdname cacomp
 #' @export
@@ -469,7 +532,8 @@ setMethod(f = "cacomp",
 #' set.seed(1234)
 #'
 #' # Simulate counts
-#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:20, 50, replace = TRUE))
 #' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 #' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 #' logcnts <- log2(cnts + 1)
@@ -565,7 +629,8 @@ subset_dims <- function(caobj, dims){
   }
   
   if(dims > length(caobj@D)){
-    warning("dims is larger than the number of available dimensions. Argument ignored")
+    warning("dims is larger than the number of available dimensions.",
+            " Argument ignored")
   } else if (dims == length(caobj@D)){
     caobj@dims <- dims
     return(caobj)
@@ -599,10 +664,12 @@ subset_dims <- function(caobj, dims){
 
 #' Calculate correspondence analysis row and column coordinates.
 #'
-#' @description `ca_coords` calculates the standardized and principal coordinates of the rows and columns in CA space.
+#' @description `ca_coords` calculates the standardized and principal 
+#' coordinates of the rows and columns in CA space.
 #'
 #' @details
-#' Takes a "cacomp" object and calculates standardized and principal coordinates for the visualization of CA results in a biplot or
+#' Takes a "cacomp" object and calculates standardized and principal 
+#' coordinates for the visualization of CA results in a biplot or
 #' to subsequently calculate coordinates in an Association Plot.
 #'
 #' @return
@@ -611,11 +678,17 @@ subset_dims <- function(caobj, dims){
 #' prin_coords_rows/prin_coords_cols: Principal coordinates of rows/columns.
 #'
 #' @param caobj A "cacomp" object as outputted from `cacomp()`.
-#' @param dims Integer indicating the number of dimensions to use for the calculation of coordinates.
-#' All elements of caobj (where applicable) will be reduced to the given number of dimensions. Default NULL (keeps all dimensions).
-#' @param princ_only Logical, whether only principal coordinates should be calculated.
-#' Or, in other words, whether the standardized coordinates are already calculated and stored in `caobj`. Default `FALSE`.
-#' @param princ_coords Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
+#' @param dims Integer indicating the number of dimensions to use for the 
+#' calculation of coordinates.
+#' All elements of caobj (where applicable) will be reduced to the given 
+#' number of dimensions. Default NULL (keeps all dimensions).
+#' @param princ_only Logical, whether only principal coordinates should be 
+#' calculated.
+#' Or, in other words, whether the standardized coordinates are already 
+#' calculated and stored in `caobj`. Default `FALSE`.
+#' @param princ_coords Integer. Number indicating whether principal 
+#' coordinates should be calculated for the rows (=1), columns (=2), both (=3) 
+#' or none (=0).
 #' Default 3.
 #' @examples
 #' # Simulate scRNAseq data.
@@ -636,7 +709,9 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
 
   if(!is.null(dims)){
     if (dims > length(caobj@D)){
-      warning("Chosen dimensions are larger than the number of dimensions obtained from the singular value decomposition. Argument ignored.")
+      warning("Chosen dimensions are larger than the number of ",
+              "dimensions obtained from the singular value ",
+              "decomposition. Argument ignored.")
      }
       caobj <- subset_dims(caobj = caobj, dims = dims)
     }
@@ -649,8 +724,14 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
       caobj@std_coords_rows <- caobj@U/sqrt(caobj@row_masses)
       caobj@std_coords_cols <- caobj@V/sqrt(caobj@col_masses)
     } else {
-      caobj@std_coords_rows <- sweep(x = caobj@U, MARGIN = 1, STATS = sqrt(caobj@row_masses), FUN = "/")
-      caobj@std_coords_cols <- sweep(x = caobj@V, MARGIN = 1, STATS = sqrt(caobj@col_masses), FUN = "/")
+      caobj@std_coords_rows <- sweep(x = caobj@U,
+                                     MARGIN = 1,
+                                     STATS = sqrt(caobj@row_masses),
+                                     FUN = "/")
+      caobj@std_coords_cols <- sweep(x = caobj@V,
+                                     MARGIN = 1,
+                                     STATS = sqrt(caobj@col_masses),
+                                     FUN = "/")
     }
 
 
@@ -663,7 +744,11 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
   }
 
 
-  stopifnot("princ_coords must be either 0, 1, 2 or 3" = (princ_coords == 0 || princ_coords == 1 || princ_coords == 2 || princ_coords == 3))
+  stopifnot("princ_coords must be either 0, 1, 2 or 3" = 
+              (princ_coords == 0 || 
+               princ_coords == 1 || 
+               princ_coords == 2 || 
+               princ_coords == 3))
 
   if(princ_coords != 0){
     stopifnot(!is.empty(caobj@std_coords_rows))
@@ -674,7 +759,10 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
         if (dims == 1 && !is.null(dims)){
           caobj@prin_coords_rows <- caobj@std_coords_rows*caobj@D
         } else {
-          caobj@prin_coords_rows <- sweep(caobj@std_coords_rows, 2, caobj@D, "*")
+          caobj@prin_coords_rows <- sweep(caobj@std_coords_rows,
+                                          2,
+                                          caobj@D,
+                                          "*")
         }
 
       } else if (princ_coords == 2) {
@@ -682,7 +770,10 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
         if (dims == 1 && !is.null(dims)){
           caobj@prin_coords_cols <- caobj@std_coords_cols*caobj@D
         } else {
-          caobj@prin_coords_cols <- sweep(caobj@std_coords_cols, 2, caobj@D, "*")
+          caobj@prin_coords_cols <- sweep(caobj@std_coords_cols,
+                                          2,
+                                          caobj@D,
+                                          "*")
         }
       } else if (princ_coords  == 3) {
 
@@ -693,9 +784,15 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
           caobj@prin_coords_cols <- caobj@std_coords_cols*caobj@D
         } else {
           #principal coordinates for rows
-          caobj@prin_coords_rows <- sweep(caobj@std_coords_rows, 2, caobj@D, "*")
+          caobj@prin_coords_rows <- sweep(caobj@std_coords_rows,
+                                          2,
+                                          caobj@D,
+                                          "*")
           #principal coordinates for columns
-          caobj@prin_coords_cols <- sweep(caobj@std_coords_cols, 2, caobj@D, "*")
+          caobj@prin_coords_cols <- sweep(caobj@std_coords_cols,
+                                          2,
+                                          caobj@D,
+                                          "*")
         }
 
       }
@@ -725,53 +822,160 @@ scree_plot <- function(df){
   screeplot <- ggplot2::ggplot(df, ggplot2::aes(x=dims, y=inertia)) +
     ggplot2::geom_col(fill="#4169E1") +
     ggplot2::geom_line(color="#B22222", size=1) +
-    # ggplot2::geom_abline(slope = 0, intercept = avg_inertia, linetype=3, alpha=0.8, color ="#606060")+
-    ggplot2::labs(title = "Scree plot of explained inertia per dimensions and the average inertia",
+    ggplot2::labs(
+         title = "Scree plot of explained inertia per dimensions and the average inertia",
          y="Explained inertia [%]",
          x="Dimension") +
-    # ggplot2::annotate(
-      # "text",
-      # x = max_num_dims*0.9,
-      # y = avg_inertia,
-      # label = "avg. inertia")+
     ggplot2::theme_bw()
   return(screeplot)
 }
 
+#' Runs elbow method
+#' 
+#' @description Helper function for pick_dims() to run the elbow method.
+#' 
+#' @param obj A "cacomp" object as outputted from `cacomp()`
+#' @param mat A numeric matrix. For sequencing a count matrix, gene expression 
+#' values with genes in rows and samples/cells in columns.
+#' Should contain row and column names.
+#' @param reps Integer. Number of permutations to perform when choosing 
+#' "elbow_rule".
+#' @param return_plot TRUE/FALSE. Whether a plot should be returned when 
+#' choosing "elbow_rule".
+#' @param python A logical value indicating whether to use singular value 
+#' decomposition from the python package torch.
+#' This implementation dramatically speeds up computation compared to `svd()` 
+#' in R.
+#' #' @return
+#' * `elbow_method` (for `return_plot=TRUE`) returns a list with two elements: 
+#' "dims" contains the number of dimensions and "plot" a ggplot.
+elbow_method <- function(obj,
+                         mat,
+                         reps,
+                         python,
+                         return_plot){
+  ev <- obj@D^2
+  expl_inertia <- (ev/sum(ev)) *100
+  max_num_dims <- length(obj@D)
+  
+  matrix_expl_inertia_perm <- matrix(0, nrow = max_num_dims , ncol = reps)
+  
+  pb <- txtProgressBar(min = 0, max = reps, style = 3)
+  
+  for (k in seq(reps)) {
+    
+    mat <- as.matrix(mat)
+    mat_perm <- apply(mat, 2, FUN=sample)
+    colnames(mat_perm) <- colnames(mat)
+    rownames(mat_perm) <- seq_len(nrow(mat_perm))
+    
+    obj_perm <- cacomp(obj=mat_perm,
+                       top = obj@top_rows,
+                       dims = obj@dims,
+                       coords = FALSE,
+                       python = python)
+    
+    ev_perm <- obj_perm@D^2
+    expl_inertia_perm <- (ev_perm/sum(ev_perm))*100
+    
+    matrix_expl_inertia_perm[,k] <- expl_inertia_perm
+    colnames(matrix_expl_inertia_perm) <- paste0("perm",seq_len(reps))
+    
+    setTxtProgressBar(pb, k)
+    
+  }
+  close(pb)
+  
+  
+  if (return_plot == TRUE){
+    df <- data.frame(dims = seq_len(max_num_dims),
+                     inertia = expl_inertia)
+    
+    df <- cbind(df, matrix_expl_inertia_perm)
+    
+    screeplot <- scree_plot(df)
+    
+    for (k in seq_len(reps)) {
+      
+      colnm <- paste0("perm",k)
+      screeplot <- screeplot +
+        ggplot2::geom_line(data = df, ggplot2::aes(x=dims,
+                                                   y=.data[[colnm]]),
+                           color="black",
+                           alpha=0.8,
+                           linetype=2)
+      
+    }
+  }
+  
+  avg_inertia_perm <- rowMeans(matrix_expl_inertia_perm)
+  
+  tmp <- as.integer(expl_inertia>avg_inertia_perm)
+  if (sum(tmp)==0 || sum(tmp)==max_num_dims){
+    dim_number <- max_num_dims								
+  } else if (tmp[1] == 0){
+    stop("Average inertia of the permutated data is above ",
+         "the explained inertia of the data in the first dimension. ",
+         "Please either try more permutations or a different method.")
+  }else{
+    dim_number <- length(tmp[cumsum(tmp == 0)<1 & tmp!=0])		
+  }
+  
+  if (return_plot == FALSE){
+    return(dim_number)
+  } else {
+    return(list("dims" = dim_number, "plot" = screeplot))
+  }
+}
 
 
 #' Compute statistics to help choose the number of dimensions
 #'
 #' @description
-#' Allow the user to choose from 4 different methods ("avg_inertia", "maj_inertia", "scree_plot" and "elbow_rule")
+#' Allow the user to choose from 4 different methods ("avg_inertia", 
+#' "maj_inertia", "scree_plot" and "elbow_rule")
 #' to estimate the number of dimensions that best represent the data.
 #'
 #' @details
-#' "avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
-#' "maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80\% of the total inertia.
-#' "scree_plot" plots a scree plot.
-#' "elbow_rule" formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
-#'  The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
+#' * "avg_inertia" calculates the number of dimensions in which the inertia is 
+#' above the average inertia.
+#' * "maj_inertia" calculates the number of dimensions in which cumulatively 
+#' explain up to 80% of the total inertia.
+#' * "scree_plot" plots a scree plot.
+#' * "elbow_rule" formalization of the commonly used elbow rule. Permutes the 
+#' rows for each column and reruns `cacomp()` for a total of `reps` times.
+#' The number of relevant dimensions is obtained from the point where the 
+#' line for the explained inertia of the permuted data intersects with the 
+#' actual data.
 #'
 #' @return
-#' For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) returns an integer, indicating the suggested number of dimensions to use.
-#' `scree_plot` returns a ggplot object.
-#' `elbow_rule` (for `return_plot=TRUE`) returns a list with two elements: "dims" contains the number of dimensions and "plot" a ggplot.
+#' For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) 
+#' returns an integer, indicating the suggested number of dimensions to use.
+#' * `scree_plot` returns a ggplot object.
+#' * `elbow_rule` (for `return_plot=TRUE`) returns a list with two elements: 
+#' "dims" contains the number of dimensions and "plot" a ggplot.
 #'
 #' @param obj A "cacomp" object as outputted from `cacomp()`,
 #' a "Seurat" object with a "CA" DimReduc object stored,
 #' or a "SingleCellExperiment" object with a "CA" dim. reduction stored.
-#' @param mat A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+#' @param mat A numeric matrix. For sequencing a count matrix, gene expression 
+#' values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
-#' @param method String. Either "scree_plot", "avg_inertia", "maj_inertia" or "elbow_rule" (see Details section). Default "scree_plot".
-#' @param reps Integer. Number of permutations to perform when choosing "elbow_rule". Default 3.
-#' @param return_plot TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.
-#' @param python A logical value indicating whether to use singular value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
+#' @param method String. Either "scree_plot", "avg_inertia", "maj_inertia" or 
+#' "elbow_rule" (see Details section). Default "scree_plot".
+#' @param reps Integer. Number of permutations to perform when choosing 
+#' "elbow_rule". Default 3.
+#' @param return_plot TRUE/FALSE. Whether a plot should be returned when 
+#' choosing "elbow_rule". Default FALSE.
+#' @param python A logical value indicating whether to use singular value 
+#' decomposition from the python package torch.
+#' This implementation dramatically speeds up computation compared to `svd()` 
+#' in R.
 #' @param ... Arguments forwarded to methods.
 #' @examples
 #' # Simulate counts
-#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:20, 50, replace = TRUE))
 #' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 #' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 #'
@@ -789,11 +993,13 @@ scree_plot <- function(df){
 #' pd$plot
 #' ca_sub <- subset_dims(ca, dims = pd$dims)
 #'
-#' # pick dimensions which explain cumulatively >80% of total inertia. Returns vector.
+#' # pick dimensions which explain cumulatively >80% of total inertia.
+#' # Returns vector.
 #' pd <- pick_dims(obj = ca,
 #'                 method = "maj_inertia")
 #' ca_sub <- subset_dims(ca, dims = pd)
 #' @export
+#' @md
 setGeneric("pick_dims", function(obj,
                                  mat = NULL,
                                  method="scree_plot",
@@ -827,13 +1033,17 @@ setMethod(f = "pick_dims",
 
   if (method == "avg_inertia"){
     # Method 1: Dim's > average inertia
-    avg_inertia <- 100/max_num_dims		# percentage of inertia explained by 1 dimension (on average)
-    dim_num <- sum(expl_inertia > avg_inertia)  # result: number of dimensions, all of which explain more than avg_inertia
+    # percentage of inertia explained by 1 dimension (on average)
+    avg_inertia <- 100/max_num_dims
+    # result: number of dimensions, all of which explain more than avg_inertia
+    dim_num <- sum(expl_inertia > avg_inertia)  
     return(dim_num)
 
   } else if (method == "maj_inertia"){
     # Method 2: Sum of dim's > 80% of the total inertia
-    dim_num <- min(which(cumsum(expl_inertia)>80)) # the first dimension for which the cumulative sum of inertia (from dim1 up to given dimension) is higher than 80%
+    # the first dimension for which the cumulative sum of inertia (from dim1 
+    # up to given dimension) is higher than 80%
+    dim_num <- min(which(cumsum(expl_inertia)>80)) 
     return(dim_num)
 
   } else if (method == "scree_plot"){
@@ -850,79 +1060,19 @@ setMethod(f = "pick_dims",
   } else if (method == "elbow_rule") {
 
     if(is.null(mat)){
-      cat("When running method=\"elbow_rule\", please provide the original data matrix (paramater mat) which was earlier submitted to cacomp()!")
+      cat(paste0("When running method=\"elbow_rule\", ",
+                 "please provide the original data matrix (paramater mat) ",
+                 "which was earlier submitted to cacomp()!"))
       stop()
     }
-    # Method 4: Formalization of the elbow rule
-
-    # 1.Generate an artificial data matrix by randomly permuting the responses (rows)
-    #   of each sample (column)  of the original expression matrix
-    # 2.Perform the CA calculations (I) for the generated data
-    # 3.Repeat the steps 1. to 3. 5 times and save the calculated
-    #   explained inertia vector (expl_inertia_perm) for each artificial matrix
-    #   as a row in an overall inertia matrix (matrix_expl_inertia_perm)
-
-    matrix_expl_inertia_perm <- matrix(0, nrow = max_num_dims , ncol = reps)
-
-    pb <- txtProgressBar(min = 0, max = reps, style = 3)
-
-    for (k in seq(reps)) {
-
-      mat <- as.matrix(mat)
-      mat_perm <- apply(mat, 2, FUN=sample)
-      colnames(mat_perm) <- colnames(mat)
-      rownames(mat_perm) <- seq_len(nrow(mat_perm))
-
-      obj_perm <- cacomp(obj=mat_perm, top = obj@top_rows, dims = obj@dims, coords = FALSE, python = python)
-
-      ev_perm <- obj_perm@D^2
-      expl_inertia_perm <- (ev_perm/sum(ev_perm))*100
-
-      matrix_expl_inertia_perm[,k] <- expl_inertia_perm
-      colnames(matrix_expl_inertia_perm) <- paste0("perm",seq_len(reps))
-
-      setTxtProgressBar(pb, k)
-
-    }
-    close(pb)
-
-
-    if (return_plot == TRUE){
-      df <- data.frame(dims = seq_len(max_num_dims),
-                       inertia = expl_inertia)
-
-      df <- cbind(df, matrix_expl_inertia_perm)
-
-      screeplot <- scree_plot(df)
-
-      for (k in seq_len(reps)) {
-
-        colnm <- paste0("perm",k)
-        screeplot <- screeplot +
-          ggplot2::geom_line(data = df, ggplot2::aes(x=dims, y=.data[[colnm]]), color="black", alpha=0.8, linetype=2)
-
-      }
-    }
-    # 5.Identify the largest number of dimension based on intersection of the real data's scree plot
-    #   with the average of simulated scree plots
-
-    avg_inertia_perm <- rowMeans(matrix_expl_inertia_perm)		# average artificial inertia vector
-
-    tmp <- as.integer(expl_inertia>avg_inertia_perm)						# check for each position (dimension) if expl_inertia is higher than the avg_artificial_inertia. If yes =1, if no =0
-    if (sum(tmp)==0 || sum(tmp)==max_num_dims){
-      dim_number <- max_num_dims									# result: if the lines do not intersect, choose max_num_dims
-    } else if (tmp[1] == 0){
-      stop("Average inertia of the permutated data is above the explained inertia of the data in the first dimension. Please either try more permutations or a different method.")
-    }else{
-      dim_number <- length(tmp[cumsum(tmp == 0)<1 & tmp!=0])		# result: if the lines intersect at 1 or more than 1 positions, choose the intersection with the lowest (BEFORE: it was with highest) x-coordinate (:= the first intersection!)
-    }
     
-    if (return_plot == FALSE){
-      return(dim_number)
-    } else {
-      return(list("dims" = dim_number, "plot" = screeplot))
-    }
-
+    pd <- elbow_method(obj = obj,
+                       mat = mat,
+                       reps = reps,
+                       python = python,
+                       return_plot = return_plot)
+    return(pd)
+    
   } else {
     cat("Please pick a valid method!")
     stop()
@@ -931,8 +1081,11 @@ setMethod(f = "pick_dims",
 
 
 
-#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
-#' @param slot Character. Data slot of the Seurat assay. E.g. "data" or "counts". Default "counts".
+#' @param assay Character. The assay from which extract the count matrix for 
+#' SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+#' SingleCellExperiments.
+#' @param slot Character. Data slot of the Seurat assay. 
+#' E.g. "data" or "counts". Default "counts".
 #'
 #' @rdname pick_dims
 #' @export
@@ -945,7 +1098,8 @@ setMethod(f = "pick_dims",
 #' set.seed(1234)
 #'
 #' # Simulate counts
-#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:20, 50, replace = TRUE))
 #' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 #' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 #'
@@ -984,7 +1138,9 @@ setMethod(f = "pick_dims",
   if ("CA" %in% Seurat::Reductions(obj)){
     caobj <- as.cacomp(obj, assay = assay)
   } else {
-    stop("No 'CA' dimension reduction object found. Please run cacomp(seurat_obj, top, coords = FALSE, return_input=TRUE) first.")
+    stop("No 'CA' dimension reduction object found. ",
+         "Please run cacomp(seurat_obj, top, coords = FALSE, ",
+         "return_input=TRUE) first.")
   }
 
   stopifnot(is(caobj, "cacomp"))
@@ -998,7 +1154,9 @@ setMethod(f = "pick_dims",
 })
 
 
-#' @param assay Character. The assay from which to extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' @param assay Character. The assay from which to extract the count matrix 
+#' for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+#' SingleCellExperiments.
 #'
 #' @rdname pick_dims
 #' @export
@@ -1037,7 +1195,8 @@ setMethod(f = "pick_dims",
                    ...,
                    assay = "counts"){
 
-  stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
+  stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = 
+              is(obj, "SingleCellExperiment"))
 
   if (method == "elbow_rule") {
     mat <- SummarizedExperiment::assay(obj, assay)
@@ -1048,7 +1207,9 @@ setMethod(f = "pick_dims",
   if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
     caobj <- as.cacomp(obj, assay = assay)
   } else {
-    stop("No 'CA' dim. reduction object found. Please run cacomp(sce, top, coords = FALSE, return_input=TRUE) first.")
+    stop("No 'CA' dim. reduction object found. ",
+         "Please run cacomp(sce, top, coords = FALSE, ",
+         "return_input=TRUE) first.")
   }
 
   stopifnot(is(caobj, "cacomp"))

@@ -55,7 +55,9 @@ ca_3Dplot(
 )
 }
 \arguments{
-\item{obj}{An object of class "cacomp", or alternatively an object of class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" saved.}
+\item{obj}{An object of class "cacomp", or alternatively an object of 
+class "Seurat" or "SingleCellExperiment" with a dim. reduction named "CA" 
+saved.}
 
 \item{xdim}{Integer. The dimension for the x-axis. Default 1.}
 
@@ -63,9 +65,11 @@ ca_3Dplot(
 
 \item{zdim}{Integer. The dimension for the z-axis. Default 3.}
 
-\item{princ_coords}{Integer. If 1 then principal coordinates are used for the rows, if 2 for the columns. Default 1 (rows).}
+\item{princ_coords}{Integer. If 1 then principal coordinates are used for 
+the rows, if 2 for the columns. Default 1 (rows).}
 
-\item{row_labels}{Numeric vector. Indices for the rows for which a label should be added (label should be stored in rownames). Default NULL.}
+\item{row_labels}{Numeric vector. Indices for the rows for which a label 
+should be added (label should be stored in rownames). Default NULL.}
 
 \item{col_labels}{Numeric vector. Indices for the columns for which
 a label should be added (label should be stored in colnames).
@@ -84,9 +88,12 @@ Plot of class "plotly".
 Plots the first 3 dimensions of the rows and columns in the same plot.
 }
 \details{
-Depending on whether `princ_coords` is set to 1 or 2 either the principal coordinates of either the rows (1) or the columns (2)
-are chosen. For the other the standardized coordinates are plotted (assymetric biplot).
-Labels for rows and columns should be stored in the row- and column names respectively.
+Depending on whether `princ_coords` is set to 1 or 2 either the principal 
+coordinates of either the rows (1) or the columns (2)
+are chosen. For the other the standardized coordinates are plotted 
+(assymetric biplot).
+Labels for rows and columns should be stored in the row- and column 
+names respectively.
 }
 \examples{
 # Simulate counts

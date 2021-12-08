@@ -51,47 +51,69 @@ pick_dims(
 )
 }
 \arguments{
-\item{obj}{A "cacomp" object as outputted from `cacomp()`,
+\item{obj}{A "cacomp" object as outputted from \code{cacomp()},
 a "Seurat" object with a "CA" DimReduc object stored,
 or a "SingleCellExperiment" object with a "CA" dim. reduction stored.}
 
-\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression
+values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
-\item{method}{String. Either "scree_plot", "avg_inertia", "maj_inertia" or "elbow_rule" (see Details section). Default "scree_plot".}
+\item{method}{String. Either "scree_plot", "avg_inertia", "maj_inertia" or
+"elbow_rule" (see Details section). Default "scree_plot".}
 
-\item{reps}{Integer. Number of permutations to perform when choosing "elbow_rule". Default 3.}
+\item{reps}{Integer. Number of permutations to perform when choosing
+"elbow_rule". Default 3.}
 
-\item{python}{A logical value indicating whether to use singular value decomposition from the python package torch.
-This implementation dramatically speeds up computation compared to `svd()` in R.}
+\item{python}{A logical value indicating whether to use singular value
+decomposition from the python package torch.
+This implementation dramatically speeds up computation compared to \code{svd()}
+in R.}
 
-\item{return_plot}{TRUE/FALSE. Whether a plot should be returned when choosing "elbow_rule". Default FALSE.}
+\item{return_plot}{TRUE/FALSE. Whether a plot should be returned when
+choosing "elbow_rule". Default FALSE.}
 
 \item{...}{Arguments forwarded to methods.}
 
-\item{assay}{Character. The assay from which to extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+\item{assay}{Character. The assay from which to extract the count matrix 
+for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+SingleCellExperiments.}
 
-\item{slot}{Character. Data slot of the Seurat assay. E.g. "data" or "counts". Default "counts".}
+\item{slot}{Character. Data slot of the Seurat assay. 
+E.g. "data" or "counts". Default "counts".}
 }
 \value{
-For `avg_inertia`, `maj_inertia` and `elbow_rule` (when `return_plot=FALSE`) returns an integer, indicating the suggested number of dimensions to use.
-`scree_plot` returns a ggplot object.
-`elbow_rule` (for `return_plot=TRUE`) returns a list with two elements: "dims" contains the number of dimensions and "plot" a ggplot.
+For \code{avg_inertia}, \code{maj_inertia} and \code{elbow_rule} (when \code{return_plot=FALSE})
+returns an integer, indicating the suggested number of dimensions to use.
+\itemize{
+\item \code{scree_plot} returns a ggplot object.
+\item \code{elbow_rule} (for \code{return_plot=TRUE}) returns a list with two elements:
+"dims" contains the number of dimensions and "plot" a ggplot.
+}
 }
 \description{
-Allow the user to choose from 4 different methods ("avg_inertia", "maj_inertia", "scree_plot" and "elbow_rule")
+Allow the user to choose from 4 different methods ("avg_inertia",
+"maj_inertia", "scree_plot" and "elbow_rule")
 to estimate the number of dimensions that best represent the data.
 }
 \details{
-"avg_inertia" calculates the number of dimensions in which the inertia is above the average inertia.
-"maj_inertia" calculates the number of dimensions in which cumulatively explain up to 80\% of the total inertia.
-"scree_plot" plots a scree plot.
-"elbow_rule" formalization of the commonly used elbow rule. Permutes the rows for each column and reruns `cacomp()` for a total of `reps` times.
- The number of relevant dimensions is obtained from the point where the line for the explained inertia of the permuted data intersects with the actual data.
+\itemize{
+\item "avg_inertia" calculates the number of dimensions in which the inertia is
+above the average inertia.
+\item "maj_inertia" calculates the number of dimensions in which cumulatively
+explain up to 80\% of the total inertia.
+\item "scree_plot" plots a scree plot.
+\item "elbow_rule" formalization of the commonly used elbow rule. Permutes the
+rows for each column and reruns \code{cacomp()} for a total of \code{reps} times.
+The number of relevant dimensions is obtained from the point where the
+line for the explained inertia of the permuted data intersects with the
+actual data.
+}
 }
 \examples{
 # Simulate counts
-cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
@@ -109,7 +131,8 @@ pd <- pick_dims(obj = ca,
 pd$plot
 ca_sub <- subset_dims(ca, dims = pd$dims)
 
-# pick dimensions which explain cumulatively >80\% of total inertia. Returns vector.
+# pick dimensions which explain cumulatively >80\% of total inertia.
+# Returns vector.
 pd <- pick_dims(obj = ca,
                 method = "maj_inertia")
 ca_sub <- subset_dims(ca, dims = pd)
@@ -121,7 +144,8 @@ library(Seurat)
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 

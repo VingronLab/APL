@@ -9,14 +9,20 @@ ca_coords(caobj, dims = NULL, princ_coords = 3, princ_only = FALSE)
 \arguments{
 \item{caobj}{A "cacomp" object as outputted from `cacomp()`.}
 
-\item{dims}{Integer indicating the number of dimensions to use for the calculation of coordinates.
-All elements of caobj (where applicable) will be reduced to the given number of dimensions. Default NULL (keeps all dimensions).}
+\item{dims}{Integer indicating the number of dimensions to use for the 
+calculation of coordinates.
+All elements of caobj (where applicable) will be reduced to the given 
+number of dimensions. Default NULL (keeps all dimensions).}
 
-\item{princ_coords}{Integer. Number indicating whether principal coordinates should be calculated for the rows (=1), columns (=2), both (=3) or none (=0).
+\item{princ_coords}{Integer. Number indicating whether principal 
+coordinates should be calculated for the rows (=1), columns (=2), both (=3) 
+or none (=0).
 Default 3.}
 
-\item{princ_only}{Logical, whether only principal coordinates should be calculated.
-Or, in other words, whether the standardized coordinates are already calculated and stored in `caobj`. Default `FALSE`.}
+\item{princ_only}{Logical, whether only principal coordinates should be 
+calculated.
+Or, in other words, whether the standardized coordinates are already 
+calculated and stored in `caobj`. Default `FALSE`.}
 }
 \value{
 Returns input object with coordinates added.
@@ -24,10 +30,12 @@ std_coords_rows/std_coords_cols: Standardized coordinates of rows/columns.
 prin_coords_rows/prin_coords_cols: Principal coordinates of rows/columns.
 }
 \description{
-`ca_coords` calculates the standardized and principal coordinates of the rows and columns in CA space.
+`ca_coords` calculates the standardized and principal 
+coordinates of the rows and columns in CA space.
 }
 \details{
-Takes a "cacomp" object and calculates standardized and principal coordinates for the visualization of CA results in a biplot or
+Takes a "cacomp" object and calculates standardized and principal 
+coordinates for the visualization of CA results in a biplot or
 to subsequently calculate coordinates in an Association Plot.
 }
 \examples{

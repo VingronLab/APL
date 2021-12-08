@@ -234,9 +234,9 @@ ca
 ```
 
 As can be seen in the summarized output, by default both types of coordinates in the CA space (principal and standardized) are calculated.
-Once the coordinates for the Association Plot are calculate, they will also be shown in the output of `cacomp`. Slots are accessed similarly to other S4 classes:
+Once the coordinates for the Association Plot are calculate, they will also be shown in the output of `cacomp`. Slots are accessed through an ccessor  function:
 ```{r std_coords}
-ca@std_coords_cols[1:5, 1:5]
+cacomp_slot(ca, "std_coords_cols")[1:5, 1:5]
 ```
 
 In the case of `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` objects, we can alternatively set `return_input = TRUE` to get the input object back, with the CA results computed by "APL" and stored in the appropriate slot for dimension reduction. This also allows for using the plotting functions that come with these packages:
@@ -297,7 +297,8 @@ In this case the elbow rule leads to a much higher number of dimensions.
 
 ```{r expl_inert}
 # Compute the amount of inertia explained by each of the dimensions
-expl_inertia <- (ca@D^2/sum(ca@D^2))*100
+D <- cacomp_slot(ca, "D")
+expl_inertia <- (D^2/sum(D^2))*100
 
 # Compute the amount of intertia explained 
 # by the number of dimensions defined by elbow rule
@@ -357,16 +358,17 @@ apl(ca,
 By default, only genes that have a score larger than 0 are colored as these tend to be genes of interest.
 However, for some datasets this cutoff is not suitable and can easily be changed through the `score_cutoff` argument to `apl()`.
 
-The \eqn{S_\alpha} scores are stored in `ca@APL_score`:
+The \eqn{S_\alpha} scores are stored in the `"APL_score"` slot and can be accessed as follows:
 ```{r print_score}
-head(ca@APL_score)
+head(cacomp_slot(ca, "APL_score"))
 ```
 
 To see the expression of genes with the highest \eqn{S_\alpha} scores (or any selected genes) across all cell types from the data we can use the functions provided by `r CRANpkg("Seurat")`:
 
 ```{r seurat_apl, fig.wide = TRUE}
-VlnPlot(pbmc, features = head(ca@APL_score$Rowname,3))
-FeaturePlot(pbmc, features = head(ca@APL_score$Rowname,3))
+scores <- cacomp_slot(ca, "APL_score")
+VlnPlot(pbmc, features = head(scores$Rowname,3))
+FeaturePlot(pbmc, features = head(scores$Rowname,3))
 ```
 
 As expected, the 3 most highly scored genes are over-expressed in the platelet cluster.

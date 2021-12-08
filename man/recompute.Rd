@@ -13,14 +13,17 @@ recompute(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...)
 
 \item{rm_zeros}{Removes rows & columns containing only zeros.}
 
-\item{top}{number of most variable rows to keep when running cacomp. Default is nrow(mat).}
+\item{top}{number of most variable rows to keep when running cacomp. 
+Default is nrow(mat).}
 
 \item{...}{Further arguments forwarded to cacomp.}
 }
 \value{
-A cacomp object with additional calculated row_masses, col_masses, std_coords_rows, U and V.
+A cacomp object with additional calculated row_masses, col_masses, 
+std_coords_rows, U and V.
 }
 \description{
-The caobj needs to have the std_coords_cols, the prin_coords_rows and D calculated. From this the remainder will be calculated.
+The caobj needs to have the std_coords_cols, the prin_coords_rows and D 
+calculated. From this the remainder will be calculated.
 Future updates might extend this functionality.
 }

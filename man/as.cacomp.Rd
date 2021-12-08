@@ -27,7 +27,8 @@ with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.}
 \item{mat}{Original input matrix.}
 
 \item{assay}{Character. The assay from which extract the count matrix,
-e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+SingleCellExperiments.}
 
 \item{slot}{character. Slot of the Seurat assay to use. Default "counts".}
 }
@@ -35,8 +36,10 @@ e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
 A cacomp object.
 }
 \description{
-Converts the values stored in the Seurat/SingleCellExperiment dimensional reduction slot "CA" to a cacomp object.
-If recompute = TRUE additional parameters are recomputed from the saved values without rerunning SVD (need to specify assay to work).
+Converts the values stored in the Seurat/SingleCellExperiment dimensional 
+reduction slot "CA" to a cacomp object.
+If recompute = TRUE additional parameters are recomputed from the saved 
+values without rerunning SVD (need to specify assay to work).
 
 as.cacomp.cacomp returns input without any calculations.
 
@@ -44,13 +47,17 @@ Recomputes missing values and returns cacomp object from a list.
 If you have a *complete* cacomp object in list form,
 use do.call(new_cacomp, obj).
 
-as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot "CA" to an cacomp object.
+as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot 
+"CA" to an cacomp object.
 
-as.cacomp.SingleCellExperiment: Converts the values stored in the SingleCellExperiment reducedDim slot "CA" to a cacomp object.
+as.cacomp.SingleCellExperiment: Converts the values stored in the 
+SingleCellExperiment reducedDim slot "CA" to a cacomp object.
 }
 \details{
-By default extracts std_coords_cols, D, prin_coords_rows, top_rows and dims from obj and outputs a cacomp object.
-If recompute = TRUE the following are additionally recalculated (doesn't run SVD):
+By default extracts std_coords_cols, D, prin_coords_rows, top_rows and dims 
+from obj and outputs a cacomp object.
+If recompute = TRUE the following are additionally recalculated 
+(doesn't run SVD):
 U, V, std_coords_rows, row_masses, col_masses.
 }
 \examples{

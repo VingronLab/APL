@@ -68,8 +68,8 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     subgroup <- cent[idx,]
 
     if (anyNA(idx)){
-      warning(paste0("Not all names in 'group' are contained in the column ",
-                     "names. Non-matching values were ignored."))
+      warning("Not all names in 'group' are contained in the column names. ",
+              "Non-matching values were ignored.")
     }
   } else {
     stop("Parameter group has to be either of type 'numeric' or 'character'.")
@@ -441,8 +441,8 @@ apl_topGO <- function(caobj,
   if (isTRUE(return_plot)){
 
     if(top_res > length(results_test@score)){
-      warning(paste0("More top nodes selected via top_res than available.",
-              " Returning max. number of nodes instead.\n"))
+      warning("More top nodes selected via top_res than available. ",
+              "Returning max. number of nodes instead.\n")
       top_res <- min(top_res, length(results_test@score))
     }
     topGO::showSigOfNodes(GOdata,
@@ -455,6 +455,312 @@ apl_topGO <- function(caobj,
 
 }
 
+#' 
+#' Plot Association Plot with ggplot
+#' @description 
+#' Uses ggplot to plot an Association Plot
+#' 
+#' @param rows Row APL-coordinates
+#' @param rows_group Row AP-coordinates to highlight
+#' @param rows_scored Row AP-coordinates of rows above a score cutoff.
+#' @param cols Column AP-coordinates
+#' @param cols_group Column AP-coordinates for the group to be highlighted.
+#' @param rows_color Color for rows
+#' @param rows_high_color Color for rows to be highlighted.
+#' @param cols_color Column points color.
+#' @param cols_color_high Color for column points to be highlighted.
+#' @param score_color Color scheme for row points with a score.
+#' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
+#' should be labeled with text. Default TRUE.
+#' @param col_labs Logical. Whether labels for columns indicated by cols_idx 
+#' shouls be labeled with text. Default FALSE.
+#' @param show_score Logical. Whether the S-alpha score should be shown in 
+#' the plot.
+#' @param show_cols Logical. Whether column points should be plotted.
+#' @param show_rows Logical. Whether row points should be plotted.
+#' 
+#' @returns
+#' ggplot Association Plot
+apl_ggplot <- function(rows,
+                       rows_group = NULL,
+                       cols,
+                       cols_group = NULL,
+                       rows_scored = NULL,
+                       rows_color = "#0066FF",
+                       rows_high_color = "#FF0000",
+                       cols_color = "#601A4A",
+                       cols_grp_color = "#EE442F",
+                       score_color = "rainbow",
+                       row_labs = FALSE,
+                       col_labs = FALSE,
+                       show_score = FALSE,
+                       show_cols = FALSE,
+                       show_rows = TRUE){
+  
+  p <- ggplot2::ggplot()
+  
+  
+  if (isTRUE(show_rows)){
+    p <- p +
+      ggplot2::geom_point(data=rows,
+                          ggplot2::aes(x=x, y=y),
+                          color = rows_color,
+                          alpha = 0.7,
+                          shape = 1) #16 point, 1 circle.
+    
+    if (isTRUE(show_score)){
+      p <- p +
+        ggplot2::geom_point(data=rows_scored,
+                            ggplot2::aes(x=x, y=y, fill = Score),
+                            alpha = 0.7,
+                            shape = 21,
+                            stroke = 0.5)
+      if (score_color == "rainbow"){
+        hex <- c("#00007F",
+                 "blue",
+                 "#007FFF",
+                 "cyan",
+                 "#7FFF7F",
+                 "yellow",
+                 "#FF7F00",
+                 "red",
+                 "#7F0000")
+        p <- p +
+          ggplot2::scale_fill_gradientn(colours = hex,
+                                        name = expression(S*alpha))
+      } else if (score_color == "viridis"){
+        p <- p +
+          ggplot2::scale_color_viridis_c(option = "D")
+      }
+      
+    }
+    
+    if (!is.null(rows_group)){
+      p <- p +
+        ggplot2::geom_point(data=rows_group,
+                            ggplot2::aes(x=x, y=y),
+                            color = rows_high_color,
+                            shape = 19)
+      
+      if(isTRUE(row_labs)){
+        p <- p +
+          ggrepel::geom_text_repel(data = rows_group,
+                                   ggplot2::aes(x=x, y=y, label=rownms),
+                                   color = rows_high_color,
+                                   max.overlaps = Inf)
+      }
+    }
+  }
+  
+  if (isTRUE(show_cols)){
+    p <- p +
+      ggplot2::geom_point(data=cols,
+                          ggplot2::aes(x=x, y=y),
+                          color = cols_color,
+                          shape = 4)
+      if (!is.null(cols_group)){
+        p <- p +
+        ggplot2::geom_point(data=cols_group,
+                            ggplot2::aes(x=x, y=y),
+                            color = cols_grp_color,
+                            shape = 4)
+      }
+
+    if(col_labs == TRUE){
+      p <- p +
+        ggrepel::geom_text_repel(data=cols_group,
+                                 ggplot2::aes(x=x, y=y, label=rownms),
+                                 color = cols_grp_color)
+    }
+  }
+  
+  p <- p +
+    ggplot2::labs(title="Association Plot") +
+    ggplot2::theme_bw()
+  
+  return(p)
+}
+
+
+#' 
+#' Plot Association Plot with plotly
+#' @description 
+#' Uses plotly to generate an interactive Association Plot
+#' 
+#' @param rows Row APL-coordinates
+#' @param rows_group Row AP-coordinates to highlight
+#' @param rows_scored Row AP-coordinates of rows above a score cutoff.
+#' @param cols Column AP-coordinates
+#' @param cols_group Column AP-coordinates for the group to be highlighted.
+#' @param rows_color Color for rows
+#' @param rows_high_color Color for rows to be highlighted.
+#' @param cols_color Column points color.
+#' @param cols_color_high Color for column points to be highlighted.
+#' @param score_color Color scheme for row points with a score.
+#' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
+#' should be labeled with text. Default TRUE.
+#' @param col_labs Logical. Whether labels for columns indicated by cols_idx 
+#' shouls be labeled with text. Default FALSE.
+#' @param show_score Logical. Whether the S-alpha score should be shown in 
+#' the plot.
+#' @param show_cols Logical. Whether column points should be plotted.
+#' @param show_rows Logical. Whether row points should be plotted.
+#' 
+#' @returns
+#' Interactive plotly Association Plot
+apl_plotly <- function(rows,
+                       rows_group =NULL,
+                       cols,
+                       cols_group,
+                       rows_scored = NULL,
+                       rows_color = "#0066FF",
+                       rows_high_color = "#FF0000",
+                       cols_color = "#601A4A",
+                       cols_grp_color = "#EE442F",
+                       score_color = "rainbow",
+                       row_labs = FALSE,
+                       col_labs = FALSE,
+                       show_score = FALSE,
+                       show_cols = FALSE,
+                       show_rows = TRUE){
+  
+  if (row_labs == FALSE){
+    rlabs <- 'markers'
+    rowfont <- NULL
+  } else {
+    rlabs <- 'markers+text'
+    rowfont <- list(color=rows_high_color)
+    
+  }
+  
+  if (col_labs == FALSE){
+    clabs <- 'markers'
+    colfont <- NULL
+  } else {
+    clabs <- 'markers+text'
+    colfont <- list(color = cols_grp_color)
+  }
+  
+  p <- plotly::plot_ly()
+  
+  if(isTRUE(show_rows)){
+    
+    color_fix <- rows_color
+    colors_fun <- NULL
+    color_bar <- NULL
+    sym <- "circle-open"
+    
+    p <- p %>%
+      plotly::add_trace(data = rows,
+                        x = ~x,
+                        y = ~y,
+                        mode = 'markers',
+                        text = rows$rownms,
+                        opacity = 0.7,
+                        textposition = "left",
+                        marker = list(color = color_fix, 
+                                      colorscale = colors_fun,
+                                      symbol = sym,
+                                      colorbar = color_bar,
+                                      size = 5),
+                        name = 'genes',
+                        hoverinfo = 'text',
+                        type = 'scatter')
+    
+    if (isTRUE(show_score)){
+      
+      if (score_color == "rainbow"){
+        colors_fun <- "Jet"
+      } else if (score_color == "viridis"){
+        colors_fun <- 'Viridis'
+      }
+      color_fix <- as.formula("~Score")
+      color_bar <- list(title = "S\u03B1", len=0.5)
+      sym <- "circle"
+      
+      p <- p %>%
+        plotly::add_trace(data = rows_scored,
+                          x = ~x,
+                          y = ~y,
+                          mode = 'markers',
+                          text = rows_scored$rownms,
+                          opacity = 0.7,
+                          textposition = "left",
+                          marker = list(color = color_fix,
+                                        colorscale = colors_fun,
+                                        symbol = sym,
+                                        colorbar = color_bar,
+                                        size = 5,
+                                        line = list(color = '#000000', #black
+                                                    width = 0.5)),
+                          name = 'genes (scored)',
+                          hoverinfo = 'text',
+                          type = 'scatter')
+      
+    }
+    
+    if (!is.null(rows_group)){
+      
+      p <- p %>%
+        plotly::add_trace(data = rows_group,
+                          x = ~x,
+                          y = ~y,
+                          mode = rlabs,
+                          text = rows_group$rownms,
+                          textposition = "left",
+                          textfont=rowfont,
+                          marker = list(symbol = 'circle',
+                                        color = rows_high_color,
+                                        size = 5),
+                          name = 'marked genes',
+                          hoverinfo = 'text',
+                          type = 'scatter')
+    }
+  }
+  
+  if(isTRUE(show_cols)){
+    p <- p %>%
+      plotly::add_trace(data=cols,
+                        x = ~x,
+                        y =  ~y,
+                        mode = 'markers',
+                        text = cols$rownms,
+                        textposition = "left",
+                        marker = list(color = cols_color,
+                                      symbol = 'x',
+                                      size = 5),
+                        name = 'samples',
+                        hoverinfo = 'text',
+                        type = 'scatter')
+    
+    if (!is.null(cols_group)){
+      p <- p %>% plotly::add_trace(data = cols_group,
+                                   x = ~x,
+                                   y = ~y,
+                                   mode = clabs,
+                                   text = cols_group$rownms,
+                                   textposition = "left",
+                                   textfont=colfont,
+                                   marker = list(symbol = 'x',
+                                                 color = cols_grp_color,
+                                                 size = 5),
+                                   name = 'marked samples',
+                                   hoverinfo = 'text',
+                                   type = 'scatter')
+    }
+  }
+  
+  
+  p <- p %>% 
+    plotly::layout(title = paste('Association Plot'),
+                   xaxis = list(title = 'Distance from origin (x)',
+                                rangemode = "tozero"),
+                   yaxis = list(title = 'Distance from gene to sample line (y)',
+                                rangemode = "tozero"),
+                   showlegend = TRUE)
+  
+  return(p)
+}
 
 #' Association Plot
 #'
@@ -556,12 +862,16 @@ apl <- function(caobj,
                            x = caobj@apl_cols[cols_idx,"x"],
                            y = caobj@apl_cols[cols_idx,"y"],
                            row.names = NULL)
+  } else {
+    group_cols <- NULL
   }
   if(is.numeric(rows_idx)){
   group_rows <- data.frame(rownms = rownames(caobj@apl_rows)[rows_idx],
                            x = caobj@apl_rows[rows_idx,"x"],
                            y = caobj@apl_rows[rows_idx,"y"],
                            row.names = NULL)
+  } else {
+    group_rows <- NULL
   }
   
   rows_color <- "#0066FF"
@@ -583,8 +893,9 @@ apl <- function(caobj,
 
     if (is.empty(idx)) {
       show_score <- FALSE
-      warning(paste0("No rows with a Score >= score_cutoff of ",
-                     score_cutoff, ". Choose lower cutoff."))
+      warning("No rows with a Score >= score_cutoff of ",
+              score_cutoff, 
+              ". Choose lower cutoff.")
     } else {
       apl_scored.tmp <- apl_rows.tmp[idx,]
       apl_rows.tmp <- apl_rows.tmp[-idx,]
@@ -594,236 +905,45 @@ apl <- function(caobj,
 
 
   if (type == "ggplot"){
-
-
-    p <- ggplot2::ggplot()
-
-
-    if (isTRUE(show_rows)){
-      p <- p +
-        ggplot2::geom_point(data=apl_rows.tmp,
-                            ggplot2::aes(x=x, y=y),
-                            color = rows_color,
-                            alpha = 0.7,
-                            shape = 1) #16 point, 1 circle.
-
-      if (isTRUE(show_score)){
-        p <- p +
-          ggplot2::geom_point(data=apl_scored.tmp,
-                              ggplot2::aes(x=x, y=y, fill = Score),
-                              alpha = 0.7,
-                              shape = 21,
-                              stroke = 0.5)
-        if (score_color == "rainbow"){
-          hex <- c("#00007F",
-                   "blue",
-                   "#007FFF",
-                   "cyan",
-                   "#7FFF7F",
-                   "yellow",
-                   "#FF7F00",
-                   "red",
-                   "#7F0000")
-          p <- p +
-            ggplot2::scale_fill_gradientn(colours = hex,
-                                            name = expression(S*alpha))
-        } else if (score_color == "viridis"){
-          p <- p +
-            ggplot2::scale_color_viridis_c(option = "D")
-        }
-
-      }
-
-      if (is.numeric(rows_idx)){
-        p <- p +
-          ggplot2::geom_point(data=group_rows,
-                              ggplot2::aes(x=x, y=y),
-                              color = rows_high_color,
-                              shape = 19)
-
-        if(isTRUE(row_labs)){
-          p <- p +
-            ggrepel::geom_text_repel(data = group_rows,
-                                     ggplot2::aes(x=x, y=y, label=rownms),
-                                     color = rows_high_color,
-                                     max.overlaps = Inf)
-        }
-      }
-    }
-
-    if (isTRUE(show_cols)){
-      p <- p +
-        ggplot2::geom_point(data=apl_cols.tmp,
-                            ggplot2::aes(x=x, y=y),
-                            color = cols_color,
-                            shape = 4) +
-        ggplot2::geom_point(data=apl_cols.tmp[caobj@group,],
-                            ggplot2::aes(x=x, y=y),
-                            color = cols_grp_color,
-                            shape = 4)
-      if(col_labs == TRUE & is.numeric(cols_idx)){
-        p <- p +
-          ggrepel::geom_text_repel(data=group_cols,
-                                   ggplot2::aes(x=x, y=y, label=rownms),
-                                   color = cols_grp_color)
-      }
-    }
-
-
-    rm(apl_rows.tmp, apl_cols.tmp)
-
-    p <- p +
-        ggplot2::labs(title="Association Plot") +
-        ggplot2::theme_bw()
-
+    
+    p <- apl_ggplot(rows = apl_rows.tmp,
+                    rows_group = group_rows,
+                    cols = apl_cols.tmp,
+                    cols_group = group_cols,
+                    rows_scored = apl_scored.tmp,
+                    rows_color = rows_color,
+                    rows_high_color = rows_high_color,
+                    cols_color = cols_color,
+                    cols_grp_color = cols_grp_color,
+                    score_color = score_color,
+                    row_labs = row_labs,
+                    col_labs = col_labs,
+                    show_score = show_score,
+                    show_cols = show_cols,
+                    show_rows = show_rows)
     return(p)
 
   } else if (type == "plotly"){
-
-    if (row_labs == FALSE){
-      rlabs <- 'markers'
-      rowfont <- NULL
-    } else {
-      rlabs <- 'markers+text'
-      rowfont <- list(color=rows_high_color)
-      
-    }
-    
-    if (col_labs == FALSE){
-      clabs <- 'markers'
-      colfont <- NULL
-    } else {
-      clabs <- 'markers+text'
-      colfont <- list(color = cols_grp_color)
-    }
-
-    p <- plotly::plot_ly()
-
-    if(isTRUE(show_rows)){
-
-      color_fix <- rows_color
-      colors_fun <- NULL
-      color_bar <- NULL
-      sym <- "circle-open"
-
-      p <- p %>%
-        plotly::add_trace(data = apl_rows.tmp,
-                          x = ~x,
-                          y = ~y,
-                          mode = 'markers',
-                          text = apl_rows.tmp$rownms,
-                          opacity = 0.7,
-                          textposition = "left",
-                          marker = list(color = color_fix, 
-                                        colorscale = colors_fun,
-                                        symbol = sym,
-                                        colorbar = color_bar,
-                                        size = 5),
-                          name = 'genes',
-                          hoverinfo = 'text',
-                          type = 'scatter')
-
-      if (isTRUE(show_score)){
-
-        if (score_color == "rainbow"){
-          colors_fun <- "Jet"
-        } else if (score_color == "viridis"){
-          colors_fun <- 'Viridis'
-        }
-        color_fix <- as.formula("~Score")
-        color_bar <- list(title = "S\u03B1", len=0.5)
-        sym <- "circle"
-
-        p <- p %>%
-          plotly::add_trace(data = apl_scored.tmp,
-                            x = ~x,
-                            y = ~y,
-                            mode = 'markers',
-                            text = apl_scored.tmp$rownms,
-                            opacity = 0.7,
-                            textposition = "left",
-                            marker = list(color = color_fix,
-                                          colorscale = colors_fun,
-                                          symbol = sym,
-                                          colorbar = color_bar,
-                                          size = 5,
-                                          line = list(color = '#000000', #black
-                                                      width = 0.5)),
-                            name = 'genes (scored)',
-                            hoverinfo = 'text',
-                            type = 'scatter')
-
-      }
-
-      if (is.numeric(rows_idx)){
-
-        p <- p %>%
-          plotly::add_trace(data = group_rows,
-                           x = ~x,
-                           y = ~y,
-                           mode = rlabs,
-                           text = group_rows$rownms,
-                           textposition = "left",
-                           textfont=rowfont,
-                           marker = list(symbol = 'circle',
-                                         color = rows_high_color,
-                                         size = 5),
-                           name = 'marked genes',
-                           hoverinfo = 'text',
-                           type = 'scatter')
-      }
-    }
-
-    if(isTRUE(show_cols)){
-      p <- p %>%
-        plotly::add_trace(data=apl_cols.tmp,
-                          x = ~x,
-                          y =  ~y,
-                          mode = 'markers',
-                          text = apl_cols.tmp$rownms,
-                          textposition = "left",
-                          marker = list(color = cols_color,
-                                        symbol = 'x',
-                                        size = 5),
-                          name = 'samples',
-                          hoverinfo = 'text',
-                          type = 'scatter')
-
-      if (is.numeric(cols_idx)){
-        p <- p %>% plotly::add_trace(data = group_cols,
-                                     x = ~x,
-                                     y = ~y,
-                                     mode = clabs,
-                                     text = group_cols$rownms,
-                                     textposition = "left",
-                                     textfont=colfont,
-                                     marker = list(symbol = 'x',
-                                                   color = cols_grp_color,
-                                                   size = 5),
-                                     name = 'marked samples',
-                                     hoverinfo = 'text',
-                                     type = 'scatter')
-      }
-    }
-
-
-    p <- p %>% plotly::layout(title = paste('Association Plot \n',
-                                            ncol(caobj@U),
-                                            ' first dimensions, ',
-                                            length(caobj@group),
-                                            ' samples.\n'),
-             xaxis = list(title = 'Distance from origin (x)',
-                          rangemode = "tozero"),
-             yaxis = list(title = 'Distance from gene to sample line (y)',
-                          rangemode = "tozero"),
-             showlegend = TRUE)
-
-    rm(apl_rows.tmp, apl_cols.tmp)
-
+    p <- apl_plotly(rows = apl_rows.tmp,
+                    rows_group = group_rows,
+                    cols = apl_cols.tmp,
+                    cols_group = group_cols,
+                    rows_scored = apl_scored.tmp,
+                    rows_color = rows_color,
+                    rows_high_color = rows_high_color,
+                    cols_color = cols_color,
+                    cols_grp_color = cols_grp_color,
+                    score_color = score_color,
+                    row_labs = row_labs,
+                    col_labs = col_labs,
+                    show_score = show_score,
+                    show_cols = show_cols,
+                    show_rows = show_rows)
     return(p)
+    
   } else {
-    stop(paste0("Please specify plot = \"ggplot\" or \"plotly\".",
-                " Other options are not accepted."))
+    stop("Please specify plot = \"ggplot\" or \"plotly\".",
+         " Other options are not accepted.")
   }
 
 }
@@ -855,27 +975,41 @@ apl <- function(caobj,
 #' sequencing a count matrix, gene expression values with genes in rows and 
 #' samples/cells in columns.
 #' Should contain row and column names.
-#' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.
-#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).
-#' @param group Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.
-#' @param nrow Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.
-#' @param top Integer. Number of most variable rows to retain. Default 5000 rows (set NULL to keep all).
-#' @param score Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.
-#' @param mark_rows Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.
-#' @param mark_cols Character vector. Names of cols that should be highlighted in the plot.
+#' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied 
+#' will be calculated. Default NULL.
+#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all 
+#' dimensions).
+#' @param group Numeric/Character. Vector of indices or column names of the 
+#' columns to calculate centroid/x-axis direction.
+#' @param nrow Integer. The top nrow scored row labels will be added to the 
+#' plot if score = TRUE. Default 10.
+#' @param top Integer. Number of most variable rows to retain. Default 5000 
+#' rows (set NULL to keep all).
+#' @param score Logical. Whether rows should be scored and ranked. Ignored when 
+#' a vector is supplied to mark_rows. Default TRUE.
+#' @param mark_rows Character vector. Names of rows that should be highlighted 
+#' in the plot. If not NULL, score is ignored. Default NULL.
+#' @param mark_cols Character vector. Names of cols that should be highlighted 
+#' in the plot.
 #' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param python A logical value indicating whether to use singular value decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` in R.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.
-#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".
+#' @param python A logical value indicating whether to use singular value 
+#' decomposition from the python package torch.
+#' This implementation dramatically speeds up computation compared to `svd()` 
+#' in R.
+#' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
+#' should be labeled with text. Default TRUE.
+#' @param col_labs Logical. Whether labels for columns indicated by cols_idx 
+#' should be labeled with text. Default TRUE.
+#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an 
+#' interactive plot "plotly". Default "plotly".
 #' @param show_cols Logical. Whether column points should be plotted.
 #' @param show_rows Logical. Whether row points should be plotted.
 #' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff
 #' will be colored according to their score if show_score = TRUE.
 #' @param score_color Either "rainbow" or "viridis".
 #' @param pd_method Which method to use for pick_dims (\link[APL]{pick_dims}).
-#' @param pd_reps Number of repetitions performed when using "elbow_rule" in `pick_dims`.
+#' @param pd_reps Number of repetitions performed when using "elbow_rule" in 
+#' `pick_dims`.
 #' (\link[APL]{pick_dims})
 #' @param pd_use Whether to use `pick_dims` (\link[APL]{pick_dims}) to determine
 #' the number of dimensions. Ignored when `dims` is set by the user.
@@ -973,25 +1107,32 @@ setMethod(f = "runAPL",
                       python = python,
                       return_plot = FALSE)
       
-      message(paste("\n Using", pd, "dimensions. Subsetting.", sep = " "))
+      message("\n Using ",
+              pd,
+              " dimensions. Subsetting.")
+      
       dims <- pd
       caobj <- subset_dims(caobj, dims)
       
     } else if (is.null(dims) & !isTRUE(pd_use)) {
       dims <- caobj@dims
-      message(paste("\n Using", dims, "dimensions. No subsetting performed.", sep = " "))
+      message("\n Using ",
+              dims,
+              " dimensions. No subsetting performed.")
+      
     } else if (!is.null(dims) & !isTRUE(pd_use)) {
-      message(paste("\n Using", dims, "dimensions.", sep = " "))
+      message("\n Using ", dims, " dimensions.")
     } else if(!is.null(dims) & isTRUE(pd_use)){
       message("\nBoth dims and pd_use set. Using dimensions specified by dims.")
-      message(paste("\nUsing", dims, "dimensions.", sep = " "))
+      message("\nUsing ", dims, " dimensions.")
     }
     
 
   } else {
     if(!is.empty(caobj@dims) && is.null(dims)){
       if(isTRUE(pd_use)){
-        stopifnot("Cannot use scree plot to pick dimensions" = pd_method != "scree_plot")
+        stopifnot("Cannot use scree plot to pick dimensions" = 
+                    pd_method != "scree_plot")
         pd <- pick_dims(obj = caobj,
                         mat = obj,
                         method = pd_method,
@@ -999,37 +1140,50 @@ setMethod(f = "runAPL",
                         python = python,
                         return_plot = FALSE)
         
-        message(paste("\n Using", pd, "dimensions", sep = " "))
+        message("\n Using ",
+                pd,
+                " dimensions")
         
         dims <- pd
         caobj <- subset_dims(caobj, dims)
       } else {
         dims <- caobj@dims
-        message(paste("\n Using", dims, "dimensions. No subsetting performed.", sep = " "))
+        message("\n Using ",
+                dims,
+                " dimensions. No subsetting performed.")
       }
 
       
     } else if (!is.empty(caobj@dims) && !is.null(dims)) {
-        # warning("The caobj was previously already subsetted to ", caobj@dims, " dimensions. Subsetting again!")
       if (dims < caobj@dims){
 
         if (!isTRUE(pd_use)) {
-          message(paste("\n Using", dims, "dimensions.", sep = " "))
+          message("\n Using ", dims, " dimensions.")
         } else if(isTRUE(pd_use)){
           message("\nBoth dims and pd_use set. Using dimensions specified by dims.")
-          message(paste("\nUsing", dims, "dimensions.", sep = " "))
+          message("\nUsing ",
+                  dims,
+                  " dimensions.")
         }
         
         caobj <- subset_dims(caobj, dims = dims)
       } else if(dims > length(caobj@D)){
-        warning("dims is larger than the number of available dimensions. Argument ignored")
+        warning("dims is larger than the number of available dimensions. ",
+                "Argument ignored")
       }
     }
 
     if (is.empty(caobj@prin_coords_rows) && !is.empty(caobj@std_coords_rows)){
-      caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = TRUE, princ_coords = 1)
-    } else if (is.empty(caobj@prin_coords_rows) || is.empty(caobj@std_coords_cols)){
-      caobj <- ca_coords(caobj = caobj, dims = dims, princ_only = FALSE, princ_coords = 1)
+      caobj <- ca_coords(caobj = caobj,
+                         dims = dims,
+                         princ_only = TRUE,
+                         princ_coords = 1)
+    } else if (is.empty(caobj@prin_coords_rows) || 
+               is.empty(caobj@std_coords_cols)){
+      caobj <- ca_coords(caobj = caobj,
+                         dims = dims,
+                         princ_only = FALSE,
+                         princ_coords = 1)
     }
   }
 
@@ -1053,7 +1207,10 @@ setMethod(f = "runAPL",
         mark_cols <- match(mark_cols, rownames(caobj@apl_cols))
         mark_cols <- na.omit(mark_cols)
         if (anyNA(mark_cols)){
-          warning("Not all names in 'mark_cols' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
+          warning(
+            "Not all names in 'mark_cols' are contained in the row names.",
+            " Maybe they were filtered out?",
+            "\nNon-matching values were ignored.")
         }
       }
     }
@@ -1062,7 +1219,10 @@ setMethod(f = "runAPL",
       mark_rows <- match(mark_rows, rownames(caobj@apl_rows))
       mark_rows <- na.omit(mark_rows)
       if (anyNA(mark_rows)){
-        warning("Not all names in 'mark_rows' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
+        warning(
+          "Not all names in 'mark_rows' are contained in the row names.",
+          " Maybe they were filtered out?",
+          "\n Non-matching values were ignored.")
       }
     }
 
@@ -1070,7 +1230,10 @@ setMethod(f = "runAPL",
       mark_cols <- match(mark_cols, rownames(caobj@apl_cols))
       mark_cols <- na.omit(mark_cols)
       if (anyNA(mark_cols)){
-        warning("Not all names in 'mark_cols' are contained in the row names. Maybe they were filtered out?\n Non-matching values were ignored.")
+        warning(
+          "Not all names in 'mark_cols' are contained in the row names.",
+          " Maybe they were filtered out?",
+          "\n Non-matching values were ignored.")
       }
     }
   }
@@ -1097,9 +1260,13 @@ setMethod(f = "runAPL",
 
 
 #' @description
-#' runAPL.SingleCellExperiment: Computes singular value decomposition and coordinates for the Association Plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
+#' runAPL.SingleCellExperiment: Computes singular value decomposition and 
+#' coordinates for the Association Plot from SingleCellExperiment objects with 
+#' reducedDim(obj, "CA") slot (optional).
 #'
-#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
+#' @param assay Character. The assay from which extract the count matrix for 
+#' SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+#' SingleCellExperiments.
 #'
 #' @rdname runAPL
 #' @export
@@ -1154,7 +1321,8 @@ setMethod(f = "runAPL",
                    ...,
                    assay = "counts"){
 
-  stopifnot("obj doesn't belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
+  stopifnot("obj doesn't belong to class 'SingleCellExperiment'" =
+              is(obj, "SingleCellExperiment"))
 
   mat <- SummarizedExperiment::assay(obj, assay)
 
@@ -1188,10 +1356,15 @@ setMethod(f = "runAPL",
 
 
 #' @description
-#' runAPL.Seurat: Computes singular value decomposition and coordinates for the Association Plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
+#' runAPL.Seurat: Computes singular value decomposition and coordinates for 
+#' the Association Plot from Seurat objects, optionally with a DimReduc Object 
+#' in the "CA" slot.
 #'
-#' @param assay Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.
-#' @param slot character. The Seurat assay slot from which to extract the count matrix.
+#' @param assay Character. The assay from which extract the count matrix for 
+#' SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+#' SingleCellExperiments.
+#' @param slot character. The Seurat assay slot from which to extract the 
+#' count matrix.
 #' @rdname runAPL
 #' @export
 #' @examples

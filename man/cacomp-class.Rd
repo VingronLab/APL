@@ -15,8 +15,10 @@ new_cacomp(...)
 cacomp object
 }
 \description{
-This class contains elements necessary to computer CA coordinates or Association Plot coordinates,
-as well as other informative data such as row/column inertia, gene-wise APL-scores, etc. ...
+This class contains elements necessary to computer CA coordinates or 
+Association Plot coordinates,
+as well as other informative data such as row/column inertia, 
+gene-wise APL-scores, etc. ...
 
 Creates new cacomp object.
 }
@@ -29,17 +31,22 @@ Creates new cacomp object.
 
 \item{\code{D}}{class "numeric". Singular values of the original inpt matrix.}
 
-\item{\code{std_coords_rows}}{class "matrix". Standardized CA coordinates of the rows.}
+\item{\code{std_coords_rows}}{class "matrix". Standardized CA coordinates of the 
+rows.}
 
-\item{\code{std_coords_cols}}{class "matrix". Standardized CA coordinates of the columns.}
+\item{\code{std_coords_cols}}{class "matrix". Standardized CA coordinates of the 
+columns.}
 
 \item{\code{prin_coords_rows}}{class "matrix". Principal CA coordinates of the rows.}
 
-\item{\code{prin_coords_cols}}{class "matrix". Principal CA coordinates of the columns.}
+\item{\code{prin_coords_cols}}{class "matrix". Principal CA coordinates of the 
+columns.}
 
-\item{\code{apl_rows}}{class "matrix". Association Plot coordinates of the rows for the direction defined in slot "group"}
+\item{\code{apl_rows}}{class "matrix". Association Plot coordinates of the rows 
+for the direction defined in slot "group"}
 
-\item{\code{apl_cols}}{class "matrix". Association Plot coordinates of the columns for the direction defined in slot "group"}
+\item{\code{apl_cols}}{class "matrix". Association Plot coordinates of the columns 
+for the direction defined in slot "group"}
 
 \item{\code{APL_score}}{class "data.frame". Contains rows sorted by the APL score.
 Columns: Rowname (gene name in the case of gene expression data),
@@ -48,7 +55,8 @@ the original row number and the rank of the row as determined by the score.}
 
 \item{\code{dims}}{class "numeric". Number of dimensions in CA space.}
 
-\item{\code{group}}{class "numeric". Indices of the chosen columns for APL calculations.}
+\item{\code{group}}{class "numeric". Indices of the chosen columns for APL 
+calculations.}
 
 \item{\code{row_masses}}{class "numeric". Row masses of the frequency table.}
 
@@ -69,7 +77,8 @@ the original row number and the rank of the row as determined by the score.}
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, x = sample(1:20, 50, replace = TRUE))
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)}, 
+               x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
