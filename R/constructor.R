@@ -415,7 +415,7 @@ new_cacomp <- function(...) new("cacomp",...)
 cacomp_slot <- function(caobj, slot){
   stopifnot(slot %in% slotNames(caobj))
   
-  return(caobj@slot)
+  return(slot(caobj, slot))
 }
 
 #' Prints slot names of cacomp object

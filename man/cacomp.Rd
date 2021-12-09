@@ -153,7 +153,8 @@ The calculation is performed according to the work of Michael Greenacre.
 Singular value decomposition can be performed either with the base R 
 function `svd` or preferably by the faster pytorch implementation 
 (python = TRUE). When working with large matrices, CA coordinates and
-principal coordinates should only be computed when needed to save computational time.
+principal coordinates should only be computed when needed to save 
+computational time.
 }
 \examples{
 # Simulate scRNAseq data.
