@@ -50,7 +50,7 @@ Imports:
     utils,
     org.Hs.eg.db,
     org.Mm.eg.db
-Depends: 
+Depends: R (>= 3.5)
 Suggests: 
     BiocStyle,
     knitr,

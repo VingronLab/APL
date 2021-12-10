@@ -468,7 +468,7 @@ apl_topGO <- function(caobj,
 #' @param rows_color Color for rows
 #' @param rows_high_color Color for rows to be highlighted.
 #' @param cols_color Column points color.
-#' @param cols_color_high Color for column points to be highlighted.
+#' @param cols_high_color Color for column points to be highlighted..
 #' @param score_color Color scheme for row points with a score.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
 #' should be labeled with text. Default TRUE.
@@ -489,7 +489,7 @@ apl_ggplot <- function(rows,
                        rows_color = "#0066FF",
                        rows_high_color = "#FF0000",
                        cols_color = "#601A4A",
-                       cols_grp_color = "#EE442F",
+                       cols_high_color = "#EE442F",
                        score_color = "rainbow",
                        row_labs = FALSE,
                        col_labs = FALSE,
@@ -562,7 +562,7 @@ apl_ggplot <- function(rows,
         p <- p +
         ggplot2::geom_point(data=cols_group,
                             ggplot2::aes(x=x, y=y),
-                            color = cols_grp_color,
+                            color = cols_high_color,
                             shape = 4)
       }
 
@@ -570,7 +570,7 @@ apl_ggplot <- function(rows,
       p <- p +
         ggrepel::geom_text_repel(data=cols_group,
                                  ggplot2::aes(x=x, y=y, label=rownms),
-                                 color = cols_grp_color)
+                                 color = cols_high_color)
     }
   }
   
@@ -616,7 +616,7 @@ apl_plotly <- function(rows,
                        rows_color = "#0066FF",
                        rows_high_color = "#FF0000",
                        cols_color = "#601A4A",
-                       cols_grp_color = "#EE442F",
+                       cols_high_color = "#EE442F",
                        score_color = "rainbow",
                        row_labs = FALSE,
                        col_labs = FALSE,
@@ -638,7 +638,7 @@ apl_plotly <- function(rows,
     colfont <- NULL
   } else {
     clabs <- 'markers+text'
-    colfont <- list(color = cols_grp_color)
+    colfont <- list(color = cols_high_color)
   }
   
   p <- plotly::plot_ly()
@@ -742,7 +742,7 @@ apl_plotly <- function(rows,
                                    textposition = "left",
                                    textfont=colfont,
                                    marker = list(symbol = 'x',
-                                                 color = cols_grp_color,
+                                                 color = cols_high_color,
                                                  size = 5),
                                    name = 'marked samples',
                                    hoverinfo = 'text',
@@ -877,7 +877,7 @@ apl <- function(caobj,
   rows_color <- "#0066FF"
   rows_high_color <- "#FF0000"
   cols_color <- "#601A4A"
-  cols_grp_color <- "#EE442F"
+  cols_high_color <- "#EE442F"
 
 
 
@@ -914,7 +914,7 @@ apl <- function(caobj,
                     rows_color = rows_color,
                     rows_high_color = rows_high_color,
                     cols_color = cols_color,
-                    cols_grp_color = cols_grp_color,
+                    cols_high_color = cols_high_color,
                     score_color = score_color,
                     row_labs = row_labs,
                     col_labs = col_labs,
@@ -932,7 +932,7 @@ apl <- function(caobj,
                     rows_color = rows_color,
                     rows_high_color = rows_high_color,
                     cols_color = cols_color,
-                    cols_grp_color = cols_grp_color,
+                    cols_high_color = cols_high_color,
                     score_color = score_color,
                     row_labs = row_labs,
                     col_labs = col_labs,
