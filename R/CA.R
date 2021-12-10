@@ -621,7 +621,9 @@ setMethod(f = "cacomp",
 #' ca <- subset_dims(ca, 2)
 #' @export
 subset_dims <- function(caobj, dims){
-
+  
+  if (dims == 1){stop("Please choose more than 1 dimension.")}
+  
   stopifnot(is(caobj, "cacomp"))
   
   if (is.null(dims)){
@@ -846,9 +848,28 @@ scree_plot <- function(df){
 #' decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` 
 #' in R.
-#' #' @return
-#' * `elbow_method` (for `return_plot=TRUE`) returns a list with two elements: 
-#' "dims" contains the number of dimensions and "plot" a ggplot.
+#' @return
+#' `elbow_method` (for `return_plot=TRUE`) returns a list with two elements: 
+#' "dims" contains the number of dimensions and "plot" a ggplot. if 
+#' `return_plot=TRUE` it just returns the number of picked dimensions.
+#' @examples 
+#' 
+#' # Get example data from Seurat
+#' library(Seurat)
+#' set.seed(2358)
+#' cnts <- as.matrix(Seurat::GetAssayData(pbmc_small, "data"))
+#' # Run correspondence analysis.
+#' ca <- cacomp(obj = cnts)
+#' 
+#' # pick dimensions with the elbow rule. Returns list.
+#' pd <- pick_dims(obj = ca,
+#'                 mat = cnts,
+#'                 method = "elbow_rule",
+#'                 return_plot = TRUE,
+#'                 reps = 10)
+#' pd$plot
+#' ca_sub <- subset_dims(ca, dims = pd$dims)
+#' 
 elbow_method <- function(obj,
                          mat,
                          reps,
@@ -897,10 +918,11 @@ elbow_method <- function(obj,
     
     for (k in seq_len(reps)) {
       
-      colnm <- paste0("perm",k)
+      colnm <- ggplot2::sym(paste0("perm",k))
+      
       screeplot <- screeplot +
         ggplot2::geom_line(data = df, ggplot2::aes(x=dims,
-                                                   y=.data[[colnm]]),
+                                                   y=!!colnm),
                            color="black",
                            alpha=0.8,
                            linetype=2)

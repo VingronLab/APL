@@ -309,7 +309,7 @@ setMethod(f = "as.cacomp",
           signature=(obj="list"),
           function(obj, ..., mat = NULL) {
 
-  try_obj <- try(do.call(new_cacomp, ca_list), silent = TRUE)
+  try_obj <- try(do.call(new_cacomp, obj), silent = TRUE)
   if (is(try_obj, "try-error")){
     obj <- recompute(calist = obj, mat = mat)
     return(obj)

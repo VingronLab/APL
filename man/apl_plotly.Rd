@@ -13,7 +13,7 @@ apl_plotly(
   rows_color = "#0066FF",
   rows_high_color = "#FF0000",
   cols_color = "#601A4A",
-  cols_grp_color = "#EE442F",
+  cols_high_color = "#EE442F",
   score_color = "rainbow",
   row_labs = FALSE,
   col_labs = FALSE,
@@ -39,6 +39,8 @@ apl_plotly(
 
 \item{cols_color}{Column points color.}
 
+\item{cols_high_color}{Color for column points to be highlighted.}
+
 \item{score_color}{Color scheme for row points with a score.}
 
 \item{row_labs}{Logical. Whether labels for rows indicated by rows_idx 
@@ -53,8 +55,6 @@ the plot.}
 \item{show_cols}{Logical. Whether column points should be plotted.}
 
 \item{show_rows}{Logical. Whether row points should be plotted.}
-
-\item{cols_color_high}{Color for column points to be highlighted.}
 }
 \value{
 Interactive plotly Association Plot

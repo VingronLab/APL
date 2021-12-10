@@ -19,14 +19,35 @@ Should contain row and column names.}
 \item{python}{A logical value indicating whether to use singular value 
 decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to `svd()` 
-in R.
-#' @return
-* `elbow_method` (for `return_plot=TRUE`) returns a list with two elements: 
-"dims" contains the number of dimensions and "plot" a ggplot.}
+in R.}
 
 \item{return_plot}{TRUE/FALSE. Whether a plot should be returned when 
 choosing "elbow_rule".}
 }
+\value{
+`elbow_method` (for `return_plot=TRUE`) returns a list with two elements: 
+"dims" contains the number of dimensions and "plot" a ggplot. if 
+`return_plot=TRUE` it just returns the number of picked dimensions.
+}
 \description{
 Helper function for pick_dims() to run the elbow method.
+}
+\examples{
+
+# Get example data from Seurat
+library(Seurat)
+set.seed(2358)
+cnts <- as.matrix(Seurat::GetAssayData(pbmc_small, "data"))
+# Run correspondence analysis.
+ca <- cacomp(obj = cnts)
+
+# pick dimensions with the elbow rule. Returns list.
+pd <- pick_dims(obj = ca,
+                mat = cnts,
+                method = "elbow_rule",
+                return_plot = TRUE,
+                reps = 10)
+pd$plot
+ca_sub <- subset_dims(ca, dims = pd$dims)
+
 }
