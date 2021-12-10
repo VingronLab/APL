@@ -11,9 +11,8 @@ is.empty <- function(x) return(isTRUE(length(x) == 0 & !is.null(x)))
 #' and whether they are coherent.
 #' @param object A cacomp object.
 #' @return TRUE if it is a valid cacomp object. FALSE otherwise.
-#' 
-#' @examples
 #' @export
+#' @examples
 #' # Simulate scRNAseq data.
 #' cnts <- data.frame(cell_1 = rpois(10, 5),
 #'                    cell_2 = rpois(10, 10),
