@@ -496,7 +496,6 @@ apl_ggplot <- function(rows,
                        show_score = FALSE,
                        show_cols = FALSE,
                        show_rows = TRUE){
-  
   p <- ggplot2::ggplot()
   
   
@@ -558,20 +557,22 @@ apl_ggplot <- function(rows,
                           ggplot2::aes(x=x, y=y),
                           color = cols_color,
                           shape = 4)
+    
       if (!is.null(cols_group)){
         p <- p +
         ggplot2::geom_point(data=cols_group,
                             ggplot2::aes(x=x, y=y),
                             color = cols_high_color,
                             shape = 4)
+        
+        if(col_labs == TRUE){
+          p <- p +
+            ggrepel::geom_text_repel(data=cols_group,
+                                     ggplot2::aes(x=x, y=y, label=rownms),
+                                     color = cols_high_color)
+        }
       }
 
-    if(col_labs == TRUE){
-      p <- p +
-        ggrepel::geom_text_repel(data=cols_group,
-                                 ggplot2::aes(x=x, y=y, label=rownms),
-                                 color = cols_high_color)
-    }
   }
   
   p <- p +
@@ -595,7 +596,7 @@ apl_ggplot <- function(rows,
 #' @param rows_color Color for rows
 #' @param rows_high_color Color for rows to be highlighted.
 #' @param cols_color Column points color.
-#' @param cols_color_high Color for column points to be highlighted.
+#' @param cols_high_color Color for column points to be highlighted.
 #' @param score_color Color scheme for row points with a score.
 #' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
 #' should be labeled with text. Default TRUE.
