@@ -225,7 +225,7 @@ ca <- cacomp(obj = logcounts,
 
 The function `cacomp` accepts as an input any matrix with non-negative entries, be it a single-cell RNA-seq, bulk RNA-seq or other data. For ease of use, `cacomp` accepts also `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` objects, however for these we additionally have to specify via the `assay` and/or `slot` (for Seurat) parameter from where to extract the data. Importantly, in order to ensure the interpretability of the results `cacomp` (and related functions such as `runAPL`) requires that the input matrix contains both row and column names.
 
-When performing a feature selection before CA, we can set the argument `top` to the desired number of genes with the highest variance across cells from the input data to retain for further analysis. By default, only the top 5000 most variable genes are kept. For this vignette we keep all genes in the data to ensure that also genes from smaller clusters such as the platelets are kept. In many cases however 5,000 genes are a good compromise between computational time and keeping most relevant genes.
+When performing a feature selection before CA, we can set the argument `top` to the desired number of genes with the highest variance across cells from the input data to retain for further analysis. By default, only the top 5,000 most variable genes are kept. For this vignette we keep all genes in the data to ensure that also genes from smaller clusters such as the platelets are kept. In many cases however 5,000 genes are a good compromise between computational time and keeping most relevant genes.
 
 The output of `cacomp` is an object of class `cacomp`:
 ```{r print_cacomp}
@@ -277,7 +277,7 @@ pick_dims(ca,
   xlim(c(0,75))
 ```
 
-In the scree plot above we can see that the first dimension explains only ~0.75% of the total inertia and we observe the "jump" in the scree plot at roughly 7 dimensions. The first dimensions however explain only a small part of the total inertia. 
+In the scree plot above we can see that the first dimension explains only ~0.75% of the total inertia and we observe the "jump" in the scree plot at roughly 15 dimensions. The first dimensions however explain only a small part of the total inertia. 
 
 Here we compute the number of dimensions using the elbow rule. For demonstration, only five data permutations are computed:
 
@@ -418,7 +418,7 @@ enr <- apl_topGO(ca,
                  organism = "hs",
                  score_cutoff = 1)
 ```
-
+The function `plot_enrichment()` was implemented to visualize the `topGO` results in form of a dotplot. 
 
 ```{r topGO_plot, message=FALSE}
 plot_enrichment(enr)
