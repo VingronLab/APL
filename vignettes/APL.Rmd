@@ -233,7 +233,7 @@ ca
 ```
 
 As can be seen in the summarized output, by default both types of coordinates in the CA space (principal and standardized) are calculated.
-Once the coordinates for the Association Plot are calculate, they will also be shown in the output of `cacomp`. Slots are accessed through an ccessor  function:
+Once the coordinates for the Association Plot are calculate, they will also be shown in the output of `cacomp`. Slots are accessed through an accessor function:
 ```{r std_coords}
 cacomp_slot(ca, "std_coords_cols")[1:5, 1:5]
 ```
@@ -392,11 +392,11 @@ ca_biplot(ca, col_labels = platelets, type = "ggplot")
 
 ```
 
-The above described plots give us a quick overview of the first 2 dimensions of the data (more dimensions can be plotted). As shown in the commented out code, to interactively explore the projection of the data `type = "plotly"` can be set. 
+The above described plots give us a quick overview of the first 2 dimensions of the data (more dimensions can be plotted). As shown in the commented-out code, to interactively explore the projection of the data `type = "plotly"` can be set. 
 
 # APL and GO enrichment analysis
 
-After computing an Association Plot and identifying a set of genes specific for a selected cluster of cells we might be interested in conducting a Gene Ontology (GO) enrichment analysis of the identified gene set. The GO enrichment analysis of the B-cell specific genes (cluster 3 from the input data) idenitfied using Association Plot we first need to compute the coordinates of the genes in the Association Plot for B cells, as way as the \eqn{S_\alpha} score for each gene: 
+After computing an Association Plot and identifying a set of genes specific for a selected cluster of cells we might be interested in conducting a Gene Ontology (GO) enrichment analysis of the identified gene set. To conduct the GO enrichment analysis of the B-cell specific genes (cluster 3 from the input data) idenitfied using Association Plot we first need to compute the coordinates of the genes in the Association Plot for B cells, as well as the \eqn{S_\alpha} score for each gene: 
 
 ```{r cluster_three, results="hide"}
 # Get indices of cells in cluster 3 (B cells)
