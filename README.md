@@ -1,4 +1,4 @@
-
+![Logo](vignettes/fig_AP.png)
 
 # APL
 
