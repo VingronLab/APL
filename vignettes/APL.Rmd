@@ -42,8 +42,7 @@ For a mathematical description of the method, please refer to the manuscript.
 
 # Installation
 
-The `r Rpackage("APL")` package requires R version >= 4.0.
-To install this package from Bioconductor, run:
+To install the `r Rpackage("APL")` from Bioconductor, run:
 
 ```{r bioc_install, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -52,7 +51,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("APL")
 ```
 
-Alternatively the package can also be installed from github:
+Alternatively the package can also be installed from GitHub:
 ```{r git_install, eval=FALSE}
 library(devtools)
 install_github("VingronLab/APL")
@@ -184,7 +183,7 @@ pbmc$cell_type <- Idents(pbmc)
 DimPlot(pbmc, reduction = "umap", label = FALSE, pt.size = 0.5)
 ```
 
-# Fast way of computing Association Plots
+# Quick start
 
 The fastest way to compute the Association Plot for a selected cluster of cells from the input data is by using a wrapper function `runAPL()`. `runAPL()` automates most of the analysis steps for ease of use. 
 
@@ -339,7 +338,7 @@ By default we plot only the genes in the Association Plot. To also display the c
 
 ## Association Plots with the \eqn{S_\alpha} scores
 
-Computing the \eqn{S_\alpha} scores, a measure of cluster-specificity of a gene, allows us to rank genes by their specificity for a selected cluster. The \eqn{S_\alpha} scores can be computed using the `apl_score` function. To show the \eqn{S_\alpha} scores in the Association Plot use the argument `show_score = TRUE` in the `apl` function:
+The \eqn{S_\alpha} score allows us to rank genes by their specificity for a selected cell cluster, and is computed for each gene from the Association Plot separately. The higher the \eqn{S_\alpha} score of a gene, the more characteristic its expression for the investigated cell cluster. The \eqn{S_\alpha} scores can be computed using the `apl_score` function. To show the \eqn{S_\alpha} scores in the Association Plot use the argument `show_score = TRUE` in the `apl` function:
 
 ```{r apl_score, results = "hide"}
 # Compute S-alpha score
@@ -355,8 +354,8 @@ apl(ca,
     type = "ggplot") 
 ```
 
-By default, only genes that have a score larger than 0 are colored as these tend to be genes of interest.
-However, for some datasets this cutoff is not suitable and can easily be changed through the `score_cutoff` argument to `apl()`.
+By default, only genes that have a \eqn{S_\alpha} score larger than 0 are colored as these tend to be genes of interest and we consider them as cluster-specific genes.
+This cutoff can be easily changed through the `score_cutoff` argument to `apl()`.
 
 The \eqn{S_\alpha} scores are stored in the `"APL_score"` slot and can be accessed as follows:
 ```{r print_score}
