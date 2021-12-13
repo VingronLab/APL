@@ -1,6 +1,8 @@
-![Logo](vignettes/fig_AP.png)
+<img src="vignettes/fig_AP.png" width="700">
 
 # APL
+
+"APL" is a package developed for computation of Association Plots, a method for visualization and analysis of single cell transcriptomics data. The main focus of "APL" is the identification of genes characteristic for individual clusters of cells from input data. 
 
 When working with `APL` package please cite:
 ```
@@ -31,6 +33,7 @@ To install the `r Rpackage("APL")` from Bioconductor, run:
     
     BiocManager::install("APL")
 
+"APL" is an R package for 
 
  
 ## Pytorch installation
