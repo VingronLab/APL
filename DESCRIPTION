@@ -3,14 +3,14 @@ Type: Package
 Title: Association Plots
 Version: 0.99.0
 Authors@R:
-  c(person(given = "Clemens",
-           family = "Kohl",
-           role = c("aut"),
-           email = "kohl@molgen.mpg.de"),
-    person(given = "Elzbieta",
+  c(person(given = "Elzbieta",
            family = "Gralinska",
            role = c("cre", "aut"),
            email = "gralinska@molgen.mpg.de"),
+    person(given = "Clemens",
+           family = "Kohl",
+           role = c("aut"),
+           email = "kohl@molgen.mpg.de"),
      person(given = "Martin",
             family = "Vingron",
             role = c("aut"),
