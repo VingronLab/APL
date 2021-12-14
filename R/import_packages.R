@@ -6,6 +6,7 @@
 #' @importFrom ggplot2 ggplot aes geom_point guide_colorbar
 #' @importFrom topGO showSigOfNodes score
 #' @importFrom viridisLite viridis
+#' @importFrom rlang .data
 #' @importClassesFrom Seurat Seurat
 #' @importClassesFrom SingleCellExperiment SingleCellExperiment
 NULL
