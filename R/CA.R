@@ -821,7 +821,8 @@ scree_plot <- function(df){
   avg_inertia <- 100/nrow(df)
   max_num_dims <- nrow(df)
 
-  screeplot <- ggplot2::ggplot(df, ggplot2::aes(x=dims, y=inertia)) +
+  screeplot <- ggplot2::ggplot(df, ggplot2::aes(x=.data$dims,
+                                                y=.data$inertia)) +
     ggplot2::geom_col(fill="#4169E1") +
     ggplot2::geom_line(color="#B22222", size=1) +
     ggplot2::labs(
@@ -921,7 +922,7 @@ elbow_method <- function(obj,
       colnm <- ggplot2::sym(paste0("perm",k))
       
       screeplot <- screeplot +
-        ggplot2::geom_line(data = df, ggplot2::aes(x=dims,
+        ggplot2::geom_line(data = df, ggplot2::aes(x=.data$dims,
                                                    y=!!colnm),
                            color="black",
                            alpha=0.8,

@@ -576,10 +576,10 @@ plot_enrichment <- function(genenr, ntop = 10){
   genenr$Term <- factor(genenr$Term , levels = rev(unique(genenr$Term)))
 
   ggplot2::ggplot(genenr[seq_len(ntop),],
-                  aes(x = geneRatio,
-                      y = Term,
-                      size = Significant,
-                      fill = raw.p.value)) +
+                  aes(x = .data$geneRatio,
+                      y = .data$Term,
+                      size = .data$Significant,
+                      fill = .data$raw.p.value)) +
     ggplot2::geom_point(shape = 21, color = "black") +
     # ggplot2::scale_color_continuous(low="red", high="blue", name = "p-value",
                            # guide=guide_colorbar(reverse=TRUE)) +

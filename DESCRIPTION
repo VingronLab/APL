@@ -49,7 +49,8 @@ Imports:
     stats,
     utils,
     org.Hs.eg.db,
-    org.Mm.eg.db
+    org.Mm.eg.db,
+    rlang
 Depends: R (>= 3.5)
 Suggests: 
     BiocStyle,

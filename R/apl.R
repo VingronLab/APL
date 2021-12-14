@@ -502,7 +502,7 @@ apl_ggplot <- function(rows,
   if (isTRUE(show_rows)){
     p <- p +
       ggplot2::geom_point(data=rows,
-                          ggplot2::aes(x=x, y=y),
+                          ggplot2::aes(x=.data$x, y=.data$y),
                           color = rows_color,
                           alpha = 0.7,
                           shape = 1) #16 point, 1 circle.
@@ -510,7 +510,9 @@ apl_ggplot <- function(rows,
     if (isTRUE(show_score)){
       p <- p +
         ggplot2::geom_point(data=rows_scored,
-                            ggplot2::aes(x=x, y=y, fill = Score),
+                            ggplot2::aes(x=.data$x,
+                                         y=.data$y,
+                                         fill = .data$Score),
                             alpha = 0.7,
                             shape = 21,
                             stroke = 0.5)
@@ -537,14 +539,16 @@ apl_ggplot <- function(rows,
     if (!is.null(rows_group)){
       p <- p +
         ggplot2::geom_point(data=rows_group,
-                            ggplot2::aes(x=x, y=y),
+                            ggplot2::aes(x=.data$x, y=.data$y),
                             color = rows_high_color,
                             shape = 19)
       
       if(isTRUE(row_labs)){
         p <- p +
           ggrepel::geom_text_repel(data = rows_group,
-                                   ggplot2::aes(x=x, y=y, label=rownms),
+                                   ggplot2::aes(x=.data$x,
+                                                y=.data$y,
+                                                label=.data$rownms),
                                    color = rows_high_color,
                                    max.overlaps = Inf)
       }
@@ -554,21 +558,23 @@ apl_ggplot <- function(rows,
   if (isTRUE(show_cols)){
     p <- p +
       ggplot2::geom_point(data=cols,
-                          ggplot2::aes(x=x, y=y),
+                          ggplot2::aes(x=.data$x, y=.data$y),
                           color = cols_color,
                           shape = 4)
     
       if (!is.null(cols_group)){
         p <- p +
         ggplot2::geom_point(data=cols_group,
-                            ggplot2::aes(x=x, y=y),
+                            ggplot2::aes(x=.data$x, y=.data$y),
                             color = cols_high_color,
                             shape = 4)
         
         if(col_labs == TRUE){
           p <- p +
             ggrepel::geom_text_repel(data=cols_group,
-                                     ggplot2::aes(x=x, y=y, label=rownms),
+                                     ggplot2::aes(x=.data$x,
+                                                  y=.data$y,
+                                                  label=.data$rownms),
                                      color = cols_high_color)
         }
       }

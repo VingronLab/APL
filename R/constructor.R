@@ -438,5 +438,5 @@ cacomp_slot <- function(caobj, slot){
 #' 
 #' @export
 cacomp_names <- function(caobj){
-  slotNames(ca)
+  slotNames(caobj)
 }

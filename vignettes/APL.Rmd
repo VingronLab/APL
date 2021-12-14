@@ -31,7 +31,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 "APL" is a package developed for computation of Association Plots, a method for visualization and analysis of single cell transcriptomics data. The main focus of "APL" is the identification of genes characteristic for individual clusters of cells from input data. 
 
 
-When working with `r Rpackage("APL")` package please cite:
+When working with `r BiocStyle::Rpackage("APL")` package please cite:
 ```
 Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
 Elzbieta Gralinska, Martin Vingron
@@ -42,7 +42,7 @@ For a mathematical description of the method, please refer to the manuscript.
 
 # Installation
 
-To install the `r Rpackage("APL")` from Bioconductor, run:
+To install the `r BiocStyle::Rpackage("APL")` from Bioconductor, run:
 
 ```{r bioc_install, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -94,9 +94,9 @@ conda install pytorch
 # Preprocessing
 ## Setup
 In this vignette we will use the 3k Peripheral Blood Mononuclear Cell (PBMC) data from 10x Genomics as an example.
-To obtain the data necessary to follow the vignette we use the Bioconductor package `r Biocpkg("TENxPBMCData")`.
+To obtain the data necessary to follow the vignette we use the Bioconductor package `r BiocStyle::Biocpkg("TENxPBMCData")`.
 
-Besides the package `r Rpackage("APL")` we will use the single-cell RNA-seq analysis suite `r CRANpkg("Seurat")` (V. 4.0.4) to preprocess the data, but the preprocessing could equally be done with `r Biocpkg("SingleCellExperiment")` and `r Biocpkg("scater")`\\`r Biocpkg("scran")`.
+Besides the package `r BiocStyle::Rpackage("APL")` we will use the single-cell RNA-seq analysis suite `r BiocStyle::CRANpkg("Seurat")` (V. 4.0.4) to preprocess the data, but the preprocessing could equally be done with `r BiocStyle::Biocpkg("SingleCellExperiment")` and `r BiocStyle::Biocpkg("scater")`\\`r BiocStyle::Biocpkg("scran")`.
 For the preprocessing we follow the [Guided Clustering Tutorial](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) from the Seurat vignette. For details about the data preprocessing please refer to their website.
 
 ```{r setup, message=FALSE, warning=FALSE}
@@ -134,7 +134,7 @@ pbmc <- pbmc[no_zeros_rows,]
 ```
 
 ## Normalization, PCA & Clustering
-Association Plots from `r Rpackage("APL")` should be computed based on the normalized expression data. Therefore, we first normalize the counts from the 3k PBMC data. For now, `r Rpackage("APL")` requires the data to be clustered beforehand. That's why we also do the cell clustering.
+Association Plots from `r BiocStyle::Rpackage("APL")` should be computed based on the normalized expression data. Therefore, we first normalize the counts from the 3k PBMC data. For now, `r BiocStyle::Rpackage("APL")` requires the data to be clustered beforehand. That's why we also do the cell clustering.
 
 ```{r preprocessing}
 
@@ -223,7 +223,7 @@ ca <- cacomp(obj = logcounts,
 
 ```
 
-The function `cacomp` accepts as an input any matrix with non-negative entries, be it a single-cell RNA-seq, bulk RNA-seq or other data. For ease of use, `cacomp` accepts also `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` objects, however for these we additionally have to specify via the `assay` and/or `slot` (for Seurat) parameter from where to extract the data. Importantly, in order to ensure the interpretability of the results `cacomp` (and related functions such as `runAPL`) requires that the input matrix contains both row and column names.
+The function `cacomp` accepts as an input any matrix with non-negative entries, be it a single-cell RNA-seq, bulk RNA-seq or other data. For ease of use, `cacomp` accepts also `r BiocStyle::CRANpkg("Seurat")` and `r BiocStyle::Biocpkg("SingleCellExperiment")` objects, however for these we additionally have to specify via the `assay` and/or `slot` (for Seurat) parameter from where to extract the data. Importantly, in order to ensure the interpretability of the results `cacomp` (and related functions such as `runAPL`) requires that the input matrix contains both row and column names.
 
 When performing a feature selection before CA, we can set the argument `top` to the desired number of genes with the highest variance across cells from the input data to retain for further analysis. By default, only the top 5,000 most variable genes are kept. For this vignette we keep all genes in the data to ensure that also genes from smaller clusters such as the platelets are kept. In many cases however 5,000 genes are a good compromise between computational time and keeping most relevant genes.
 
@@ -238,7 +238,7 @@ Once the coordinates for the Association Plot are calculate, they will also be s
 cacomp_slot(ca, "std_coords_cols")[1:5, 1:5]
 ```
 
-In the case of `r CRANpkg("Seurat")` and `r Biocpkg("SingleCellExperiment")` objects, we can alternatively set `return_input = TRUE` to get the input object back, with the CA results computed by "APL" and stored in the appropriate slot for dimension reduction. This also allows for using the plotting functions that come with these packages:
+In the case of `r BiocStyle::CRANpkg("Seurat")` and `r BiocStyle::Biocpkg("SingleCellExperiment")` objects, we can alternatively set `return_input = TRUE` to get the input object back, with the CA results computed by "APL" and stored in the appropriate slot for dimension reduction. This also allows for using the plotting functions that come with these packages:
 
 ```{r ca_pbmc}
 pbmc <- cacomp(obj = pbmc,
@@ -252,7 +252,7 @@ DimPlot(pbmc, reduction = "CA", label = FALSE, pt.size = 0.5)
 
 ```
 
-However, some functions such as apl_coords() require information that cannot be stored in the single-cell container objects. It is therefore often easier to work with a `cacomp` object instead. We can convert `r CRANpkg("Seurat")` or `r Biocpkg("SingleCellExperiment")` objects which have CA results stored to a `cacomp` object using the function `as.cacomp()`:
+However, some functions such as apl_coords() require information that cannot be stored in the single-cell container objects. It is therefore often easier to work with a `cacomp` object instead. We can convert `r BiocStyle::CRANpkg("Seurat")` or `r BiocStyle::Biocpkg("SingleCellExperiment")` objects which have CA results stored to a `cacomp` object using the function `as.cacomp()`:
 ```{r convert}
 # Converting the object pbmc to cacomp
 ca <- as.cacomp(pbmc)
@@ -362,7 +362,7 @@ The \eqn{S_\alpha} scores are stored in the `"APL_score"` slot and can be access
 head(cacomp_slot(ca, "APL_score"))
 ```
 
-To see the expression of genes with the highest \eqn{S_\alpha} scores (or any selected genes) across all cell types from the data we can use the functions provided by `r CRANpkg("Seurat")`:
+To see the expression of genes with the highest \eqn{S_\alpha} scores (or any selected genes) across all cell types from the data we can use the functions provided by `r BiocStyle::CRANpkg("Seurat")`:
 
 ```{r seurat_apl, fig.wide = TRUE}
 scores <- cacomp_slot(ca, "APL_score")
@@ -410,7 +410,7 @@ ca <- apl_score(ca,
                 python = TRUE)
 ```
 
-Now we can conduct GO enrichment analysis as implemented in the package `r Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot. By default we use all genes with an \eqn{S_\alpha} score higher than 0, but the cutoff may have to be adjusted depending on the dataset. In the example below we restrict it to genes with a \eqn{S_\alpha} score higher than 1 to restrict it to truly significant genes. In case that no \eqn{S_\alpha} scores were calculated, one can also choose to use the `ngenes` (by default 1000) genes with the highest x-coordinates by setting `use_coords = FALSE`.
+Now we can conduct GO enrichment analysis as implemented in the package `r BiocStyle::Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot. By default we use all genes with an \eqn{S_\alpha} score higher than 0, but the cutoff may have to be adjusted depending on the dataset. In the example below we restrict it to genes with a \eqn{S_\alpha} score higher than 1 to restrict it to truly significant genes. In case that no \eqn{S_\alpha} scores were calculated, one can also choose to use the `ngenes` (by default 1000) genes with the highest x-coordinates by setting `use_coords = FALSE`.
 
 ```{r topGO, message=FALSE}
 enr <- apl_topGO(ca,

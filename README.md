@@ -1,8 +1,8 @@
-<img src="vignettes/fig_AP.png" width="700">
+<img src="man/figures/fig_AP.png" width="700">
 
 # APL
 
-"APL" is a package developed for computation of Association Plots, a method for visualization and analysis of single cell transcriptomics data. The main focus of "APL" is the identification of genes characteristic for individual clusters of cells from input data. 
+`APL` is a package developed for computation of Association Plots, a method for visualization and analysis of single cell transcriptomics data. The main focus of `APL` is the identification of genes characteristic for individual clusters of cells from input data. 
 
 When working with `APL` package please cite:
 ```
@@ -13,7 +13,7 @@ bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
 
 ## Installation
 
-The `r Rpackage("APL")` can be installed from GitHub:
+The `APL` can be installed from GitHub:
     
     library(devtools)
     install_github("VingronLab/APL")
@@ -26,14 +26,12 @@ To additionally build the package vignette, run instead
 
 Building the vignette will however take considerable time.
 
-To install the `r Rpackage("APL")` from Bioconductor, run:
+To install the `APL` from Bioconductor, run:
 
     if (!requireNamespace("BiocManager", quietly = TRUE))
         install.packages("BiocManager")
     
     BiocManager::install("APL")
-
-"APL" is an R package for 
 
  
 ## Pytorch installation
