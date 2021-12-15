@@ -111,49 +111,49 @@ runAPL(
 )
 }
 \arguments{
-\item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For 
-sequencing a count matrix, gene expression values with genes in rows and 
+\item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For
+sequencing a count matrix, gene expression values with genes in rows and
 samples/cells in columns.
 Should contain row and column names.}
 
-\item{group}{Numeric/Character. Vector of indices or column names of the 
+\item{group}{Numeric/Character. Vector of indices or column names of the
 columns to calculate centroid/x-axis direction.}
 
-\item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied 
+\item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied
 will be calculated. Default NULL.}
 
-\item{dims}{Integer. Number of dimensions to keep. Default NULL (keeps all 
+\item{dims}{Integer. Number of dimensions to keep. Default NULL (keeps all
 dimensions).}
 
-\item{nrow}{Integer. The top nrow scored row labels will be added to the 
+\item{nrow}{Integer. The top nrow scored row labels will be added to the
 plot if score = TRUE. Default 10.}
 
-\item{top}{Integer. Number of most variable rows to retain. Default 5000 
+\item{top}{Integer. Number of most variable rows to retain. Default 5000
 rows (set NULL to keep all).}
 
-\item{score}{Logical. Whether rows should be scored and ranked. Ignored when 
+\item{score}{Logical. Whether rows should be scored and ranked. Ignored when
 a vector is supplied to mark_rows. Default TRUE.}
 
-\item{mark_rows}{Character vector. Names of rows that should be highlighted 
+\item{mark_rows}{Character vector. Names of rows that should be highlighted
 in the plot. If not NULL, score is ignored. Default NULL.}
 
-\item{mark_cols}{Character vector. Names of cols that should be highlighted 
+\item{mark_cols}{Character vector. Names of cols that should be highlighted
 in the plot.}
 
 \item{reps}{Integer. Number of permutations during scoring. Default 3.}
 
-\item{python}{A logical value indicating whether to use singular value 
+\item{python}{A logical value indicating whether to use singular value
 decomposition from the python package torch.
-This implementation dramatically speeds up computation compared to `svd()` 
+This implementation dramatically speeds up computation compared to `svd()`
 in R.}
 
-\item{row_labs}{Logical. Whether labels for rows indicated by rows_idx 
+\item{row_labs}{Logical. Whether labels for rows indicated by rows_idx
 should be labeled with text. Default TRUE.}
 
-\item{col_labs}{Logical. Whether labels for columns indicated by cols_idx 
+\item{col_labs}{Logical. Whether labels for columns indicated by cols_idx
 should be labeled with text. Default TRUE.}
 
-\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an 
+\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an
 interactive plot "plotly". Default "plotly".}
 
 \item{show_cols}{Logical. Whether column points should be plotted.}
@@ -167,7 +167,7 @@ will be colored according to their score if show_score = TRUE.}
 
 \item{pd_method}{Which method to use for pick_dims (\link[APL]{pick_dims}).}
 
-\item{pd_reps}{Number of repetitions performed when using "elbow_rule" in 
+\item{pd_reps}{Number of repetitions performed when using "elbow_rule" in
 `pick_dims`.
 (\link[APL]{pick_dims})}
 
@@ -176,54 +176,59 @@ the number of dimensions. Ignored when `dims` is set by the user.}
 
 \item{...}{Arguments forwarded to methods.}
 
-\item{assay}{Character. The assay from which extract the count matrix for 
-SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+\item{assay}{Character. The assay from which extract the count matrix for
+SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for
 SingleCellExperiments.}
 
-\item{slot}{character. The Seurat assay slot from which to extract the 
+\item{slot}{character. The Seurat assay slot from which to extract the
 count matrix.}
 }
 \value{
 Association Plot (plotly object).
 }
 \description{
-Computes singular value decomposition and coordinates for 
+Computes singular value decomposition and coordinates for
 the Association Plot.
 
-runAPL.SingleCellExperiment: Computes singular value decomposition and 
-coordinates for the Association Plot from SingleCellExperiment objects with 
+runAPL.SingleCellExperiment: Computes singular value decomposition and
+coordinates for the Association Plot from SingleCellExperiment objects with
 reducedDim(obj, "CA") slot (optional).
 
-runAPL.Seurat: Computes singular value decomposition and coordinates for 
-the Association Plot from Seurat objects, optionally with a DimReduc Object 
+runAPL.Seurat: Computes singular value decomposition and coordinates for
+the Association Plot from Seurat objects, optionally with a DimReduc Object
 in the "CA" slot.
 }
 \details{
-The function is a wrapper that calls `cacomp()`, `apl_coords()`, 
+The function is a wrapper that calls `cacomp()`, `apl_coords()`,
 `apl_score()` and finally `apl()` for ease of use.
-The chosen defaults are most useful for genomics experiments, but for more 
+The chosen defaults are most useful for genomics experiments, but for more
 fine grained control the functions
 can be also run individually for the same results.
-If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score 
+If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score
 is treated as if FALSE.
 }
 \examples{
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
-               x = sample(1:100, 50, replace = TRUE))
+cnts <- mapply(function(x) {
+    rpois(n = 500, lambda = x)
+},
+x = sample(1:100, 50, replace = TRUE)
+)
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
 # (nonsensical) APL
-runAPL(obj = cnts,
-       group = 1:10,
-       dims = 10,
-       top = 500,
-       score = TRUE,
-       show_cols = TRUE,
-       type = "ggplot")
+runAPL(
+    obj = cnts,
+    group = 1:10,
+    dims = 10,
+    top = 500,
+    score = TRUE,
+    show_cols = TRUE,
+    type = "ggplot"
+)
 
 ########################
 # SingleCellExperiment #
@@ -232,22 +237,27 @@ library(SingleCellExperiment)
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
-               x = sample(1:100, 50, replace = TRUE))
+cnts <- mapply(function(x) {
+    rpois(n = 500, lambda = x)
+},
+x = sample(1:100, 50, replace = TRUE)
+)
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
-sce <- SingleCellExperiment(assays=list(counts=cnts))
+sce <- SingleCellExperiment(assays = list(counts = cnts))
 
 # (nonsensical) APL
-runAPL(obj = sce,
-       group = 1:10,
-       dims = 10,
-       top = 500,
-       score = TRUE,
-       show_cols = TRUE,
-       type = "ggplot",
-       assay = "counts")
+runAPL(
+    obj = sce,
+    group = 1:10,
+    dims = 10,
+    top = 500,
+    score = TRUE,
+    show_cols = TRUE,
+    type = "ggplot",
+    assay = "counts"
+)
 
 ###########
 # Seurat  #
@@ -256,26 +266,31 @@ library(Seurat)
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
-               x = sample(1:100, 50, replace = TRUE))
+cnts <- mapply(function(x) {
+    rpois(n = 500, lambda = x)
+},
+x = sample(1:100, 50, replace = TRUE)
+)
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
 seu <- CreateSeuratObject(counts = cnts)
 
 # (nonsensical) APL
-runAPL(obj = seu,
-       group = 1:10,
-       dims = 10,
-       top = 500,
-       score = TRUE,
-       show_cols = TRUE,
-       type = "ggplot",
-       assay = "RNA",
-       slot = "counts")
+runAPL(
+    obj = seu,
+    group = 1:10,
+    dims = 10,
+    top = 500,
+    score = TRUE,
+    show_cols = TRUE,
+    type = "ggplot",
+    assay = "RNA",
+    slot = "counts"
+)
 }
 \references{
-Association Plots: Visualizing associations in high-dimensional 
+Association Plots: Visualizing associations in high-dimensional
 correspondence analysis biplots \cr
 Elzbieta Gralinska, Martin Vingron \cr
 bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr

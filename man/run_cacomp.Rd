@@ -17,34 +17,34 @@ run_cacomp(
 )
 }
 \arguments{
-\item{obj}{A numeric matrix or Seurat/SingleCellExperiment object. For 
-sequencing a count matrix, gene expression values with genes in rows and 
+\item{obj}{A numeric matrix or Seurat/SingleCellExperiment object. For
+sequencing a count matrix, gene expression values with genes in rows and
 samples/cells in columns.
 Should contain row and column names.}
 
-\item{coords}{Logical. Indicates whether CA standard coordinates should be 
+\item{coords}{Logical. Indicates whether CA standard coordinates should be
 calculated. Default TRUE}
 
-\item{princ_coords}{Integer. Number indicating whether principal 
-coordinates should be calculated for the rows (=1), columns (=2), 
+\item{princ_coords}{Integer. Number indicating whether principal
+coordinates should be calculated for the rows (=1), columns (=2),
 both (=3) or none (=0).
 Default 1.}
 
-\item{python}{A logical value indicating whether to use singular-value 
+\item{python}{A logical value indicating whether to use singular-value
 decomposition from the python package torch.
-This implementation dramatically speeds up computation compared to `svd()` 
+This implementation dramatically speeds up computation compared to `svd()`
 in R.}
 
-\item{dims}{Integer. Number of CA dimensions to retain. Default NULL 
+\item{dims}{Integer. Number of CA dimensions to retain. Default NULL
 (keeps all dimensions).}
 
 \item{top}{Integer. Number of most variable rows to retain. Default 5000.}
 
-\item{inertia}{Logical.. Whether total, row and column inertias should be 
+\item{inertia}{Logical.. Whether total, row and column inertias should be
 calculated and returned. Default TRUE.}
 
-\item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be 
-removed. Keeping zero only rows/cols might lead to unexpected results. 
+\item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be
+removed. Keeping zero only rows/cols might lead to unexpected results.
 Default TRUE.}
 
 \item{...}{Arguments forwarded to methods.}
@@ -53,23 +53,23 @@ Default TRUE.}
 Returns a named list of class "cacomp" with components
 U, V and D: The results from the SVD.
 row_masses and col_masses: Row and columns masses.
-top_rows: How many of the most variable rows/genes were retained for the 
+top_rows: How many of the most variable rows/genes were retained for the
 analysis.
-tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total, 
+tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE. Total,
 row and column inertia respectively.
 }
 \description{
-`run_cacomp` performs correspondence analysis on a matrix and returns the 
+`run_cacomp` performs correspondence analysis on a matrix and returns the
 transformed data.
 }
 \details{
-The calculation is performed according to the work of Michael Greenacre. 
+The calculation is performed according to the work of Michael Greenacre.
 Singular value decomposition
-can be performed either with the base R function `svd` or preferably by the 
+can be performed either with the base R function `svd` or preferably by the
 faster
-pytorch implementation (python = TRUE). When working with large matrices, 
+pytorch implementation (python = TRUE). When working with large matrices,
 CA coordinates and
-principal coordinates should only be computed when needed to save 
+principal coordinates should only be computed when needed to save
 computational time.
 }
 \references{

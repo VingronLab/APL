@@ -17,9 +17,11 @@ Prints slot names of cacomp object
 }
 \examples{
 # Simulate scRNAseq data.
-cnts <- data.frame(cell_1 = rpois(10, 5),
-                   cell_2 = rpois(10, 10),
-                   cell_3 = rpois(10, 20))
+cnts <- data.frame(
+    cell_1 = rpois(10, 5),
+    cell_2 = rpois(10, 10),
+    cell_3 = rpois(10, 20)
+)
 rownames(cnts) <- paste0("gene_", 1:10)
 cnts <- as.matrix(cnts)
 
@@ -28,5 +30,4 @@ ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
 
 # show slot names:
 cacomp_names(ca)
-
 }

@@ -17,20 +17,21 @@ Should contain row and column names.}
 Returns a matrix, which consists of the top variable rows of mat.
 }
 \description{
-Calculates the variance of the chi-square component matrix and selects the 
+Calculates the variance of the chi-square component matrix and selects the
 rows with the highest variance, e.g. 5,000.
 }
 \examples{
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
-              x = sample(1:20, 50, replace = TRUE))
+cnts <- mapply(function(x) {
+    rpois(n = 500, lambda = x)
+},
+x = sample(1:20, 50, replace = TRUE)
+)
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
 # Choose top 5000 most variable genes
 cnts <- var_rows(mat = cnts, top = 5000)
-
-
 }
