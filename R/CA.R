@@ -219,6 +219,7 @@ run_cacomp <- function(obj,
   # message("Running singular value decomposition ...")
 
   if (python == TRUE){
+    svd_torch <- NULL
     # require(reticulate)
     # source_python('./python_svd.py')
     reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
