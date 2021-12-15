@@ -80,7 +80,7 @@ enr <- apl_topGO(ca,
 plot_enrichment(enr)
 }
 \references{
-Adrian Alexa and Jorg Rahnenfuhrer (2020). topGO: Enrichment Analysis for 
-Gene Ontology. 
+Adrian Alexa and Jorg Rahnenfuhrer \cr
+topGO: Enrichment Analysis for Gene Ontology. \cr
 R package version 2.42.0.
 }

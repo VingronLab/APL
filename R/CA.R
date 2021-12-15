@@ -853,6 +853,10 @@ scree_plot <- function(df){
 #' `elbow_method` (for `return_plot=TRUE`) returns a list with two elements: 
 #' "dims" contains the number of dimensions and "plot" a ggplot. if 
 #' `return_plot=TRUE` it just returns the number of picked dimensions.
+#' @references 
+#' Ciampi, Antonio, González Marcos, Ana and Castejón Limas, Manuel. \cr
+#' Correspondence analysis and 2-way clustering. (2005), SORT 29(1).
+#' 
 #' @examples 
 #' 
 #' # Get example data from Seurat
