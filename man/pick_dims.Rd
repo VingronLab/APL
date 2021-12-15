@@ -75,11 +75,11 @@ choosing "elbow_rule". Default FALSE.}
 
 \item{...}{Arguments forwarded to methods.}
 
-\item{assay}{Character. The assay from which to extract the count matrix
-for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for
+\item{assay}{Character. The assay from which to extract the count matrix 
+for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
 SingleCellExperiments.}
 
-\item{slot}{Character. Data slot of the Seurat assay.
+\item{slot}{Character. Data slot of the Seurat assay. 
 E.g. "data" or "counts". Default "counts".}
 }
 \value{
@@ -112,11 +112,8 @@ actual data.
 }
 \examples{
 # Simulate counts
-cnts <- mapply(function(x) {
-    rpois(n = 500, lambda = x)
-},
-x = sample(1:20, 50, replace = TRUE)
-)
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
@@ -126,22 +123,18 @@ ca <- cacomp(obj = cnts)
 # pick dimensions with the elbow rule. Returns list.
 
 set.seed(2358)
-pd <- pick_dims(
-    obj = ca,
-    mat = cnts,
-    method = "elbow_rule",
-    return_plot = TRUE,
-    reps = 10
-)
+pd <- pick_dims(obj = ca,
+                mat = cnts,
+                method = "elbow_rule",
+                return_plot = TRUE,
+                reps = 10)
 pd$plot
 ca_sub <- subset_dims(ca, dims = pd$dims)
 
 # pick dimensions which explain cumulatively >80\% of total inertia.
 # Returns vector.
-pd <- pick_dims(
-    obj = ca,
-    method = "maj_inertia"
-)
+pd <- pick_dims(obj = ca,
+                method = "maj_inertia")
 ca_sub <- subset_dims(ca, dims = pd)
 
 ################################
@@ -151,11 +144,8 @@ library(Seurat)
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x) {
-    rpois(n = 500, lambda = x)
-},
-x = sample(1:20, 50, replace = TRUE)
-)
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
@@ -166,12 +156,10 @@ seu <- CreateSeuratObject(counts = cnts)
 seu <- cacomp(seu, return_input = TRUE, assay = "RNA", slot = "counts")
 
 # pick dimensions
-pd <- pick_dims(
-    obj = seu,
-    method = "maj_inertia",
-    assay = "RNA",
-    slot = "counts"
-)
+pd <- pick_dims(obj = seu,
+                method = "maj_inertia",
+                assay = "RNA",
+                slot = "counts")
 
 ##############################################
 # pick_dims for SingleCellExperiment objects #
@@ -180,24 +168,19 @@ library(SingleCellExperiment)
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x) {
-    rpois(n = 500, lambda = x)
-},
-x = sample(1:20, 50, replace = TRUE)
-)
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
 # Create SingleCellExperiment object
-sce <- SingleCellExperiment(assays = list(counts = cnts))
+sce <- SingleCellExperiment(assays=list(counts=cnts))
 
 # run CA and save in dim. reduction slot.
 sce <- cacomp(sce, return_input = TRUE, assay = "counts")
 
 # pick dimensions
-pd <- pick_dims(
-    obj = sce,
-    method = "maj_inertia",
-    assay = "counts"
-)
+pd <- pick_dims(obj = sce,
+                method = "maj_inertia",
+                assay = "counts")
 }

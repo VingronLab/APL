@@ -55,29 +55,29 @@ ca_biplot(
 )
 }
 \arguments{
-\item{obj}{An object of class "cacomp" with the relevant standardized and
+\item{obj}{An object of class "cacomp" with the relevant standardized and 
 principal coordinates calculated,
- or alternatively an object of class "Seurat" or "SingleCellExperiment"
+ or alternatively an object of class "Seurat" or "SingleCellExperiment" 
  with a dim. reduction named "CA" saved.}
 
 \item{xdim}{Integer. The dimension for the x-axis. Default 1.}
 
 \item{ydim}{Integer. The dimension for the y-axis. Default 2.}
 
-\item{princ_coords}{Integer. If 1 then principal coordinates are used for
+\item{princ_coords}{Integer. If 1 then principal coordinates are used for 
 the rows,
 if 2 for the columns. Default 1 (rows).}
 
-\item{row_labels}{Numeric vector. Indices for the rows for which a label
+\item{row_labels}{Numeric vector. Indices for the rows for which a label 
 should be added
 (label should be stored in rownames). Default NULL.}
 
-\item{col_labels}{Numeric vector. Indices for the columns for which a label
+\item{col_labels}{Numeric vector. Indices for the columns for which a label 
 should be added
 (label should be stored in colnames).
 Default NULL (no columns).}
 
-\item{type}{String. Type of plot to draw. Either "ggplot" or "plotly".
+\item{type}{String. Type of plot to draw. Either "ggplot" or "plotly". 
 Default "plotly".}
 
 \item{...}{Further arguments.}
@@ -93,23 +93,20 @@ Plot of class "plotly" or "ggplot".
 Plots the first 2 dimensions of the rows and columns in the same plot.
 }
 \details{
-Choosing type "plotly" will generate an interactive html plot with the
+Choosing type "plotly" will generate an interactive html plot with the 
 package plotly.
 Type "ggplot" generates a static plot.
 Depending on whether `princ_coords` is set to 1 or 2 either
 the principal coordinates of either the rows (1) or the columns (2)
-are chosen. For the other the standard coordinates are plotted
+are chosen. For the other the standard coordinates are plotted 
 (assymetric biplot).
-Labels for rows and columns should be stored in the row and column names
+Labels for rows and columns should be stored in the row and column names 
 respectively.
 }
 \examples{
 # Simulate counts
-cnts <- mapply(function(x) {
-    rpois(n = 500, lambda = x)
-},
-x = sample(1:100, 50, replace = TRUE)
-)
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
