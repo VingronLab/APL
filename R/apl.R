@@ -321,8 +321,8 @@ apl_score <- function(caobj,
 #' A data.frame containing the gene sets with the highest overrepresentation.
 #'
 #' @references 
-#' Adrian Alexa and Jorg Rahnenfuhrer (2020). topGO: Enrichment Analysis for 
-#' Gene Ontology. 
+#' Adrian Alexa and Jorg Rahnenfuhrer \cr
+#' topGO: Enrichment Analysis for Gene Ontology. \cr
 #' R package version 2.42.0.
 #' 
 #' @param caobj A "cacomp" object with principal row coordinates and 

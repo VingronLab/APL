@@ -51,3 +51,7 @@ pd$plot
 ca_sub <- subset_dims(ca, dims = pd$dims)
 
 }
+\references{
+Ciampi, Antonio, González Marcos, Ana and Castejón Limas, Manuel. \cr
+Correspondence analysis and 2-way clustering. (2005), SORT 29(1).
+}
