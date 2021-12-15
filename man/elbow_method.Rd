@@ -9,24 +9,24 @@ elbow_method(obj, mat, reps, python, return_plot)
 \arguments{
 \item{obj}{A "cacomp" object as outputted from `cacomp()`}
 
-\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression 
+\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression
 values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
-\item{reps}{Integer. Number of permutations to perform when choosing 
+\item{reps}{Integer. Number of permutations to perform when choosing
 "elbow_rule".}
 
-\item{python}{A logical value indicating whether to use singular value 
+\item{python}{A logical value indicating whether to use singular value
 decomposition from the python package torch.
-This implementation dramatically speeds up computation compared to `svd()` 
+This implementation dramatically speeds up computation compared to `svd()`
 in R.}
 
-\item{return_plot}{TRUE/FALSE. Whether a plot should be returned when 
+\item{return_plot}{TRUE/FALSE. Whether a plot should be returned when
 choosing "elbow_rule".}
 }
 \value{
-`elbow_method` (for `return_plot=TRUE`) returns a list with two elements: 
-"dims" contains the number of dimensions and "plot" a ggplot. if 
+`elbow_method` (for `return_plot=TRUE`) returns a list with two elements:
+"dims" contains the number of dimensions and "plot" a ggplot. if
 `return_plot=TRUE` it just returns the number of picked dimensions.
 }
 \description{
@@ -42,14 +42,15 @@ cnts <- as.matrix(Seurat::GetAssayData(pbmc_small, "data"))
 ca <- cacomp(obj = cnts)
 
 # pick dimensions with the elbow rule. Returns list.
-pd <- pick_dims(obj = ca,
-                mat = cnts,
-                method = "elbow_rule",
-                return_plot = TRUE,
-                reps = 10)
+pd <- pick_dims(
+    obj = ca,
+    mat = cnts,
+    method = "elbow_rule",
+    return_plot = TRUE,
+    reps = 10
+)
 pd$plot
 ca_sub <- subset_dims(ca, dims = pd$dims)
-
 }
 \references{
 Ciampi, Antonio, González Marcos, Ana and Castejón Limas, Manuel. \cr

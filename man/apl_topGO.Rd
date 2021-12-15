@@ -16,26 +16,26 @@ apl_topGO(
 )
 }
 \arguments{
-\item{caobj}{A "cacomp" object with principal row coordinates and 
+\item{caobj}{A "cacomp" object with principal row coordinates and
 standardized column coordinates calculated.}
 
-\item{ontology}{Character string. Chooses GO sets for 'BP' 
+\item{ontology}{Character string. Chooses GO sets for 'BP'
 (biological processes), 'CC' (cell compartment) or 'MF' (molecular function).}
 
-\item{organism}{Character string. Either 'hs' (homo sapiens), 'mm' 
+\item{organism}{Character string. Either 'hs' (homo sapiens), 'mm'
 (mus musculus) or the name of the organism package such as 'org.*.eg.db'.}
 
-\item{ngenes}{Numeric. Number of top ranked genes to test for 
+\item{ngenes}{Numeric. Number of top ranked genes to test for
 overrepresentation.}
 
-\item{score_cutoff}{numeric. S-alpha score cutoff. Only genes with a score 
+\item{score_cutoff}{numeric. S-alpha score cutoff. Only genes with a score
 larger will be tested.}
 
-\item{use_coords}{Logical. Whether the x-coordinates of the row APL 
+\item{use_coords}{Logical. Whether the x-coordinates of the row APL
 coordinates should be used for ranking.
 Only recommended when no S-alpha score (see apl_score()) can be calculated.}
 
-\item{return_plot}{Logical. Whether a plot of significant gene sets should 
+\item{return_plot}{Logical. Whether a plot of significant gene sets should
 be additionally returned.}
 
 \item{top_res}{Numeric. Number of top scoring genes to plot.}
@@ -44,12 +44,12 @@ be additionally returned.}
 A data.frame containing the gene sets with the highest overrepresentation.
 }
 \description{
-This function uses the Kolmogorov-Smirnov test as implemented by the package 
+This function uses the Kolmogorov-Smirnov test as implemented by the package
 topGO to test for overrepresentation in Gene Ontology gene sets.
 }
 \details{
 For a chosen group of cells/samples,
-the top 'ngenes' group specific genes are used for gene overrepresentation 
+the top 'ngenes' group specific genes are used for gene overrepresentation
 analysis.
 The genes are ranked either by the precomputed APL score, or, if
 not available by their APL x-coordinates.
@@ -63,19 +63,22 @@ cnts <- as.matrix(cnts)
 # Run CA on example from Seurat
 
 ca <- cacomp(pbmc_small,
-             princ_coords = 3,
-             return_input = FALSE,
-             assay = "RNA",
-             slot = "counts")
+    princ_coords = 3,
+    return_input = FALSE,
+    assay = "RNA",
+    slot = "counts"
+)
 
 grp <- which(Idents(pbmc_small) == 2)
 ca <- apl_coords(ca, group = grp)
 ca <- apl_score(ca,
-                mat = cnts)
+    mat = cnts
+)
 
 enr <- apl_topGO(ca,
-                 ontology = "BP",
-                 organism = "hs")
+    ontology = "BP",
+    organism = "hs"
+)
 
 plot_enrichment(enr)
 }
