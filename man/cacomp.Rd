@@ -62,46 +62,46 @@ cacomp(
 }
 \arguments{
 \item{obj}{A numeric matrix or Seurat/SingleCellExperiment object.
-For sequencing a count matrix, gene expression values with genes in rows
+For sequencing a count matrix, gene expression values with genes in rows 
 and samples/cells in columns.
 Should contain row and column names.}
 
-\item{coords}{Logical. Indicates whether CA standard coordinates should be
+\item{coords}{Logical. Indicates whether CA standard coordinates should be 
 calculated. Default TRUE}
 
-\item{princ_coords}{Integer. Number indicating whether principal
-coordinates should be calculated for the rows (=1), columns (=2),
+\item{princ_coords}{Integer. Number indicating whether principal 
+coordinates should be calculated for the rows (=1), columns (=2), 
 both (=3) or none (=0).
 Default 1.}
 
-\item{python}{A logical value indicating whether to use singular-value
+\item{python}{A logical value indicating whether to use singular-value 
 decomposition from the python package torch.
-This implementation dramatically speeds up computation compared to `svd()`
+This implementation dramatically speeds up computation compared to `svd()` 
 in R.}
 
-\item{dims}{Integer. Number of CA dimensions to retain. Default NULL
+\item{dims}{Integer. Number of CA dimensions to retain. Default NULL 
 (keeps all dimensions).}
 
-\item{top}{Integer. Number of most variable rows to retain.
+\item{top}{Integer. Number of most variable rows to retain. 
 Default 5000. (set NULL to keep all).}
 
-\item{inertia}{Logical.. Whether total, row and column inertias should be
+\item{inertia}{Logical.. Whether total, row and column inertias should be 
 calculated and returned. Default TRUE.}
 
-\item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be
+\item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be 
 removed.
 Keeping zero only rows/cols might lead to unexpected results. Default TRUE.}
 
 \item{...}{Other parameters}
 
-\item{assay}{Character. The assay from which extract the count matrix for
-SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for
+\item{assay}{Character. The assay from which extract the count matrix for 
+SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
 SingleCellExperiments.}
 
 \item{slot}{character. The slot of the Seurat assay. Default "counts".}
 
-\item{return_input}{Logical. If TRUE returns the input
-(SingleCellExperiment/Seurat object) with the CA results saved in the
+\item{return_input}{Logical. If TRUE returns the input 
+(SingleCellExperiment/Seurat object) with the CA results saved in the 
 reducedDim/DimReduc slot "CA".
  Otherwise returns a "cacomp". Default FALSE.}
 }
@@ -113,56 +113,54 @@ top_rows: How many of the most variable rows were retained for the analysis.
 tot_inertia, row_inertia and col_inertia: Only if inertia = TRUE.
 Total, row and column inertia respectively.
 
-If return_imput = TRUE with Seurat container: Returns input obj of class
+If return_imput = TRUE with Seurat container: Returns input obj of class 
 "Seurat" with a new Dimensional Reduction Object named "CA".
 Standard coordinates of the cells are saved as embeddings,
 the principal coordinates of the genes as loadings and
 the singular values (= square root of principal intertias/eigenvalues)
 are stored as stdev.
-To recompute a regular "cacomp" object without rerunning cacomp use
+To recompute a regular "cacomp" object without rerunning cacomp use 
 `as.cacomp()`.
 
-If return_input =TRUE for SingleCellExperiment input returns a
-SingleCellExperiment object with a matrix of standardized coordinates of
+If return_input =TRUE for SingleCellExperiment input returns a 
+SingleCellExperiment object with a matrix of standardized coordinates of 
 the columns in
-reducedDim(obj, "CA"). Additionally, the matrix contains the following
+reducedDim(obj, "CA"). Additionally, the matrix contains the following 
 attributes:
 "prin_coords_rows": Principal coordinates of the rows.
-"singval": Singular values. For the explained inertia of each principal
+"singval": Singular values. For the explained inertia of each principal 
 axis calculate singval^2.
 "percInertia": Percent explained inertia of each principal axis.
-To recompute a regular "cacomp" object from a SingleCellExperiment without
+To recompute a regular "cacomp" object from a SingleCellExperiment without 
 rerunning cacomp use `as.cacomp()`.
 }
 \description{
 `cacomp` performs correspondence analysis on a matrix or
 Seurat/SingleCellExperiment object and returns the transformed data.
 
-`cacomp.seurat` performs correspondence analysis on an assay from a Seurat
-container and stores the standardized coordinates of the columns (= cells)
-and the principal coordinates of the rows (= genes) as a DimReduc Object in
+`cacomp.seurat` performs correspondence analysis on an assay from a Seurat 
+container and stores the standardized coordinates of the columns (= cells) 
+and the principal coordinates of the rows (= genes) as a DimReduc Object in 
 the Seurat container.
 
-`cacomp.SingleCellExperiment` performs correspondence analysis on an assay
+`cacomp.SingleCellExperiment` performs correspondence analysis on an assay 
 from a SingleCellExperiment and stores the standardized coordinates
- of the columns (= cells) and the principal coordinates of the rows
+ of the columns (= cells) and the principal coordinates of the rows 
  (= genes) as a matrix in the SingleCellExperiment container.
 }
 \details{
-The calculation is performed according to the work of Michael Greenacre.
-Singular value decomposition can be performed either with the base R
-function `svd` or preferably by the faster pytorch implementation
+The calculation is performed according to the work of Michael Greenacre. 
+Singular value decomposition can be performed either with the base R 
+function `svd` or preferably by the faster pytorch implementation 
 (python = TRUE). When working with large matrices, CA coordinates and
-principal coordinates should only be computed when needed to save
+principal coordinates should only be computed when needed to save 
 computational time.
 }
 \examples{
 # Simulate scRNAseq data.
-cnts <- data.frame(
-    cell_1 = rpois(10, 5),
-    cell_2 = rpois(10, 10),
-    cell_3 = rpois(10, 20)
-)
+cnts <- data.frame(cell_1 = rpois(10, 5),
+                   cell_2 = rpois(10, 10),
+                   cell_3 = rpois(10, 20))
 rownames(cnts) <- paste0("gene_", 1:10)
 cnts <- as.matrix(cnts)
 
@@ -176,11 +174,8 @@ library(Seurat)
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x) {
-    rpois(n = 500, lambda = x)
-},
-x = sample(1:20, 50, replace = TRUE)
-)
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+                     x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
@@ -200,17 +195,14 @@ library(SingleCellExperiment)
 set.seed(1234)
 
 # Simulate counts
-cnts <- mapply(function(x) {
-    rpois(n = 500, lambda = x)
-},
-x = sample(1:20, 50, replace = TRUE)
-)
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:20, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 logcnts <- log2(cnts + 1)
 
 # Create SingleCellExperiment object
-sce <- SingleCellExperiment(assays = list(counts = cnts, logcounts = logcnts))
+sce <- SingleCellExperiment(assays=list(counts=cnts, logcounts=logcnts))
 
 # run CA and save in dim. reduction slot.
 sce <- cacomp(sce, return_input = TRUE, assay = "counts") # on counts

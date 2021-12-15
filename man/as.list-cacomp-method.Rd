@@ -18,11 +18,8 @@ Convert cacomp object to list.
 \examples{
 
 # Simulate counts
-cnts <- mapply(function(x) {
-    rpois(n = 500, lambda = x)
-},
-x = sample(1:100, 50, replace = TRUE)
-)
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(1:100, 50, replace = TRUE))
 rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
 colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
 
