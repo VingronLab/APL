@@ -19,12 +19,14 @@ The `APL` can be installed from GitHub:
     install_github("VingronLab/APL")
     
 
-To additionally build the package vignette, run instead
+To additionally build the package vignette, run instead:
 
     install_github("VingronLab/APL", build_vignettes = TRUE, dependencies = TRUE)
 
 
 Building the vignette will however take considerable time.
+
+**The vignette can also be found under the link: vingronlab.github.io/apl/ (hyperlink in the GitHub repository description).**
 
 To install the `APL` from Bioconductor, run:
 
