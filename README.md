@@ -26,7 +26,7 @@ To additionally build the package vignette, run instead:
 
 Building the vignette will however take considerable time.
 
-**The vignette can also be found under the link: vingronlab.github.io/apl/ (hyperlink in the GitHub repository description).**
+**The vignette can also be found under the link: https://vingronlab.github.io/apl/ (hyperlink in the GitHub repository description).**
 
 To install the `APL` from Bioconductor, run:
 
