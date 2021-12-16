@@ -69,7 +69,7 @@
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://satijalab.org/seurat" class="external-link">Seurat</a></span><span class="op">)</span></span>
 <span class="r-in"><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1234</span><span class="op">)</span></span>
-<span class="r-in"><span class="va">cnts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">pbmc_small</span>, slot <span class="op">=</span> <span class="st">"counts"</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">cnts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/AssayData.html" class="external-link">GetAssayData</a></span><span class="op">(</span><span class="va">pbmc_small</span>, slot <span class="op">=</span> <span class="st">"counts"</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">cnts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">cnts</span><span class="op">)</span></span>
 <span class="r-in"></span>
 <span class="r-in"><span class="co"># Run CA on example from Seurat</span></span>
@@ -82,7 +82,7 @@
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> Parameter top is &gt;nrow(obj) and therefore ignored.</span>
 <span class="r-in"></span>
-<span class="r-in"><span class="va">grp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://satijalab.org/seurat/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">pbmc_small</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span></span>
+<span class="r-in"><span class="va">grp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://mojaveazure.github.io/seurat-object/reference/Idents.html" class="external-link">Idents</a></span><span class="op">(</span><span class="va">pbmc_small</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">ca</span> <span class="op">&lt;-</span> <span class="fu"><a href="apl_coords.html">apl_coords</a></span><span class="op">(</span><span class="va">ca</span>, group <span class="op">=</span> <span class="va">grp</span><span class="op">)</span></span>
 <span class="r-in"><span class="va">ca</span> <span class="op">&lt;-</span> <span class="fu"><a href="apl_score.html">apl_score</a></span><span class="op">(</span><span class="va">ca</span>,</span>
 <span class="r-in">                mat <span class="op">=</span> <span class="va">cnts</span><span class="op">)</span></span>
@@ -95,46 +95,48 @@
 <span class="r-msg co"><span class="r-pr">#&gt;</span> groupGOTerms: 	GOBPTerm, GOMFTerm, GOCCTerm environments built.</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Building most specific GOs .....</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	( 1419 GO terms found. )</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	( 1310 GO terms found. )</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Build GO DAG topology ..........</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	( 3911 GO terms and 8831 relations. )</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	( 3624 GO terms and 8038 relations. )</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Annotating nodes ...............</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	( 204 genes annotated to the GO terms. )</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	( 203 genes annotated to the GO terms. )</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 			 -- Elim Algorithm -- </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 		 the algorithm is scoring 678 nontrivial nodes</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 		 the algorithm is scoring 623 nontrivial nodes</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 		 parameters: </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 			 test statistic: fisher</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 			 cutOff: 0.01</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 14:	1 nodes to be scored	(0 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 13:	5 nodes to be scored	(0 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 12:	15 nodes to be scored	(0 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 12:	9 nodes to be scored	(0 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 11:	18 nodes to be scored	(0 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 11:	14 nodes to be scored	(7 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 10:	29 nodes to be scored	(10 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 10:	24 nodes to be scored	(11 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 9:	39 nodes to be scored	(10 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 9:	39 nodes to be scored	(11 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 8:	70 nodes to be scored	(10 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 8:	65 nodes to be scored	(11 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 7:	100 nodes to be scored	(10 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 7:	91 nodes to be scored	(11 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 6:	130 nodes to be scored	(18 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 6:	119 nodes to be scored	(27 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 5:	129 nodes to be scored	(18 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 5:	117 nodes to be scored	(27 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 4:	86 nodes to be scored	(18 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 4:	81 nodes to be scored	(27 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 3:	41 nodes to be scored	(18 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 3:	42 nodes to be scored	(27 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 2:	15 nodes to be scored	(18 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 2:	15 nodes to be scored	(27 eliminated genes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 1:	1 nodes to be scored	(18 eliminated genes)</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> 	 Level 1:	1 nodes to be scored	(27 eliminated genes)</span>
 <span class="r-in"></span>
 <span class="r-in"><span class="fu">plot_enrichment</span><span class="op">(</span><span class="va">enr</span><span class="op">)</span></span>
 <span class="r-plt img"><img src="plot_enrichment-1.png" alt="" width="700" height="433"></span>
