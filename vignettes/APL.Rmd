@@ -197,14 +197,14 @@ runAPL(pbmc,
        group = which(pbmc$seurat_clusters == 3),
        type = "ggplot")
 ```
-The generated Association Plot is computed based on the log-normalized count matrix. By default `runAPL` uses the top 5000 most variable genes in the data, but the data can be subset to any number of genes by changing the value for the argument `top`. In the above example we keep all genes to ensure that marker genes for smaller clusters are also included. The dimensionality of the CA is determined automatically by the elbow rule descibed below (see [here](#dim_reduc)). This default behaviour can be overriden by setting the dimensions manually (parameter `dims`). The cluster-specificity score ( \eqn{S_\alpha}) for each gene is also calculated (`score = TRUE`). In order to better explore the data, `type` can be set to `"plotly"` to obtain an interactive plot. `runAPL` has many arguments to further customize the output and fine tune the calculations. Please refer to the documentation (`?runAPL`) for more information. The following sections in this vignette will discuss the choice of dimensionality and the \eqn{S_\alpha}-score.
+The generated Association Plot is computed based on the log-normalized count matrix. By default `runAPL` uses the top 5,000 most variable genes in the data, but the data can be subset to any number of genes by changing the value for the argument `top`. In the above-presented example we keep all genes to ensure that marker genes for smaller clusters are also included. The dimensionality of the CA is determined automatically by the elbow rule descibed below (see [here](#dim_reduc)). This default behaviour can be overriden by setting the dimensions manually (parameter `dims`). The cluster-specificity score ( \eqn{S_\alpha}) for each gene is also calculated (`score = TRUE`). In order to better explore the data, `type` can be set to `"plotly"` to obtain an interactive plot. `runAPL` has many arguments to further customize the output and fine tune the calculations. Please refer to the documentation (`?runAPL`) for more information. The following sections in this vignette will discuss the choice of dimensionality and the \eqn{S_\alpha}-score.
 
 # Step-by-step way of computing Association Plots
 
 Alternatively, Association Plots can be computed step-by-step. This allows to adjust the Association Plots to user's needs. Below we explain each step of the process of generating Association Plots.
 
 ## Correspondence Analysis
-The first step of Association Plot computations is correspondence analysis (CA). CA is a data dimensionality reduction similar to PCA, however it allows for a simultaneous embedding of both cells and genes from the input data in the same space. 
+The first step of Association Plot computations is correspondence analysis (CA). CA is a data dimensionality reduction method similar to PCA, however it allows for a simultaneous embedding of both cells and genes from the input data in the same space. 
 In this example we perform CA on the log-normalized count matrix from the 3k PBMC data.
 
 ```{r cacomp}
@@ -233,7 +233,7 @@ ca
 ```
 
 As can be seen in the summarized output, by default both types of coordinates in the CA space (principal and standardized) are calculated.
-Once the coordinates for the Association Plot are calculate, they will also be shown in the output of `cacomp`. Slots are accessed through an accessor function:
+Once the coordinates for the Association Plot are calculated, they will also be shown in the output of `cacomp`. Slots are accessed through an accessor function:
 ```{r std_coords}
 cacomp_slot(ca, "std_coords_cols")[1:5, 1:5]
 ```
@@ -263,7 +263,7 @@ When working with high-dimensional data, after singular value decomposition ther
 
 The number of dimensions to retain can be computed using the function `pick_dims`. This function offers three standard methods which we implemented:
 
-* elbow rule (`method = "elbow_rule"`) - the number of dimensions to retain is calculated based on scree plots generated for randomized data and corresponds to a point in the plot where the band of randomized singular values enters the band of the original singular values,
+* elbow rule (`method = "elbow_rule"`) - the number of dimensions to retain is calculated based on scree plots generated for randomized data, and corresponds to a point in the plot where the band of randomized singular values enters the band of the original singular values,
  
 * 80% rule (`method = "maj_inertia"`) - only those first dimensions are retained which in total account for >= 80% of total inertia,
 
@@ -277,7 +277,7 @@ pick_dims(ca,
   xlim(c(0,75))
 ```
 
-In the scree plot above we can see that the first dimension explains only ~0.75% of the total inertia and we observe the "jump" in the scree plot at roughly 15 dimensions. The first dimensions however explain only a small part of the total inertia. 
+In the scree plot above we can see that the first dimension explains only ~0.75% of the total inertia and we observe the "jump" in the scree plot at roughly 15 dimensions. The first dimensions however explain only a small amount of the total inertia. 
 
 Here we compute the number of dimensions using the elbow rule. For demonstration, only five data permutations are computed:
 
@@ -374,7 +374,7 @@ As expected, the 3 most highly scored genes are over-expressed in the platelet c
 
 
 ## Visualization of CA
-In addition to Association Plots "APL" produces also other forms of the output. For instance, we can use "APL" to generate a two- and three-dimensional correspondence analysis projection of the data. The so-called biplot visualizes both cells and genes from the input data and can be created using the function `ca_biplot`. Alternatively. a three-dimensional data projection plot can be generated using the function `ca_3Dplot`. To generate such biplots a `cacomp` object is required.
+In addition to Association Plots "APL" produces also other forms of the output. For instance, we can use "APL" to generate a two- and three-dimensional correspondence analysis projection of the data. The so-called biplot visualizes both cells and genes from the input data and can be created using the function `ca_biplot`. Alternatively, a three-dimensional data projection plot can be generated using the function `ca_3Dplot`. To generate such biplots a `cacomp` object is required.
 
 ```{r biplot, fig.wide = TRUE}
 
@@ -402,7 +402,7 @@ After computing an Association Plot and identifying a set of genes specific for 
 # Get indices of cells in cluster 3 (B cells)
 c_three <- which(pbmc$seurat_clusters == 3)
 
-# Calculate Association Plot coordinates of the genes and the Salpha scores
+# Calculate Association Plot coordinates of the genes and the \eqn{S_\alpha} scores
 ca <- apl_coords(ca, group = c_three)
 ca <- apl_score(ca,
                 mat = as.matrix(GetAssayData(object = pbmc, slot = "data")),
