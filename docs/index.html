@@ -82,16 +82,17 @@ bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096</code>
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>The <code>APL</code> can be installed from GitHub:</p>
-<div class="sourceCode"><pre class="sourceCode R"><code class="sourceCode r"><span class="kw">library</span>(devtools)
-<span class="kw">install_github</span>(<span class="st">"VingronLab/APL"</span>)</code></pre></div>
-<p>To additionally build the package vignette, run instead</p>
-<div class="sourceCode"><pre class="sourceCode R"><code class="sourceCode r"><span class="kw">install_github</span>(<span class="st">"VingronLab/APL"</span>, <span class="dt">build_vignettes =</span> <span class="ot">TRUE</span>, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true"></a><span class="kw">library</span>(devtools)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true"></a><span class="kw">install_github</span>(<span class="st">"VingronLab/APL"</span>)</span></code></pre></div>
+<p>To additionally build the package vignette, run instead:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true"></a><span class="kw">install_github</span>(<span class="st">"VingronLab/APL"</span>, <span class="dt">build_vignettes =</span> <span class="ot">TRUE</span>, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <p>Building the vignette will however take considerable time.</p>
+<p><strong>The vignette can also be found under the link: <a href="https://vingronlab.github.io/APL/" class="external-link uri">https://vingronlab.github.io/APL/</a> (hyperlink in the GitHub repository description).</strong></p>
 <p>To install the <code>APL</code> from Bioconductor, run:</p>
-<div class="sourceCode"><pre class="sourceCode R"><code class="sourceCode r">if (!<span class="kw">requireNamespace</span>(<span class="st">"BiocManager"</span>, <span class="dt">quietly =</span> <span class="ot">TRUE</span>))
-    <span class="kw">install.packages</span>(<span class="st">"BiocManager"</span>)
-
-BiocManager::<span class="kw">install</span>(<span class="st">"APL"</span>)</code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true"></a><span class="cf">if</span> (<span class="op">!</span><span class="kw">requireNamespace</span>(<span class="st">"BiocManager"</span>, <span class="dt">quietly =</span> <span class="ot">TRUE</span>))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true"></a>    <span class="kw">install.packages</span>(<span class="st">"BiocManager"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true"></a>BiocManager<span class="op">::</span><span class="kw">install</span>(<span class="st">"APL"</span>)</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="pytorch-installation">Pytorch installation<a class="anchor" aria-label="anchor" href="#pytorch-installation"></a>
@@ -100,25 +101,25 @@ BiocManager::<span class="kw">install</span>(<span class="st">"APL"</span>)</cod
 <div class="section level3">
 <h3 id="install-pytorch-with-reticulate">Install pytorch with reticulate<a class="anchor" aria-label="anchor" href="#install-pytorch-with-reticulate"></a>
 </h3>
-<div class="sourceCode"><pre class="sourceCode R"><code class="sourceCode r"><span class="kw">library</span>(reticulate)
-<span class="kw">install_miniconda</span>() 
-<span class="kw">conda_install</span>(<span class="dt">envname =</span> <span class="st">"r-reticulate"</span>, <span class="dt">packages =</span> <span class="st">"numpy"</span>)
-<span class="kw">conda_install</span>(<span class="dt">envname =</span> <span class="st">"r-reticulate"</span>, <span class="dt">packages =</span> <span class="st">"pytorch"</span>)</code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true"></a><span class="kw">library</span>(reticulate)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true"></a><span class="kw">install_miniconda</span>() </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true"></a><span class="kw">conda_install</span>(<span class="dt">envname =</span> <span class="st">"r-reticulate"</span>, <span class="dt">packages =</span> <span class="st">"numpy"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true"></a><span class="kw">conda_install</span>(<span class="dt">envname =</span> <span class="st">"r-reticulate"</span>, <span class="dt">packages =</span> <span class="st">"pytorch"</span>)</span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="manually-install-pytorch-with-conda">Manually install pytorch with conda<a class="anchor" aria-label="anchor" href="#manually-install-pytorch-with-conda"></a>
 </h3>
 <p>Download the appropriate Miniconda installer for your system from <a href="https://docs.conda.io/en/latest/miniconda.html" class="external-link">the conda website</a>. Follow the installation instructions on their website and make sure the R package <code>reticulate</code> is also installed before proceeding. Once installed, list all available conda environments via <br><code>conda info --envs</code> <br> One of the environments should have <code>r-reticulate</code> in its name. Depending on where you installed it and your system, the exact path might be different. Activate the environment and install pytorch into it.</p>
-<div class="sourceCode"><pre class="sourceCode R"><code class="sourceCode r">conda activate ~<span class="er">/</span>.local/share/r-miniconda/envs/r-reticulate <span class="co"># change path accordingly.</span>
-conda install numpy
-conda install pytorch</code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true"></a>conda activate <span class="op">~</span><span class="er">/</span>.local<span class="op">/</span>share<span class="op">/</span>r<span class="op">-</span>miniconda<span class="op">/</span>envs<span class="op">/</span>r<span class="op">-</span>reticulate <span class="co"># change path accordingly.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true"></a>conda install numpy</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true"></a>conda install pytorch</span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="feature-overview">Feature overview<a class="anchor" aria-label="anchor" href="#feature-overview"></a>
 </h2>
 <p>Please run</p>
-<div class="sourceCode"><pre class="sourceCode R"><code class="sourceCode r"><span class="kw">vignette</span>(<span class="st">"APL"</span>)</code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true"></a><span class="kw">vignette</span>(<span class="st">"APL"</span>)</span></code></pre></div>
 <p>after installation with <code>build_vignettes = TRUE</code> for an introduction into the package.</p>
 </div>
 </div>
