@@ -6,3 +6,4 @@
 ^.gitignore
 ^doc$
 ^Meta$
+^README\.Rmd$
