@@ -2,7 +2,7 @@
 % Please edit documentation in R/CA.R
 \name{comp_std_residuals}
 \alias{comp_std_residuals}
-\title{Compute Standard Residuals}
+\title{Compute Standardized Residuals}
 \usage{
 comp_std_residuals(mat)
 }
@@ -11,16 +11,16 @@ comp_std_residuals(mat)
 Should have row and column names.}
 }
 \value{
-A named list with standard residual matrix "S",
+A named list with standardized residual matrix "S",
 grand total of the original matrix "tot"
 as well as row and column masses "rowm" and "colm" respectively.
 }
 \description{
-`comp_std_residuals` computes the standard Residuals matrix S,
+`comp_std_residuals` computes the standardized residual matrix S,
 which is the basis for correspondence analysis and serves
-as input for singular value decomposition.
+as input for singular value decomposition (SVD).
 }
 \details{
-Calculates standardized residual matrix S from the proportions matrix P and
+Calculates standardized residual matrix S from the proportion matrix P and
 the expected values E according to \eqn{S = \frac{(P-E)}{sqrt(E)}}.
 }
