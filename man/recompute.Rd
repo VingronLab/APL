@@ -4,21 +4,26 @@
 \alias{recompute}
 \title{Recompute missing values of cacomp object.}
 \usage{
-recompute(calist, mat, rm_zeros = TRUE, ...)
+recompute(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...)
 }
 \arguments{
 \item{calist}{A list with std_coords_cols, the prin_coords_rows and D.}
 
-\item{mat}{A matrix from which the cacomp object derives from.}
+\item{mat}{A matrix from which the cacomp object is derived from.}
 
 \item{rm_zeros}{Removes rows & columns containing only zeros.}
+
+\item{top}{number of most variable rows to keep when running cacomp. 
+Default is nrow(mat).}
 
 \item{...}{Further arguments forwarded to cacomp.}
 }
 \value{
-A cacomp object with additional calculated row_masses, col_masses, std_coords_rows, U and V.
+A cacomp object with additional calculated row_masses, col_masses, 
+std_coords_rows, U and V.
 }
 \description{
-The caobj needs to have the std_coords_cols, the prin_coords_rows and D calculated. From this the remainder will be calculated.
+The caobj needs to have the std_coords_cols, the prin_coords_rows and D 
+calculated. From this the remainder will be calculated.
 Future updates might extend this functionality.
 }

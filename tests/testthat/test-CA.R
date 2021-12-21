@@ -13,12 +13,12 @@
 #           cols = TRUE)
 #
 # smoke <- as.matrix(smoke)
-# save(smoke, smoke_ca, smoke_prin, file = "/home/kohl/PhD/gits/APL/tests/testthat/testdata/smoke.rda")
+# save(smoke, smoke_ca, smoke_prin, file = "./tests/testthat/testdata/smoke.rda")
 
 load("./testdata/smoke.rda")
 
-ca_python <- cacomp(obj = smoke, princ_coords = 3, coords = TRUE, python = TRUE)
-ca_svd <- cacomp(obj = smoke, princ_coords = 3, coords = TRUE, python = FALSE)
+ca_python <- cacomp(obj = smoke, top = nrow(smoke), princ_coords = 3, coords = TRUE, python = TRUE)
+ca_svd <- cacomp(obj = smoke, top = nrow(smoke), princ_coords = 3, coords = TRUE, python = FALSE)
 cac <- ca_coords(ca_svd, princ_coords = 3)
 
 

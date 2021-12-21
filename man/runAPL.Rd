@@ -5,7 +5,7 @@
 \alias{runAPL,matrix-method}
 \alias{runAPL,SingleCellExperiment-method}
 \alias{runAPL,Seurat-method}
-\title{Compute and plot Association plot}
+\title{Compute and plot Association Plot}
 \usage{
 runAPL(
   obj,
@@ -22,10 +22,13 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  show_cols = TRUE,
+  show_cols = FALSE,
   show_rows = TRUE,
   score_cutoff = 0,
   score_color = "rainbow",
+  pd_method = "elbow_rule",
+  pd_reps = 1,
+  pd_use = TRUE,
   ...
 )
 
@@ -44,10 +47,13 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  show_cols = TRUE,
+  show_cols = FALSE,
   show_rows = TRUE,
   score_cutoff = 0,
   score_color = "rainbow",
+  pd_method = "elbow_rule",
+  pd_reps = 1,
+  pd_use = TRUE,
   ...
 )
 
@@ -66,10 +72,13 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  show_cols = TRUE,
+  show_cols = FALSE,
   show_rows = TRUE,
   score_cutoff = 0,
   score_color = "rainbow",
+  pd_method = "elbow_rule",
+  pd_reps = 1,
+  pd_use = TRUE,
   ...,
   assay = "counts"
 )
@@ -89,45 +98,63 @@ runAPL(
   row_labs = TRUE,
   col_labs = TRUE,
   type = "plotly",
-  show_cols = TRUE,
+  show_cols = FALSE,
   show_rows = TRUE,
   score_cutoff = 0,
   score_color = "rainbow",
+  pd_method = "elbow_rule",
+  pd_reps = 1,
+  pd_use = TRUE,
   ...,
   assay = Seurat::DefaultAssay(obj),
   slot = "counts"
 )
 }
 \arguments{
-\item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For sequencing a count matrix, gene expression values with genes in rows and samples/cells in columns.
+\item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For 
+sequencing a count matrix, gene expression values with genes in rows and 
+samples/cells in columns.
 Should contain row and column names.}
 
-\item{group}{Numeric/Character. Vector of indices or column names of the columns to calculate centroid/x-axis direction.}
+\item{group}{Numeric/Character. Vector of indices or column names of the 
+columns to calculate centroid/x-axis direction.}
 
-\item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied will be calculated. Default NULL.}
+\item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied 
+will be calculated. Default NULL.}
 
-\item{dims}{Integer. Number of dimensions to keep. Default NULL (keeps all dimensions).}
+\item{dims}{Integer. Number of dimensions to keep. Default NULL (keeps all 
+dimensions).}
 
-\item{nrow}{Integer. The top nrow scored row labels will be added to the plot if score = TRUE. Default 10.}
+\item{nrow}{Integer. The top nrow scored row labels will be added to the 
+plot if score = TRUE. Default 10.}
 
-\item{top}{Integer. Number of most variable rows to retain. Default 5000.}
+\item{top}{Integer. Number of most variable rows to retain. Default 5000 
+rows (set NULL to keep all).}
 
-\item{score}{Logical. Whether rows should be scored and ranked. Ignored when a vector is supplied to mark_rows. Default TRUE.}
+\item{score}{Logical. Whether rows should be scored and ranked. Ignored when 
+a vector is supplied to mark_rows. Default TRUE.}
 
-\item{mark_rows}{Character vector. Names of rows that should be highlighted in the plot. If not NULL, score is ignored. Default NULL.}
+\item{mark_rows}{Character vector. Names of rows that should be highlighted 
+in the plot. If not NULL, score is ignored. Default NULL.}
 
-\item{mark_cols}{Character vector. Names of cols that should be highlighted in the plot.}
+\item{mark_cols}{Character vector. Names of cols that should be highlighted 
+in the plot.}
 
 \item{reps}{Integer. Number of permutations during scoring. Default 3.}
 
-\item{python}{A logical value indicating whether to use singular-value decomposition from the python package torch.
-This implementation dramatically speeds up computation compared to `svd()` in R.}
+\item{python}{A logical value indicating whether to use singular value 
+decomposition from the python package torch.
+This implementation dramatically speeds up computation compared to `svd()` 
+in R.}
 
-\item{row_labs}{Logical. Whether labels for rows indicated by rows_idx should be labeled with text. Default TRUE.}
+\item{row_labs}{Logical. Whether labels for rows indicated by rows_idx 
+should be labeled with text. Default TRUE.}
 
-\item{col_labs}{Logical. Whether labels for columns indicated by cols_idx shouls be labeled with text. Default TRUE.}
+\item{col_labs}{Logical. Whether labels for columns indicated by cols_idx 
+should be labeled with text. Default TRUE.}
 
-\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an interactive plot "plotly". Default "plotly".}
+\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an 
+interactive plot "plotly". Default "plotly".}
 
 \item{show_cols}{Logical. Whether column points should be plotted.}
 
@@ -138,27 +165,47 @@ will be colored according to their score if show_score = TRUE.}
 
 \item{score_color}{Either "rainbow" or "viridis".}
 
+\item{pd_method}{Which method to use for pick_dims (\link[APL]{pick_dims}).}
+
+\item{pd_reps}{Number of repetitions performed when using "elbow_rule" in 
+`pick_dims`.
+(\link[APL]{pick_dims})}
+
+\item{pd_use}{Whether to use `pick_dims` (\link[APL]{pick_dims}) to determine
+the number of dimensions. Ignored when `dims` is set by the user.}
+
 \item{...}{Arguments forwarded to methods.}
 
-\item{assay}{Character. The assay from which extract the count matrix for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for SingleCellExperiments.}
+\item{assay}{Character. The assay from which extract the count matrix for 
+SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+SingleCellExperiments.}
 
-\item{slot}{character. The Seurat assay slot from which to extract the count matrix.}
+\item{slot}{character. The Seurat assay slot from which to extract the 
+count matrix.}
 }
 \value{
-Association plot (plotly object).
+Association Plot (plotly object).
 }
 \description{
-Computes singular value decomposition and coordinates for the Association plot.
+Computes singular value decomposition and coordinates for 
+the Association Plot.
 
-runAPL.SingleCellExperiment: Computes singular value decomposition and coordinates for the Association plot from SingleCellExperiment objects with reducedDim(obj, "CA") slot (optional).
+runAPL.SingleCellExperiment: Computes singular value decomposition and 
+coordinates for the Association Plot from SingleCellExperiment objects with 
+reducedDim(obj, "CA") slot (optional).
 
-runAPL.Seurat: Computes singular value decomposition and coordinates for the Association plot from Seurat objects, optionally with a DimReduc Object in the "CA" slot.
+runAPL.Seurat: Computes singular value decomposition and coordinates for 
+the Association Plot from Seurat objects, optionally with a DimReduc Object 
+in the "CA" slot.
 }
 \details{
-The function is a wrapper that calls `cacomp()`, `apl_coords()`, `apl_score()` and finally `apl()` for ease of use.
-The chosen defaults are most useful for genomics experiments, but for more fine grained control the functions
+The function is a wrapper that calls `cacomp()`, `apl_coords()`, 
+`apl_score()` and finally `apl()` for ease of use.
+The chosen defaults are most useful for genomics experiments, but for more 
+fine grained control the functions
 can be also run individually for the same results.
-If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score is treated as if FALSE.
+If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score 
+is treated as if FALSE.
 }
 \examples{
 set.seed(1234)
@@ -226,4 +273,10 @@ runAPL(obj = seu,
        type = "ggplot",
        assay = "RNA",
        slot = "counts")
+}
+\references{
+Association Plots: Visualizing associations in high-dimensional 
+correspondence analysis biplots \cr
+Elzbieta Gralinska, Martin Vingron \cr
+bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
 }
