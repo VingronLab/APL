@@ -3,21 +3,33 @@ Type: Package
 Title: Association Plots
 Version: 0.99.0
 Authors@R:
-  c(person(given = "Clemens",
-           family = "Kohl",
-           role = c("aut"),
-           email = "kohl@molgen.mpg.de"),
-    person(given = "Elzbieta",
+  c(person(given = "Elzbieta",
            family = "Gralinska",
            role = c("cre", "aut"),
            email = "gralinska@molgen.mpg.de"),
+    person(given = "Clemens",
+           family = "Kohl",
+           role = c("aut"),
+           email = "kohl@molgen.mpg.de"),
      person(given = "Martin",
             family = "Vingron",
             role = c("aut"),
             email = "vingron@molgen.mpg.de"))
-Description: This package performs Correspondence Analysis (CA) and allows to visualize the results in Association Plots (APL) and biplots.
-    For an APL genes can be scored and gene enrichment run for further insights.
-biocViews: StatisticalMethod, DimensionReduction, SingleCell, Sequencing, RNASeq
+Description: APL is a package developed for computation of Association Plots
+  (AP), a method for visualization and analysis of single cell transcriptomics 
+  data. The main focus of APL is the identification of genes characteristic for
+  individual clusters of cells from input data. The package performs 
+  correspondence analysis (CA) and allows to identify cluster-specific
+  genes using Association Plots. Additionally, APL computes the 
+  cluster-specificity scores for all genes which allows to rank the genes by 
+  their specificity for a selected cell cluster of interest.
+biocViews: 
+  StatisticalMethod,
+  DimensionReduction,
+  SingleCell,
+  Sequencing,
+  RNASeq,
+  GeneExpression
 License: GPL (>= 3)
 Encoding: UTF-8
 RoxygenNote: 7.1.2
@@ -35,14 +47,17 @@ Imports:
     topGO,
     methods,
     stats,
-    utils
-Depends: 
-    R (>= 4.0)
+    utils,
+    org.Hs.eg.db,
+    org.Mm.eg.db,
+    rlang
+Depends: R (>= 3.5)
 Suggests: 
     BiocStyle,
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    TENxPBMCData,
+    testthat
 Config/testthat/edition: 3
 Collate: 
     'constructor.R'
@@ -53,3 +68,4 @@ Collate:
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
+SystemRequirements: python, pytorch, numpy
