@@ -203,7 +203,7 @@ The generated Association Plot is computed based on the log-normalized count mat
 
 The dimensionality of the CA can be determined automatically by the elbow rule descibed below (see [here](#dim_reduc)). To speed up the calculations we have predetermined the optimal number of dimensions to keep through the elbow method to be 222 dimensions (`dims = 222`). 
 <!-- Optimally, one should call `pick_dims()` or use `pd_use = TRUE` to make sure to choose the optimal number of dimensions for each cluster of interest.  -->
-To include the elbow rule calculation use "pd_use = TRUE" and "pd_method = "elbow_rule", and remove the parameter "dims = 222". The cluster-specificity score ( \eqn{S_\alpha}) for each gene is also calculated (`score = TRUE`). In order to better explore the data, `type` can be set to `"plotly"` to obtain an interactive plot. `runAPL` has many arguments to further customize the output and fine tune the calculations. Please refer to the documentation (`?runAPL`) for more information. The following sections in this vignette will discuss the choice of dimensionality and the \eqn{S_\alpha}-score.
+To include the elbow rule calculation use "pd_use = TRUE" and "pd_method = "elbow_rule", and remove the parameter "dims = 222". The cluster-specificity score ($S_\alpha$) for each gene is also calculated (`score = TRUE`). In order to better explore the data, `type` can be set to `"plotly"` to obtain an interactive plot. `runAPL` has many arguments to further customize the output and fine tune the calculations. Please refer to the documentation (`?runAPL`) for more information. The following sections in this vignette will discuss the choice of dimensionality and the $S_\alpha$-score.
 
 
 # Step-by-step way of computing Association Plots
@@ -361,9 +361,9 @@ Additionally, it is possible to highlight in the Association Plot any set of gen
 
 By default we plot only the genes in the Association Plot. To also display the cells in the Association Plot, use the argument `show_cols = TRUE`. This way we can identify other cells which show similar expression profiles to the cells of interest. Cells that belong to the cluster of interest will be colored in red, and all remaining cells will be colored in violet. Furthermore, an interactive plot in which you can hover over genes to see their name can be created by setting `type = "plotly"`.
 
-## Association Plots with the \eqn{S_\alpha} scores {#apl}
+## Association Plots with the $S_\alpha$-scores {#apl}
 
-The \eqn{S_\alpha} score allows us to rank genes by their specificity for a selected cell cluster, and is computed for each gene from the Association Plot separately. The higher the \eqn{S_\alpha} score of a gene, the more characteristic its expression for the investigated cell cluster. The \eqn{S_\alpha} scores can be computed using the `apl_score` function. To show the \eqn{S_\alpha} scores in the Association Plot use the argument `show_score = TRUE` in the `apl` function:
+The $S_\alpha$-score allows us to rank genes by their specificity for a selected cell cluster, and is computed for each gene from the Association Plot separately. The higher the $S_\alpha$-score of a gene, the more characteristic its expression for the investigated cell cluster. The $S_\alpha$-scores can be computed using the `apl_score` function. To show the $S_\alpha$-scores in the Association Plot use the argument `show_score = TRUE` in the `apl` function:
 
 ```{r apl_score, results = "hide"}
 # Compute S-alpha score
@@ -379,15 +379,15 @@ apl(ca,
     type = "ggplot")
 ```
 
-By default, only genes that have a \eqn{S_\alpha} score larger than 0 are colored as these tend to be genes of interest and we consider them as cluster-specific genes.
+By default, only genes that have a $S_\alpha$-score larger than 0 are colored as these tend to be genes of interest and we consider them as cluster-specific genes.
 This cutoff can be easily changed through the `score_cutoff` argument to `apl()`.
 
-The \eqn{S_\alpha} scores are stored in the `"APL_score"` slot and can be accessed as follows:
+The $S_\alpha$-scores are stored in the `"APL_score"` slot and can be accessed as follows:
 ```{r print_score}
 head(cacomp_slot(ca, "APL_score"))
 ```
 
-To see the expression of genes with the highest \eqn{S_\alpha} scores (or any selected genes) across all cell types from the data we can use the functions provided by `r BiocStyle::CRANpkg("Seurat")`:
+To see the expression of genes with the highest $S_\alpha$-scores (or any selected genes) across all cell types from the data we can use the functions provided by `r BiocStyle::CRANpkg("Seurat")`:
 
 ```{r seurat_apl, fig.wide = TRUE}
 scores <- cacomp_slot(ca, "APL_score")
@@ -421,9 +421,9 @@ The above described plots give us a quick overview of the first 2 dimensions of 
 
 # APL and GO enrichment analysis
 
-After computing an Association Plot and identifying a set of genes specific for a selected cluster of cells we might be interested in conducting a Gene Ontology (GO) enrichment analysis of the identified gene set. To conduct the GO enrichment analysis of the B-cell specific genes (cluster 3 from the input data) idenitfied using Association Plot we first need to compute the coordinates of the genes in the Association Plot for B cells, as well as the \eqn{S_\alpha} score for each gene. As this was already done [above](#apl) we can directly proceed to the gene set enrichment analysis.
+After computing an Association Plot and identifying a set of genes specific for a selected cluster of cells we might be interested in conducting a Gene Ontology (GO) enrichment analysis of the identified gene set. To conduct the GO enrichment analysis of the B-cell specific genes (cluster 3 from the input data) idenitfied using Association Plot we first need to compute the coordinates of the genes in the Association Plot for B cells, as well as the $S_\alpha$-score for each gene. As this was already done [above](#apl) we can directly proceed to the gene set enrichment analysis.
 
-The GO enrichment analysis is performed as implemented in the package `r BiocStyle::Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot. By default we use all genes with an \eqn{S_\alpha} score higher than 0, but the cutoff may have to be adjusted depending on the dataset. In the example below we restrict it to genes with a \eqn{S_\alpha} score higher than 1 to restrict it to truly significant genes. In case that no \eqn{S_\alpha} scores were calculated, one can also choose to use the `ngenes` (by default 1000) genes with the highest x-coordinates by setting `use_coords = FALSE`.
+The GO enrichment analysis is performed as implemented in the package `r BiocStyle::Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot. By default we use all genes with an $S_\alpha$-score higher than 0, but the cutoff may have to be adjusted depending on the dataset. In the example below we restrict it to genes with a $S_\alpha$-score higher than 1 to restrict it to truly significant genes. In case that no $S_\alpha$-scores were calculated, one can also choose to use the `ngenes` (by default 1000) genes with the highest x-coordinates by setting `use_coords = FALSE`.
 
 ```{r topGO, message=FALSE}
 enr <- apl_topGO(ca,
