@@ -42,6 +42,74 @@ comp_std_residuals <- function(mat){
   return(out)
 }
 
+
+
+comp_sct_residuals <- function(mat){
+  
+  stopifnot(
+    "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
+  stopifnot(
+    "Input matrix does not have any colnames!" = !is.null(colnames(mat)))
+  
+  tot <- sum(mat)
+  P <- mat/tot               # proportions matrix
+  rowm <- rowSums(P)          # row masses
+  colm <- colSums(P)  
+  
+  vst_out <- sctransform::vst(mat,
+                              latent_var = c("log_umi"),
+                              return_gene_attr = TRUE, 
+                              return_cell_attr = TRUE,
+                              residual_type = "pearson",
+                              verbosity = 1,
+                              min_cells = 0)
+  
+  out <- list("S"=vst_out$y, "tot"=tot, "rowm"=rowm, "colm"=colm)
+  
+}
+
+
+comp_ft_residuals <- function(mat){
+ 
+    N <- sum(mat)
+    mat <- mat
+    pmat <- mat / N
+    
+    row.w <- rowSums(pmat)
+    col.w <- colSums(pmat)
+    
+    row.sum <- rowSums(mat)
+    col.sum <- colSums(mat)
+    expectedp <- row.w %*% t(col.w)
+    expectedx <- row.sum %*% t(col.sum)
+    
+    S <- pmat^.5 + (pmat + 1/N)^.5 - (4*expectedp + 1/N)^.5
+    
+    return(list("S"=S, "tot"=N, "rowm"=row.w, "colm"=col.w))
+
+}
+
+
+pick_residuals <- function(mat, residuals){
+  
+  if (residuals == "pearson"){
+    message("\nusing pearson residuals")
+    res <-  comp_std_residuals(mat=mat)
+    
+  } else if (residuals == "sctransform"){
+    message("\nusing sctransform pearson residuals")
+    
+      res <- comp_sct_residuals(mat)
+
+  } else if (residuals == "freemantukey"){
+    message("\nusing freeman-tukey residuals")
+    
+     res <- comp_ft_residuals(mat)
+  }
+  
+  return(res)
+}
+
 #' removes 0-only rows and columns in a matrix.
 #'
 #' @param obj A matrix.
@@ -95,9 +163,11 @@ rm_zeros <- function(obj){
 #' cnts <- var_rows(mat = cnts, top = 5000)
 #'
 #'
-var_rows <- function(mat, top = 5000){
-
-  res <-  comp_std_residuals(mat=mat)
+var_rows <- function(mat, residuals = "pearson", top = 5000){
+  
+  res <- pick_residuals(mat = mat,
+                        residuals = residuals)
+  # res <-  comp_std_residuals(mat=mat)
 
   if(top>nrow(mat)) {
     warning("Top is larger than the number of rows in matrix. ",
@@ -105,9 +175,12 @@ var_rows <- function(mat, top = 5000){
   }
   
   top <- min(nrow(mat), top)
-
-  chisquare <- res$tot * (res$S^2)		# chi-square components matrix
-  variances <- apply(chisquare,1,var) #row-wise variances
+  S <- res$S
+  if (residuals == "pearson"){
+    S <- res$tot * (S^2)		# chi-square components matrix
+  }
+  
+  variances <- apply(S,1,var) #row-wise variances
   ix_var <- order(-variances)
   mat <- mat[ix_var[seq_len(top)],] # choose top rows
   return(mat)
@@ -164,6 +237,7 @@ var_rows <- function(mat, top = 5000){
 #' @param rm_zeros Logical. Whether rows & cols containing only 0s should be 
 #' removed. Keeping zero only rows/cols might lead to unexpected results. 
 #' Default TRUE.
+#' @param residuals "pearson", "freemantukey", "sctransform"
 #' @param ... Arguments forwarded to methods.
 run_cacomp <- function(obj,
                    coords = TRUE,
@@ -173,6 +247,7 @@ run_cacomp <- function(obj,
                    top = 5000,
                    inertia = TRUE,
                    rm_zeros = TRUE,
+                   residuals = "pearson",
                    ...){
 
   stopifnot("Input matrix does not have any rownames!" =
@@ -184,24 +259,27 @@ run_cacomp <- function(obj,
     obj <- rm_zeros(obj)
   }
 
-
   # Choose only top # of variable genes
   if (is.null(top) || top == nrow(obj)) {
-    res <-  comp_std_residuals(mat=obj)
+    res <- pick_residuals(mat = obj,
+                          residuals = residuals)
     toptmp <- nrow(obj)
   } else if (!is.null(top) && top < nrow(obj)){
 
-    obj <- var_rows(mat = obj, top = top)
-    res <-  comp_std_residuals(mat=obj)
+    obj <- var_rows(mat = obj, top = top, residuals = residuals)
+    res <- pick_residuals(mat = obj,
+                          residuals = residuals)
     toptmp <- top
     
   } else if (top > nrow(obj)) {
     warning("\nParameter top is >nrow(obj) and therefore ignored.")
-    res <-  comp_std_residuals(mat=obj)
+    res <-  pick_residuals(mat=obj,
+                           residuals = residuals)
     toptmp <- nrow(obj)
   } else {
     warning("\nUnusual input for top, argument ignored.")
-    res <-  comp_std_residuals(mat=obj)
+    res <-  pick_residuals(mat=obj,
+                           residuals = residuals)
     toptmp <- nrow(obj)
   }
 
@@ -360,6 +438,7 @@ setGeneric("cacomp", function(obj,
                               top = 5000,
                               inertia = TRUE,
                               rm_zeros = TRUE,
+                              residuals = "pearson",
                               ...) {
   standardGeneric("cacomp")
 })
@@ -377,6 +456,7 @@ setMethod(f = "cacomp",
                    top = 5000,
                    inertia = TRUE,
                    rm_zeros = TRUE,
+                   residuals = "pearson",
                    ...){
 
     caobj <- run_cacomp(obj = obj,
@@ -387,6 +467,7 @@ setMethod(f = "cacomp",
                         top = top,
                         inertia = inertia,
                         rm_zeros = rm_zeros,
+                        residuals = residuals,
                         ...)
 
     return(caobj)
@@ -454,6 +535,7 @@ setMethod(f = "cacomp",
                    top = 5000,
                    inertia = TRUE,
                    rm_zeros = TRUE,
+                   residuals = "pearson",
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts",
@@ -475,6 +557,7 @@ setMethod(f = "cacomp",
                       python = python,
                       rm_zeros = rm_zeros,
                       inertia = inertia,
+                      residuals = residuals,
                       ...)
 
   if (return_input == TRUE){
@@ -558,6 +641,7 @@ setMethod(f = "cacomp",
                    top = 5000,
                    inertia = TRUE,
                    rm_zeros = TRUE,
+                   residuals = "pearson",
                    ...,
                    assay = "counts",
                    return_input = FALSE){
@@ -578,6 +662,7 @@ setMethod(f = "cacomp",
                      python = python,
                      rm_zeros = rm_zeros,
                      inertia = inertia,
+                     residuals = residuals,
                      ...)
 
   if (return_input == TRUE){

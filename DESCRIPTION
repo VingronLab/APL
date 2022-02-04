@@ -1,4 +1,4 @@
-Package: APL
+Package: APLcle
 Type: Package
 Title: Association Plots
 Version: 0.99.0
@@ -50,7 +50,8 @@ Imports:
     utils,
     org.Hs.eg.db,
     org.Mm.eg.db,
-    rlang
+    rlang,
+    sctransform
 Depends: R (>= 3.5)
 Suggests: 
     BiocStyle,
