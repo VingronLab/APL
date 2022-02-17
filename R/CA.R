@@ -187,6 +187,34 @@ var_rows <- function(mat, residuals = "pearson", top = 5000){
 
 }
 
+#' Find most variable rows
+#'
+#' @description
+#' Calculates the contributing inertia of each row which is defined as sum of squares of pearson residuals and selects the 
+#' rows with the largested inertias, e.g. 5,000.
+#'
+#' @return
+#' Returns a matrix, which consists of the top variable rows of mat.
+
+inertia_rows <- function(mat, top = 5000){
+
+    res <-  comp_std_residuals(mat = mat)
+
+    if(top>nrow(mat)) {
+        warning("Top is larger than the number of rows in matrix. ",
+            "Top was set to nrow(mat).")
+    }
+
+    top <- min(nrow(mat), top)
+
+    inertia <- apply(res$S, 1, function(x){x^2})
+    inertia <- rowSums(inertia)
+    ix <- order(inertia, decreasing = T)
+    mat <- mat[ix[seq_len(top)],] # choose top rows
+    return(mat)
+}
+
+
 
 #' Internal function for `cacomp`
 #'
@@ -365,6 +393,11 @@ run_cacomp <- function(obj,
       SVD@dims <- length(SVD@D)
     }
   }
+    
+    ## check if dimensions with ~zero singular values are selected, in case the dimensions selected are more then rank of matrix
+    if (min(SVD@D) <= 1e-6){
+        warning('Too many dimensions are selected!! Number of dimensions should be smaller than rank of matrix!')
+    }
 
   stopifnot(validObject(SVD))
   return(SVD)
