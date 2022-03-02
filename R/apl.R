@@ -235,6 +235,8 @@ apl_score <- function(caobj,
     if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
       calist <- caobj@permuted_data[[k]][seq_len(3)]
       mat <- caobj@permuted_data[[k]]$mat
+      mat <- mat[rownames(mat) %in% rownames(calist$std_coords_rows),]
+      
       caobjp <- recompute(calist, mat)
 
     } else {

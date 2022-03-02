@@ -56,7 +56,9 @@ Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
-    TENxPBMCData,
+    scRNAseq,
+    scater,
+    scran,
     testthat
 Config/testthat/edition: 3
 Collate: 
