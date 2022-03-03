@@ -404,10 +404,10 @@ plotExpression(darmanis,
 
 plotReducedDim(darmanis, 
                dimred="UMAP",
-               colour_by= scores$Rowname[2])
+               colour_by= scores$Rowname[3])
 ```
 
-As expected, the 3 most highly scored genes are over-expressed in the endothelial cells.
+As expected, the 3 most highly scored genes are over-expressed in the endothelial cells. Due to the small size of the data set and number of cells in the cluster (only 20 out of 466 cells are endothelial cells) some cluster specific genes are only expressed in a few cells. Most data sets nowadays are significantly larger so this should not be a major concern and it can further be mitigated by performing a more stringent feature selection before CA.
 
 ## Visualization of CA
 
@@ -472,7 +472,7 @@ The function `plot_enrichment()` was implemented to visualize the `topGO` result
 ```{r topGO_plot, message=FALSE}
 plot_enrichment(enr)
 ```
-Microglial cells are innate immune cells of the brain and as such the most highly scored genes are enriched in gene sets related to the immune response and microglial specific gene sets as one would expect. 
+Microglia cells are innate immune cells of the brain and as such the most highly scored genes are enriched in gene sets related to the immune response and microglia specific gene sets as one would expect. 
 
 <!-- Additionally, in the Association Plot we can highlight genes of interest identified for instance using the GO enrichment analysis. -->
 <!-- In the example below we highlight two microglial markers. -->
