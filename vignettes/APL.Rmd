@@ -125,7 +125,7 @@ set.seed(1234)
 
 ## Loading the data
 
-We start with the loading and preprocessing of the 3k PBMC data.
+We start with the loading and preprocessing of the Darmanis data.
 
 ```{r load_data}
 darmanis <- DarmanisBrainData()
@@ -136,7 +136,7 @@ darmanis
 ## Normalization, PCA & Clustering
 
 Association Plots from `r BiocStyle::Rpackage("APL")` should be computed based on the normalized expression data.
-Therefore, we first normalize the counts from the darmanis data and calculate both PCA and UMAP for visualizations later.
+Therefore, we first normalize the counts from the Darmanis data and calculate both PCA and UMAP for visualizations later.
 
 For now, `r BiocStyle::Rpackage("APL")` requires the data to be clustered beforehand. The darmanis data comes already annotated, so we will use the cell types stored in the `cell.type` metadata column instead of performing a clustering.
 
@@ -148,7 +148,7 @@ darmanis <- computeSumFactors(darmanis, cluster=clust, min.mean=0.1)
 darmanis <- logNormCounts(darmanis)
 
 dec <- modelGeneVar(darmanis)
-top_darmanis <- getTopHVGs(dec, n=4000)
+top_darmanis <- getTopHVGs(dec, n=5000)
 darmanis <- fixedPCA(darmanis, subset.row=top_darmanis) 
 darmanis <- runUMAP(darmanis, dimred="PCA")
 
@@ -213,7 +213,7 @@ For ease of use, `cacomp` accepts also `r BiocStyle::Biocpkg("SingleCellExperime
 Importantly, in order to ensure the interpretability of the results `cacomp` (and related functions such as `runAPL`) requires that the input matrix contains both row and column names.
 
 When performing a feature selection before CA, we can set the argument `top` to the desired number of genes with the highest variance across cells from the input data to retain for further analysis.
-By default, only the top 5,000 most variable genes are kept as a good compromise between computational time and keeping the most relevant genes. I we want to ensure however that even marker genes of smaller clusters are kept, we can increase the number of genes.
+By default, only the top 5,000 most variable genes are kept as a good compromise between computational time and keeping the most relevant genes. If we want to ensure however that even marker genes of smaller clusters are kept, we can increase the number of genes.
 <!-- For this vignette we keep all genes in the data to ensure that also genes from smaller clusters such as the platelets are kept. -->
 <!-- In many cases however 5,000 genes are a good compromise between computational time and keeping most relevant genes. -->
 
@@ -276,8 +276,7 @@ This function offers three standard methods which we implemented:
 Additionally, the user can compute a scree plot to choose the number of dimensions by themselves:
 
 ```{r scree_plot}
-pick_dims(ca,
-          method = "scree_plot") +
+pick_dims(ca, method = "scree_plot") +
   xlim(c(0,20))
 ```
 
@@ -285,14 +284,14 @@ In the scree plot above we can see that the first dimension explains only \~1% o
 The first dimensions however explain only a small amount of the total inertia.
 
 Here we compute the number of dimensions using the elbow rule.
-For demonstration, only five data permutations are computed:
+For demonstration, only three data permutations are computed:
 
 ```{r pick_dims, results = "hide"}
 pd <- pick_dims(ca,
-          mat = logcounts(darmanis),
-          method = "elbow_rule",
-          reps = 5, 
-          python = TRUE)
+                mat = logcounts(darmanis),
+                method = "elbow_rule",
+                reps = 3, 
+                python = TRUE)
 ```
 
 ```{r show_dims, message=FALSE}
@@ -349,10 +348,9 @@ apl(ca,
 ```
 
 In the Association Plot all genes are represented by blue circles.
-The further to the right a gene is located the more associated it is with the chosen cluster of cells.
-Additionally, the lower the y-axis value, the more specific it is for the selected cluster.
+The further to the right a gene is located the more associated it is with the chosen cluster of cells and the lower the y-axis value, the more specific it is for the selected cluster.
 Additionally, it is possible to highlight in the Association Plot any set of genes.
-In the example above we additionally highlighted five genes ("APOLD1", "TM4SF1", "SULT1B1", "ESM1", "SELE") which are known to be marker genes for endothelial cells.
+In the example above we highlighted five genes (APOLD1, TM4SF1, SULT1B1, ESM1, SELE) which are known to be marker genes for endothelial cells.
 As we can see in the plot, they are located in the right part of the plot, which confirms their specificity for endothelial cells.
 
 By default we plot only the genes in the Association Plot.
@@ -457,7 +455,7 @@ ca <- apl_score(ca,
 Now we can conduct GO enrichment analysis as implemented in the package `r BiocStyle::Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot.
 By default we use all genes with an $S_\alpha$-score higher than 0, but the cutoff may have to be adjusted depending on the dataset.
 In the example below we restrict it to genes with a $S_\alpha$-score higher than 1 to restrict it to truly significant genes.
-In case that no $S_\alpha$-scores were calculated, one can also choose to use the `ngenes` (by default 1000) genes with the highest x-coordinates by setting `use_coords = FALSE`.
+In case that no $S_\alpha$-scores were calculated, one can also choose to use the `ngenes` (by default 1000) genes with the highest x-coordinates by setting `use_coords = TRUE`.
 
 ```{r topGO, message=FALSE}
 enr <- apl_topGO(ca,
@@ -474,22 +472,6 @@ plot_enrichment(enr)
 ```
 Microglia cells are innate immune cells of the brain and as such the most highly scored genes are enriched in gene sets related to the immune response and microglia specific gene sets as one would expect. 
 
-<!-- Additionally, in the Association Plot we can highlight genes of interest identified for instance using the GO enrichment analysis. -->
-<!-- In the example below we highlight two microglial markers. -->
-
-<!-- ```{r bcell_apl, fig.wide = TRUE} -->
-
-<!-- microg_markers <- c("P2RY12", "ITGAM") -->
-
-<!-- apl(ca, -->
-<!--     show_score = TRUE, -->
-<!--     col_labs = FALSE, -->
-<!--     row_labs = TRUE, -->
-<!--     score_cutoff = 1, -->
-<!--     rows_idx = microg_markers, -->
-<!--     type = "ggplot") -->
-
-<!-- ``` -->
 
 # Session info {.unnumbered}
 
