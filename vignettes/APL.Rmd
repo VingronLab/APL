@@ -402,7 +402,7 @@ plotExpression(darmanis,
 
 plotReducedDim(darmanis, 
                dimred="UMAP",
-               colour_by= scores$Rowname[3])
+               colour_by= scores$Rowname[2])
 ```
 
 As expected, the 3 most highly scored genes are over-expressed in the endothelial cells. Due to the small size of the data set and number of cells in the cluster (only 20 out of 466 cells are endothelial cells) some cluster specific genes are only expressed in a few cells. Most data sets nowadays are significantly larger so this should not be a major concern and it can further be mitigated by performing a more stringent feature selection before CA.
