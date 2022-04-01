@@ -195,7 +195,7 @@ apl_score <- function(caobj,
                       group = caobj@group,
                       reps=10,
                       quant = 0.99,
-                      python = TRUE,
+                      python = FALSE,
                       store_perm = TRUE){
 
   if (!is(caobj,"cacomp")){
