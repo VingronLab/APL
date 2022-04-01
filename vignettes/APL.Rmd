@@ -73,7 +73,8 @@ Building the vignette will however take considerable time.
 
 In order to decrease the computation time of the singular value decomposition (SVD), we highly recommend the installation of `pytorch`.
 More information on the `pytorch` installation is given below.
-By default SVD with pytorch is turned off to ensure it runs everywhere. Users who installed `pytorch`, can turn the argument `python = TRUE` wherever applicable in this vignette to speed up the calculations.
+Instead of installing `pytorch`, users can also opt to use the R native SVD.
+For this, please use the argument `python = FALSE` wherever applicable in this vignette.
 
 ### Install pytorch with reticulate
 
@@ -168,7 +169,7 @@ runAPL(darmanis,
        top = 5000,
        group = which(darmanis$cell.type == "oligodendrocytes"),
        type = "ggplot",
-       python = FALSE)
+       python = TRUE)
 ```
 
 The generated Association Plot is computed based on the log-normalized count matrix.
@@ -198,13 +199,13 @@ In this example we perform CA on the log-normalized count matrix of the darmanis
 logcounts <- logcounts(darmanis)
 ca <- cacomp(obj = logcounts,
              top = 5000,
-             python = FALSE)
+             python = TRUE)
 
 # The above is equivalent to:
 # ca <- cacomp(obj = darmanis,
 #              assay = "logcounts",
 #              top = 5000,
-#              python = FALSE)
+#              python = TRUE)
 
 ```
 
@@ -239,7 +240,7 @@ darmanis <- cacomp(obj = darmanis,
                assay = "logcounts",
                top = 5000,
                return_input = TRUE,
-               python = FALSE)
+               python = TRUE)
 
 plotReducedDim(darmanis, dimred="CA",
                ncomponents = c(1,2),
@@ -291,7 +292,7 @@ pd <- pick_dims(ca,
                 mat = logcounts(darmanis),
                 method = "elbow_rule",
                 reps = 3, 
-                python = FALSE)
+                python = TRUE)
 ```
 
 ```{r show_dims, message=FALSE}
@@ -372,7 +373,7 @@ To display the $S_\alpha$-scores in the Association Plot, we can use the argumen
 ca <- apl_score(ca,
                 mat = logcounts(darmanis),
                 reps = 5,
-                python = FALSE)
+                python = TRUE)
 ```
 
 ```{r apl_plot_platelets, fig.wide = TRUE}
@@ -449,7 +450,7 @@ ca <- apl_coords(ca, group = microglia)
 ca <- apl_score(ca,
                 mat = logcounts(darmanis),
                 reps = 5,
-                python = FALSE)
+                python = TRUE)
 ```
 
 Now we can conduct GO enrichment analysis as implemented in the package `r BiocStyle::Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot.
