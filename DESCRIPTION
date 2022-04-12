@@ -58,8 +58,10 @@ Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
-    TENxPBMCData,
-    testthat
+    testthat,
+    scRNAseq,
+    scran,
+    scater
 Config/testthat/edition: 3
 Collate: 
     'constructor.R'
