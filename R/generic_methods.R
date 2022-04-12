@@ -66,7 +66,7 @@ show.cacomp <- function(object){
         paste0(round(percentInertia[1], 1),
                "% Dim1, ",
                round(percentInertia[2], 1),
-               "% Dim2"))
+               "% Dim2\n"))
   }
 
 }
