@@ -439,7 +439,8 @@ apl_topGO <- function(caobj,
 
   goEnrichment <- topGO::GenTable(GOdata,
                                   raw.p.value = results_test,
-                                  topNodes = length(results_test@score))
+                                  topNodes = length(results_test@score),
+                                  numChar = 1200)
   if (isTRUE(return_plot)){
 
     if(top_res > length(results_test@score)){
