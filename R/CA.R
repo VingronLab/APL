@@ -44,32 +44,26 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
     idx = cbind(P@i+1, rep(1:P@Dim[2], diff(P@p)))
     S = -E/sqrt(E)
     S[idx] = P@x/sqrt(E[idx]) + S[idx]
-    AR = matrix(1, nrow = nrow(E), ncol = ncol(E))
-    AR[idx] = P@x/E[idx] - AR[idx]
-    # P = as.matrix(P)
-    # S <-  (P - E) / sqrt(E)         # standardized residuals
-    # AR <- P/E -1
+
     
   }else{
     S <-  (P - E) / sqrt(E)         # standardized residuals
-    AR <- P/E -1
-  }
 
-<<<<<<< HEAD
+  }
 
   if (isTRUE(clip)){
     S <- clip_residuals(S, cutoff = cutoff)
   }
 
   out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
-=======
-  S[is.na(S)] <- 0
-  AR[is.na(AR)] <- 0
-  rownames(S) = rownames(mat)
-  rownames(AR) = rownames(mat)
 
-  out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm, 'AR' = AR)
->>>>>>> 7158255 (make functions compatible for spare matrix input)
+  S[is.na(S)] <- 0
+
+  rownames(S) = rownames(mat)
+
+
+  out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
+
   return(out)
 }
 
