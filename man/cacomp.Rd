@@ -3,6 +3,7 @@
 \name{cacomp}
 \alias{cacomp}
 \alias{cacomp,matrix-method}
+\alias{cacomp,dgCMatrix-method}
 \alias{cacomp,Seurat-method}
 \alias{cacomp,SingleCellExperiment-method}
 \title{Correspondance Analysis}
@@ -21,6 +22,19 @@ cacomp(
 )
 
 \S4method{cacomp}{matrix}(
+  obj,
+  coords = TRUE,
+  princ_coords = 3,
+  python = FALSE,
+  dims = NULL,
+  top = 5000,
+  inertia = TRUE,
+  rm_zeros = TRUE,
+  residuals = "pearson",
+  ...
+)
+
+\S4method{cacomp}{dgCMatrix}(
   obj,
   coords = TRUE,
   princ_coords = 3,
