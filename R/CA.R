@@ -14,10 +14,12 @@ NULL
 #'
 #' @param mat A numerical matrix or coercible to one by `as.matrix()`.
 #' Should have row and column names.
-#' @return
-#' A named list with standardized residual matrix "S",
-#' grand total of the original matrix "tot"
-#' as well as row and column masses "rowm" and "colm" respectively.
+#' @param clip logical. Whether residuals should be clipped if they are 
+#' higher/lower than a specified cutoff
+#' @param cutoff numeric. Residuals that are larger than cutoff or lower than
+#' -cutoff are clipped to cutoff.
+#' 
+#' @inherit calc_residuals return
 #'
 comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
 
@@ -48,33 +50,12 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
 }
 
 
-
-comp_sct_residuals <- function(mat){
-  
-  stopifnot(
-    "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
-  stopifnot(
-    "Input matrix does not have any colnames!" = !is.null(colnames(mat)))
-  
-  tot <- sum(mat)
-  P <- mat/tot               # proportions matrix
-  rowm <- rowSums(P)          # row masses
-  colm <- colSums(P)  
-  
-  vst_out <- sctransform::vst(mat,
-                              latent_var = c("log_umi"),
-                              return_gene_attr = TRUE, 
-                              return_cell_attr = TRUE,
-                              residual_type = "pearson",
-                              verbosity = 1,
-                              min_cells = 0)
-  
-  out <- list("S"=vst_out$y, "tot"=tot, "rowm"=rowm, "colm"=colm)
-  return(out)
-}
-
-
-comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, freq = TRUE){
+#' Compute Negative-Binomial residuals
+#' 
+#' @inheritParams comp_std_residuals
+#' 
+#' @inherit calc_residuals return
+comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, cutoff = NULL, freq = TRUE){
   
 
   if (isTRUE(freq)) mat <- mat/sum(mat)
@@ -92,7 +73,10 @@ comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, freq = TRUE){
   # sqrt(tot)/tot*Z (for theta = Inf)
 
   if (isTRUE(clip)){
-    Z <- clip_residuals(Z, cutoff = sqrt(ncol(Z)))
+    
+    if(is.null(cutoff)) cutoff <- sqrt(ncol(Z))
+      
+    Z <- clip_residuals(Z, cutoff = cutoff)
   }
 
   return(list("S" = Z, "tot" = tot, "rowm" = rowS, "colm" = colS))
@@ -100,7 +84,13 @@ comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, freq = TRUE){
 }
 
 
-
+#' Perform clipping of residuals
+#' 
+#' @param S Matrix of residuals.
+#' @param cutoff Value above/below which clipping should happen.
+#' 
+#' @returns 
+#' Clipped residuals
 clip_residuals <- function(S, cutoff = sqrt(ncol(S))){
         message("Clipping residuals at lambda = ", cutoff)
         S[S >  cutoff] <-  cutoff
@@ -109,12 +99,16 @@ clip_residuals <- function(S, cutoff = sqrt(ncol(S))){
         return(S)
 }
 
-# clip_residuals_CA <- function(S){
-#         n <- ncol(S)
-#         S[S >  sqrt(n)] <-  sqrt(n)
-#         S[S < -sqrt(n)] <- -sqrt(n)
-#         return(S)
-# }
+
+
+#' Compute Freeman-Tukey residuals
+#' 
+#' @description 
+#' TODO
+#' 
+#' @inheritParams comp_std_residuals
+#' 
+#' @inherit calc_residuals return
 comp_ft_residuals <- function(mat){
  
     N <- sum(mat)
@@ -136,28 +130,52 @@ comp_ft_residuals <- function(mat){
 }
 
 
-pick_residuals <- function(mat, residuals, cutoff = NULL){
+#' Calculate residuals for Correspondence analysis
+#' 
+#' @description 
+#' `calc_residuals` provides optional residuals as the basis for Correspondence 
+#' Analysis
+#' 
+#' @param residuals character string. Specifies which kind of residuals should
+#' be calculated. Can be "pearson" (default), "freemantukey" or "NB" for 
+#' negative-binomial.
+#' @inheritParams comp_std_residuals  
+#' 
+#' @returns 
+#' A named list. The elements are:
+#' * "S": standardized residual matrix.
+#' * "tot": grand total of the original matrix.
+#' * "rowm": row masses.
+#' * "colm": column masses.
+#' 
+#' @md
+calc_residuals <- function(mat, residuals = "pearson", clip = TRUE, cutoff = NULL){
   
   if (residuals == "pearson"){
-    message("\nusing pearson residuals")
-    if (is.null(cutoff)) cutoff <- 1
-    res <-  comp_std_residuals(mat=mat, clip = TRUE, cutoff = cutoff)
-    
-  } else if (residuals == "sctransform"){
-    message("\nusing sctransform pearson residuals")
-    
-      res <- comp_sct_residuals(mat)
-
+        message("\nusing pearson residuals")
+        if (is.null(cutoff)) cutoff <- 1
+        res <-  comp_std_residuals(mat=mat,
+                                   clip = TRUE,
+                                   cutoff = cutoff)
+ 
   } else if (residuals == "freemantukey"){
-    message("\nusing freeman-tukey residuals")
-    
-     res <- comp_ft_residuals(mat)
+        message("\nusing freeman-tukey residuals")
+        
+        if(!is.null(cutoff)){
+            warning("Clipping for freemantukey residuals is not implemented. Argument ignored.")
+        }
+        res <- comp_ft_residuals(mat)
+     
   } else if (residuals == "NB"){
-    message("\nusing negative-binomial residuals")
+      
+        message("\nusing negative-binomial residuals")
     
-     res <- comp_NB_residuals(mat = mat,
-                              theta = 100,
-                              clip = TRUE)
+        res <- comp_NB_residuals(mat = mat,
+                                 theta = 100,
+                                 cutoff = cutoff,
+                                 clip = TRUE)
+  } else {
+      stop("Unknown type of residuals.")
   }
   
   
@@ -217,12 +235,16 @@ rm_zeros <- function(obj){
 #' cnts <- var_rows(mat = cnts, top = 5000)
 #'
 #'
-var_rows <- function(mat, residuals = "pearson", top = 5000, cutoff = NULL){
+var_rows <- function(mat,
+                     residuals = "pearson",
+                     top = 5000,
+                     cutoff = NULL,
+                     clip = TRUE){
   
-  res <- pick_residuals(mat = mat,
+  res <- calc_residuals(mat = mat,
                         residuals = residuals,
-                        cutoff = cutoff)
-  # res <-  comp_std_residuals(mat=mat)
+                        cutoff = cutoff,
+                        clip = clip)
 
   if(top>nrow(mat)) {
     warning("Top is larger than the number of rows in matrix. ",
@@ -332,6 +354,7 @@ run_cacomp <- function(obj,
                    rm_zeros = TRUE,
                    residuals = "pearson",
                    cutoff = NULL,
+                   clip = TRUE,
                    ...){
 
   stopifnot("Input matrix does not have any rownames!" =
@@ -340,35 +363,43 @@ run_cacomp <- function(obj,
               !is.null(colnames(obj)))
 
   if (rm_zeros == TRUE){
+    
+    if(top == nrow(obj)) update_top <- TRUE
     obj <- rm_zeros(obj)
+    if(isTRUE(update_top)) top <- nrow(obj)
   }
-  # Choose only top # of variable genes
-  if (is.null(top) || top == nrow(obj)) {
-    res <- pick_residuals(mat = obj,
-                          residuals = residuals,
-                          cutoff = cutoff)
-    toptmp <- nrow(obj)
-  } else if (!is.null(top) && top < nrow(obj)){
 
-    obj <- var_rows(mat = obj, top = top, residuals = residuals)
-    res <- pick_residuals(mat = obj,
+    # Choose only top # of variable genes
+  if (!is.null(top) && top < nrow(obj)){
+
+    obj <- var_rows(mat = obj,
+                    top = top, 
+                    residuals = residuals,
+                    clip = clip,
+                    cutoff = cutoff)
+    res <- calc_residuals(mat = obj,
                           residuals = residuals,
+                          clip = clip,
                           cutoff = cutoff)
     toptmp <- top
     
-  } else if (top > nrow(obj)) {
-    warning("\nParameter top is >nrow(obj) and therefore ignored.")
-    res <-  pick_residuals(mat=obj,
-                           residuals = residuals,
-                          cutoff = cutoff)
-    toptmp <- nrow(obj)
   } else {
-    warning("\nUnusual input for top, argument ignored.")
-    res <-  pick_residuals(mat=obj,
-                           residuals = residuals,
-                          cutoff = cutoff)
-    toptmp <- nrow(obj)
-  }
+      
+      if (top > nrow(obj)) {
+          warning("\nParameter top is >nrow(obj) and therefore ignored.")
+      } else if (is.null(top) || top == nrow(obj)){
+          # do nothing. just here to allow for else statement.
+      } else {
+          warning("\nUnusual input for top, argument ignored.")
+      }
+      
+      res <- calc_residuals(mat = obj,
+                            residuals = residuals,
+                            clip = clip,
+                            cutoff = cutoff)
+      toptmp <- nrow(obj)
+      
+  } 
 
   S <- res$S
   tot <- res$tot
@@ -453,7 +484,8 @@ run_cacomp <- function(obj,
     }
   }
     
-    ## check if dimensions with ~zero singular values are selected, in case the dimensions selected are more then rank of matrix
+    # check if dimensions with ~zero singular values are selected, 
+    # in case the dimensions selected are more then rank of matrix
     if (min(SVD@D) <= 1e-6){
         warning('Too many dimensions are selected!! Number of dimensions should be smaller than rank of matrix!')
     }
