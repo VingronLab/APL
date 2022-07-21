@@ -14,6 +14,7 @@ run_cacomp(
   inertia = TRUE,
   rm_zeros = TRUE,
   residuals = "pearson",
+  cutoff = NULL,
   ...
 )
 }
