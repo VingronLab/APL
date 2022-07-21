@@ -19,7 +19,7 @@ NULL
 #' grand total of the original matrix "tot"
 #' as well as row and column masses "rowm" and "colm" respectively.
 #'
-comp_std_residuals <- function(mat){
+comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
 
   stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix")| is(mat, "dgCMatrix"))
   
@@ -49,15 +49,16 @@ comp_std_residuals <- function(mat){
     
   }else{
     S <-  (P - E) / sqrt(E)         # standardized residuals
-    AR <- P/E -1
   }
 
   S[is.na(S)] <- 0
-  AR[is.na(AR)] <- 0
   rownames(S) = rownames(mat)
-  rownames(AR) = rownames(mat)
 
-  out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm, 'AR' = AR)
+  if (isTRUE(clip)){
+    S <- clip_residuals(S, cutoff = cutoff)
+  }
+
+  out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
   return(out)
 }
 
@@ -86,10 +87,51 @@ comp_sct_residuals <- function(mat){
                               min_cells = 0)
   
   out <- list("S"=vst_out$y, "tot"=tot, "rowm"=rowm, "colm"=colm)
-  
+  return(out)
 }
 
 
+comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, freq = TRUE){
+  
+
+  if (isTRUE(freq)) mat <- mat/sum(mat)
+
+  rowS <- rowSums(mat)          
+  colS <- colSums(mat)          
+
+  tot <- sum(mat)
+
+  mu <- (rowS %o% colS)/tot
+ 
+  Z <- (mat - mu)/sqrt(mu + (mu**2)/theta)
+
+  #convert to S:
+  # sqrt(tot)/tot*Z (for theta = Inf)
+
+  if (isTRUE(clip)){
+    Z <- clip_residuals(Z, cutoff = sqrt(ncol(Z)))
+  }
+
+  return(list("S" = Z, "tot" = tot, "rowm" = rowS, "colm" = colS))
+
+}
+
+
+
+clip_residuals <- function(S, cutoff = sqrt(ncol(S))){
+        message("Clipping residuals at lambda = ", cutoff)
+        S[S >  cutoff] <-  cutoff
+        S[S < -cutoff] <- -cutoff
+
+        return(S)
+}
+
+# clip_residuals_CA <- function(S){
+#         n <- ncol(S)
+#         S[S >  sqrt(n)] <-  sqrt(n)
+#         S[S < -sqrt(n)] <- -sqrt(n)
+#         return(S)
+# }
 comp_ft_residuals <- function(mat){
   
   stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix")| is(mat, "dgCMatrix"))
@@ -113,11 +155,12 @@ comp_ft_residuals <- function(mat){
 }
 
 
-pick_residuals <- function(mat, residuals){
+pick_residuals <- function(mat, residuals, cutoff = NULL){
   
   if (residuals == "pearson"){
     message("\nusing pearson residuals")
-    res <-  comp_std_residuals(mat=mat)
+    if (is.null(cutoff)) cutoff <- 1
+    res <-  comp_std_residuals(mat=mat, clip = TRUE, cutoff = cutoff)
     
   } else if (residuals == "sctransform"){
     message("\nusing sctransform pearson residuals")
@@ -128,7 +171,14 @@ pick_residuals <- function(mat, residuals){
     message("\nusing freeman-tukey residuals")
     
      res <- comp_ft_residuals(mat)
+  } else if (residuals == "NB"){
+    message("\nusing negative-binomial residuals")
+    
+     res <- comp_NB_residuals(mat = mat,
+                              theta = 100,
+                              clip = TRUE)
   }
+  
   
   return(res)
 }
@@ -186,10 +236,11 @@ rm_zeros <- function(obj){
 #' cnts <- var_rows(mat = cnts, top = 5000)
 #'
 #'
-var_rows <- function(mat, residuals = "pearson", top = 5000){
+var_rows <- function(mat, residuals = "pearson", top = 5000, cutoff = NULL){
   
   res <- pick_residuals(mat = mat,
-                        residuals = residuals)
+                        residuals = residuals,
+                        cutoff = cutoff)
   # res <-  comp_std_residuals(mat=mat)
 
   if(top>nrow(mat)) {
@@ -299,6 +350,7 @@ run_cacomp <- function(obj,
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    residuals = "pearson",
+                   cutoff = NULL,
                    ...){
 
   stopifnot("Input matrix does not have any rownames!" =
@@ -309,28 +361,31 @@ run_cacomp <- function(obj,
   if (rm_zeros == TRUE){
     obj <- rm_zeros(obj)
   }
-
   # Choose only top # of variable genes
   if (is.null(top) || top == nrow(obj)) {
     res <- pick_residuals(mat = obj,
-                          residuals = residuals)
+                          residuals = residuals,
+                          cutoff = cutoff)
     toptmp <- nrow(obj)
   } else if (!is.null(top) && top < nrow(obj)){
 
     obj <- var_rows(mat = obj, top = top, residuals = residuals)
     res <- pick_residuals(mat = obj,
-                          residuals = residuals)
+                          residuals = residuals,
+                          cutoff = cutoff)
     toptmp <- top
     
   } else if (top > nrow(obj)) {
     warning("\nParameter top is >nrow(obj) and therefore ignored.")
     res <-  pick_residuals(mat=obj,
-                           residuals = residuals)
+                           residuals = residuals,
+                          cutoff = cutoff)
     toptmp <- nrow(obj)
   } else {
     warning("\nUnusual input for top, argument ignored.")
     res <-  pick_residuals(mat=obj,
-                           residuals = residuals)
+                           residuals = residuals,
+                          cutoff = cutoff)
     toptmp <- nrow(obj)
   }
 

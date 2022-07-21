@@ -4,7 +4,7 @@
 \alias{var_rows}
 \title{Find most variable rows}
 \usage{
-var_rows(mat, residuals = "pearson", top = 5000)
+var_rows(mat, residuals = "pearson", top = 5000, cutoff = NULL)
 }
 \arguments{
 \item{mat}{A numeric matrix. For sequencing a count matrix,
