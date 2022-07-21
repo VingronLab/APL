@@ -3,6 +3,7 @@
 \name{cacomp}
 \alias{cacomp}
 \alias{cacomp,matrix-method}
+\alias{cacomp,dgCMatrix-method}
 \alias{cacomp,Seurat-method}
 \alias{cacomp,SingleCellExperiment-method}
 \title{Correspondance Analysis}
@@ -16,6 +17,7 @@ cacomp(
   top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
+  residuals = "pearson",
   ...
 )
 
@@ -28,6 +30,20 @@ cacomp(
   top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
+  residuals = "pearson",
+  ...
+)
+
+\S4method{cacomp}{dgCMatrix}(
+  obj,
+  coords = TRUE,
+  princ_coords = 3,
+  python = FALSE,
+  dims = NULL,
+  top = 5000,
+  inertia = TRUE,
+  rm_zeros = TRUE,
+  residuals = "pearson",
   ...
 )
 
@@ -40,6 +56,7 @@ cacomp(
   top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
+  residuals = "pearson",
   ...,
   assay = Seurat::DefaultAssay(obj),
   slot = "counts",
@@ -55,6 +72,7 @@ cacomp(
   top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
+  residuals = "pearson",
   ...,
   assay = "counts",
   return_input = FALSE
