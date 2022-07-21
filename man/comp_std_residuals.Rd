@@ -4,7 +4,7 @@
 \alias{comp_std_residuals}
 \title{Compute Standardized Residuals}
 \usage{
-comp_std_residuals(mat)
+comp_std_residuals(mat, clip = TRUE, cutoff = 1)
 }
 \arguments{
 \item{mat}{A numerical matrix or coercible to one by `as.matrix()`.
