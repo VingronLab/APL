@@ -13,6 +13,9 @@ run_cacomp(
   top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
+  residuals = "pearson",
+  cutoff = NULL,
+  clip = TRUE,
   ...
 )
 }
@@ -46,6 +49,8 @@ calculated and returned. Default TRUE.}
 \item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be 
 removed. Keeping zero only rows/cols might lead to unexpected results. 
 Default TRUE.}
+
+\item{residuals}{"pearson", "freemantukey", "sctransform"}
 
 \item{...}{Arguments forwarded to methods.}
 }
