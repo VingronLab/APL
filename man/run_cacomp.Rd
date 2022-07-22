@@ -50,7 +50,15 @@ calculated and returned. Default TRUE.}
 removed. Keeping zero only rows/cols might lead to unexpected results. 
 Default TRUE.}
 
-\item{residuals}{"pearson", "freemantukey", "sctransform"}
+\item{residuals}{character string. Specifies which kind of residuals should
+be calculated. Can be "pearson" (default), "freemantukey" or "NB" for
+negative-binomial.}
+
+\item{cutoff}{numeric. Residuals that are larger than cutoff or lower than
+-cutoff are clipped to cutoff.}
+
+\item{clip}{logical. Whether residuals should be clipped if they are 
+higher/lower than a specified cutoff}
 
 \item{...}{Arguments forwarded to methods.}
 }

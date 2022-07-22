@@ -4,7 +4,8 @@ NULL
 #' Compute Standardized Residuals
 #'
 #' @description
-#' `comp_std_residuals` computes the standardized residual matrix S,
+#' `comp_std_residuals` computes the standardized residual matrix S based on
+#' the Poisson model,
 #' which is the basis for correspondence analysis and serves
 #' as input for singular value decomposition (SVD).
 #'
@@ -51,8 +52,20 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
 
 
 #' Compute Negative-Binomial residuals
+#' @description 
+#' Computes the residuals based on the negative binomial model. By default a
+#' theta of 100 is used to capture technical variation.
 #' 
 #' @inheritParams comp_std_residuals
+#' @param freq logical. Whether a table of frequencies (as used in CA) should 
+#' be used.
+#' @param theta Overdispersion parameter. By default set to 100 as described in
+#' Lause and Berens, 2021 (see references).
+#' 
+#' @references 
+#' Lause, J., Berens, P. & Kobak, D. Analytic Pearson residuals for 
+#' normalization of single-cell RNA-seq UMI data. Genome Biol 22, 258 (2021). 
+#' https://doi.org/10.1186/s13059-021-02451-7
 #' 
 #' @inherit calc_residuals return
 comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, cutoff = NULL, freq = TRUE){
@@ -86,11 +99,21 @@ comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, cutoff = NULL, freq
 
 #' Perform clipping of residuals
 #' 
+#' @description 
+#' Clips Pearson or negative-binomial residuals above or below a determined 
+#' value. For Pearson (Poisson) residuals it is set by default for 1, for NB at
+#' sqrt(n).
+#' 
 #' @param S Matrix of residuals.
 #' @param cutoff Value above/below which clipping should happen.
 #' 
+#' @references 
+#' Lause, J., Berens, P. & Kobak, D. Analytic Pearson residuals for 
+#' normalization of single-cell RNA-seq UMI data. Genome Biol 22, 258 (2021). 
+#' https://doi.org/10.1186/s13059-021-02451-7
+#' 
 #' @returns 
-#' Clipped residuals
+#' Matrix of clipped residuals.
 clip_residuals <- function(S, cutoff = sqrt(ncol(S))){
         message("Clipping residuals at lambda = ", cutoff)
         S[S >  cutoff] <-  cutoff
@@ -104,7 +127,7 @@ clip_residuals <- function(S, cutoff = sqrt(ncol(S))){
 #' Compute Freeman-Tukey residuals
 #' 
 #' @description 
-#' TODO
+#' Computes Freeman-Tukey residuals
 #' 
 #' @inheritParams comp_std_residuals
 #' 
@@ -342,7 +365,7 @@ inertia_rows <- function(mat, top = 5000){
 #' @param rm_zeros Logical. Whether rows & cols containing only 0s should be 
 #' removed. Keeping zero only rows/cols might lead to unexpected results. 
 #' Default TRUE.
-#' @param residuals "pearson", "freemantukey", "sctransform"
+#' @inheritParams calc_residuals
 #' @param ... Arguments forwarded to methods.
 run_cacomp <- function(obj,
                    coords = TRUE,
@@ -361,10 +384,15 @@ run_cacomp <- function(obj,
               !is.null(rownames(obj)))
   stopifnot("Input matrix does not have any colnames!" = 
               !is.null(colnames(obj)))
-
+  
   if (rm_zeros == TRUE){
     
-    if(top == nrow(obj)) update_top <- TRUE
+    if(top == nrow(obj)) {
+      update_top <- TRUE
+    } else {
+      update_top <- FALSE
+    }
+    
     obj <- rm_zeros(obj)
     if(isTRUE(update_top)) top <- nrow(obj)
   }

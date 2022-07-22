@@ -26,7 +26,8 @@ A named list. The elements are:
 }
 }
 \description{
-`comp_std_residuals` computes the standardized residual matrix S,
+`comp_std_residuals` computes the standardized residual matrix S based on
+the Poisson model,
 which is the basis for correspondence analysis and serves
 as input for singular value decomposition (SVD).
 }
