@@ -2,7 +2,7 @@
 % Please edit documentation in R/apl.R
 \name{apl_topGO}
 \alias{apl_topGO}
-\title{Run Gene overrepresentation analysis with topGO}
+\title{Find rows most highly associated with a condition through random APs.}
 \usage{
 apl_topGO(
   caobj,
@@ -41,13 +41,23 @@ be additionally returned.}
 \item{top_res}{Numeric. Number of top scoring genes to plot.}
 }
 \value{
+Returns the input "cacomp" object with "APL_score" component added.
+APL_score contains a data frame with ranked rows, their score and their original row number.
+
 A data.frame containing the gene sets with the highest overrepresentation.
 }
 \description{
+Ranks rows by a calculated score which balances the association of the row with the condition and how associated it is with other conditions.
+
 This function uses the Kolmogorov-Smirnov test as implemented by the package 
 topGO to test for overrepresentation in Gene Ontology gene sets.
 }
 \details{
+The score is calculated by choosing random directions in space to calculate APLs for the rows. 
+\deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
+By default the permutation is repeated 300 times, and is independent of group size, so the same cutoff is applicable to all groups.
+If store_perm is TRUE the calculated cutoff is stored as an attribute to ca$permuted_data to prevent recalculation when running with identical parameters.
+
 For a chosen group of cells/samples,
 the top 'ngenes' group specific genes are used for gene overrepresentation 
 analysis.

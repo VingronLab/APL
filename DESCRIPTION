@@ -1,7 +1,7 @@
-Package: APLcle
+Package: APL
 Type: Package
 Title: Association Plots
-Version: 0.99.0
+Version: 0.99.4
 Authors@R:
   c(person(given = "Elzbieta",
            family = "Gralinska",
@@ -32,9 +32,11 @@ biocViews:
   GeneExpression
 License: GPL (>= 3)
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
+StagedInstall: false
 VignetteBuilder: knitr
 Imports: 
+    basilisk,
     reticulate,
     ggrepel,
     ggplot2,
@@ -50,15 +52,16 @@ Imports:
     utils,
     org.Hs.eg.db,
     org.Mm.eg.db,
-    rlang,
-    sctransform
-Depends: R (>= 3.5)
+    rlang
+Depends: R (>= 4.1)
 Suggests: 
     BiocStyle,
     knitr,
     rmarkdown,
-    TENxPBMCData,
-    testthat
+    testthat,
+    scRNAseq,
+    scran,
+    scater
 Config/testthat/edition: 3
 Collate: 
     'constructor.R'
