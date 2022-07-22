@@ -20,5 +20,5 @@ A named list. The elements are:
 }
 }
 \description{
-TODO
+Computes Freeman-Tukey residuals
 }
