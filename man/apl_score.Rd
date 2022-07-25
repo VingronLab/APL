@@ -11,7 +11,7 @@ apl_score(
   group = caobj@group,
   reps = 10,
   quant = 0.99,
-  python = TRUE,
+  python = FALSE,
   store_perm = TRUE
 )
 }

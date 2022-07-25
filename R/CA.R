@@ -879,8 +879,8 @@ scree_plot <- function(df){
 elbow_method <- function(obj,
                          mat,
                          reps,
-                         python,
-                         return_plot){
+                         python = FALSE,
+                         return_plot = FALSE){
   ev <- obj@D^2
   expl_inertia <- (ev/sum(ev)) *100
   max_num_dims <- length(obj@D)
@@ -1032,7 +1032,7 @@ setGeneric("pick_dims", function(obj,
                                  mat = NULL,
                                  method="scree_plot",
                                  reps=3,
-                                 python = TRUE,
+                                 python = FALSE,
                                  return_plot = FALSE,
                                  ...) {
   standardGeneric("pick_dims")
@@ -1047,7 +1047,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = TRUE,
+                   python = FALSE,
                    return_plot = FALSE,
                    ...){
 
@@ -1148,7 +1148,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = TRUE,
+                   python = FALSE,
                    return_plot = FALSE,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
@@ -1218,7 +1218,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = TRUE,
+                   python = FALSE,
                    return_plot = FALSE,
                    ...,
                    assay = "counts"){
