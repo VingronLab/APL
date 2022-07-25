@@ -36,8 +36,8 @@ RoxygenNote: 7.2.0
 StagedInstall: false
 VignetteBuilder: knitr
 Imports: 
-    basilisk,
     reticulate,
+    Matrix,
     ggrepel,
     ggplot2,
     viridisLite,
@@ -53,7 +53,7 @@ Imports:
     org.Hs.eg.db,
     org.Mm.eg.db,
     rlang
-Depends: R (>= 4.2)
+Depends: R (>= 4.1)
 Suggests: 
     BiocStyle,
     knitr,
