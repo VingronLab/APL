@@ -3,8 +3,8 @@
 .RData
 .Ruserdata
 .Rproj
+.ipynb_checkpoints
 APL.Rproj
-
 /doc/
 /Meta/
 inst/doc

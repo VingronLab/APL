@@ -141,6 +141,11 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' By default the permutation is repeated 10 times (for random direction min. 
 #' 300 repetition is recommended!), but for very large matrices 
 #' this can be reduced.
+#' The method "permutation" permutes the columns in each row and calculates 
+#' AP-coordinates for each such permutation. The cutoff is then taken by the
+#' quantile specified by "quan". The "random" method in contrast calculates 
+#' AP-coordinates for the original data, but by looking into random directions.
+#' 
 #' If store_perm is TRUE the permuted data is stored in the cacomp object and 
 #' can be used for future scoring.
 #' @return
@@ -166,6 +171,8 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' @param reps Integer. Number of permutations to perform.
 #' @param quant Numeric. Single number between 0 and 1 indicating the quantile 
 #' used to calculate the cutoff. Default 0.99.
+#' @param method Method to calculate the cutoff. Either "random" for random 
+#' direction method or "permutation" for the permutation method.
 #' @param python A logical value indicating whether to use singular-value 
 #' decomposition from the python package torch.
 #' @param store_perm Logical. Whether permuted data should be stored in the CA 

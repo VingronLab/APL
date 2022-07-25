@@ -110,6 +110,10 @@ calculated and returned. Default TRUE.}
 removed.
 Keeping zero only rows/cols might lead to unexpected results. Default TRUE.}
 
+\item{residuals}{character string. Specifies which kind of residuals should
+be calculated. Can be "pearson" (default), "freemantukey" or "NB" for
+negative-binomial.}
+
 \item{...}{Other parameters}
 
 \item{assay}{Character. The assay from which extract the count matrix for 
