@@ -195,7 +195,7 @@ apl_score <- function(caobj,
                       group = caobj@group,
                       reps=10,
                       quant = 0.99,
-                      python = TRUE,
+                      python = FALSE,
                       store_perm = TRUE){
 
   if (!is(caobj,"cacomp")){
@@ -235,6 +235,8 @@ apl_score <- function(caobj,
     if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
       calist <- caobj@permuted_data[[k]][seq_len(3)]
       mat <- caobj@permuted_data[[k]]$mat
+      mat <- mat[rownames(mat) %in% rownames(calist$std_coords_rows),]
+      
       caobjp <- recompute(calist, mat)
 
     } else {
@@ -437,7 +439,8 @@ apl_topGO <- function(caobj,
 
   goEnrichment <- topGO::GenTable(GOdata,
                                   raw.p.value = results_test,
-                                  topNodes = length(results_test@score))
+                                  topNodes = length(results_test@score),
+                                  numChar = 1200)
   if (isTRUE(return_plot)){
 
     if(top_res > length(results_test@score)){

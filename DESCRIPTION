@@ -1,7 +1,7 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 0.99.0
+Version: 0.99.5
 Authors@R:
   c(person(given = "Elzbieta",
            family = "Gralinska",
@@ -51,12 +51,14 @@ Imports:
     org.Hs.eg.db,
     org.Mm.eg.db,
     rlang
-Depends: R (>= 3.5)
+Depends: R (>= 4.2)
 Suggests: 
     BiocStyle,
     knitr,
     rmarkdown,
-    TENxPBMCData,
+    scRNAseq,
+    scater,
+    scran,
     testthat
 Config/testthat/edition: 3
 Collate: 
