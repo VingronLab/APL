@@ -4,8 +4,7 @@ NULL
 #' Compute Standardized Residuals
 #'
 #' @description
-#' `comp_std_residuals` computes the standardized residual matrix S based on
-#' the Poisson model,
+#' `comp_std_residuals` computes the standardized residual matrix S,
 #' which is the basis for correspondence analysis and serves
 #' as input for singular value decomposition (SVD).
 #'
@@ -15,17 +14,16 @@ NULL
 #'
 #' @param mat A numerical matrix or coercible to one by `as.matrix()`.
 #' Should have row and column names.
-#' @param clip logical. Whether residuals should be clipped if they are 
-#' higher/lower than a specified cutoff
-#' @param cutoff numeric. Residuals that are larger than cutoff or lower than
-#' -cutoff are clipped to cutoff.
-#' 
-#' @inherit calc_residuals return
+#' @return
+#' A named list with standardized residual matrix "S",
+#' grand total of the original matrix "tot"
+#' as well as row and column masses "rowm" and "colm" respectively.
 #'
-comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
+comp_std_residuals <- function(mat){
 
-  stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix")| is(mat, "dgCMatrix"))
-  
+  if (!is(mat, "matrix")){
+    mat <- as.matrix(mat)
+  }
   stopifnot(
     "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
   stopifnot(
@@ -33,128 +31,55 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
 
   tot <- sum(mat)
   P <- mat/tot               # proportions matrix
-  rowm <- Matrix::rowSums(P)          # row masses
-  colm <- Matrix::colSums(P)          # column masses
+  rowm <- rowSums(P)          # row masses
+  colm <- colSums(P)          # column masses
 
   E <- rowm %o% colm      # expected proportions
-  # E <- rowm %*% Matrix::t(colm)
-  
-  if (is(P, 'dgCMatrix')){
-    
-    idx = cbind(P@i+1, rep(1:P@Dim[2], diff(P@p)))
-    S = -E/sqrt(E)
-    S[idx] = P@x/sqrt(E[idx]) + S[idx]
-    
-  }else{
-    S <-  (P - E) / sqrt(E)         # standardized residuals
-  }
-
-  S[is.na(S)] <- 0
-  rownames(S) = rownames(mat)
-
-  if (isTRUE(clip)){
-    S <- clip_residuals(S, cutoff = cutoff)
-  }
+  S <-  (P - E) / sqrt(E)         # standardized residuals
+  S[is.nan(S)] <- 0
 
   out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
   return(out)
 }
 
 
-#' Compute Negative-Binomial residuals
-#' @description 
-#' Computes the residuals based on the negative binomial model. By default a
-#' theta of 100 is used to capture technical variation.
-#' 
-#' @inheritParams comp_std_residuals
-#' @param freq logical. Whether a table of frequencies (as used in CA) should 
-#' be used.
-#' @param theta Overdispersion parameter. By default set to 100 as described in
-#' Lause and Berens, 2021 (see references).
-#' 
-#' @references 
-#' Lause, J., Berens, P. & Kobak, D. Analytic Pearson residuals for 
-#' normalization of single-cell RNA-seq UMI data. Genome Biol 22, 258 (2021). 
-#' https://doi.org/10.1186/s13059-021-02451-7
-#' 
-#' @inherit calc_residuals return
-comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, cutoff = NULL, freq = TRUE){
+
+comp_sct_residuals <- function(mat){
   
-
-  if (isTRUE(freq)) mat <- mat/sum(mat)
-
-  rowS <- rowSums(mat)          
-  colS <- colSums(mat)          
-
+  stopifnot(
+    "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
+  stopifnot(
+    "Input matrix does not have any colnames!" = !is.null(colnames(mat)))
+  
   tot <- sum(mat)
-
-  mu <- (rowS %o% colS)/tot
- 
-  Z <- (mat - mu)/sqrt(mu + (mu**2)/theta)
-
-  #convert to S:
-  # sqrt(tot)/tot*Z (for theta = Inf)
-
-  if (isTRUE(clip)){
-    
-    if(is.null(cutoff)) cutoff <- sqrt(ncol(Z))
-      
-    Z <- clip_residuals(Z, cutoff = cutoff)
-  }
-
-  return(list("S" = Z, "tot" = tot, "rowm" = rowS, "colm" = colS))
-
-}
-
-
-#' Perform clipping of residuals
-#' 
-#' @description 
-#' Clips Pearson or negative-binomial residuals above or below a determined 
-#' value. For Pearson (Poisson) residuals it is set by default for 1, for NB at
-#' sqrt(n).
-#' 
-#' @param S Matrix of residuals.
-#' @param cutoff Value above/below which clipping should happen.
-#' 
-#' @references 
-#' Lause, J., Berens, P. & Kobak, D. Analytic Pearson residuals for 
-#' normalization of single-cell RNA-seq UMI data. Genome Biol 22, 258 (2021). 
-#' https://doi.org/10.1186/s13059-021-02451-7
-#' 
-#' @returns 
-#' Matrix of clipped residuals.
-clip_residuals <- function(S, cutoff = sqrt(ncol(S))){
-        message("Clipping residuals at lambda = ", cutoff)
-        S[S >  cutoff] <-  cutoff
-        S[S < -cutoff] <- -cutoff
-
-        return(S)
-}
-
-
-
-#' Compute Freeman-Tukey residuals
-#' 
-#' @description 
-#' Computes Freeman-Tukey residuals
-#' 
-#' @inheritParams comp_std_residuals
-#' 
-#' @inherit calc_residuals return
-comp_ft_residuals <- function(mat){
+  P <- mat/tot               # proportions matrix
+  rowm <- rowSums(P)          # row masses
+  colm <- colSums(P)  
   
-  stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix")| is(mat, "dgCMatrix"))
+  vst_out <- sctransform::vst(mat,
+                              latent_var = c("log_umi"),
+                              return_gene_attr = TRUE, 
+                              return_cell_attr = TRUE,
+                              residual_type = "pearson",
+                              verbosity = 1,
+                              min_cells = 0)
+  
+  out <- list("S"=vst_out$y, "tot"=tot, "rowm"=rowm, "colm"=colm)
+  
+}
+
+
+comp_ft_residuals <- function(mat){
  
     N <- sum(mat)
     mat <- mat
     pmat <- mat / N
     
-    row.w <- Matrix::rowSums(pmat)
-    col.w <- Matrix::colSums(pmat)
+    row.w <- rowSums(pmat)
+    col.w <- colSums(pmat)
     
-    row.sum <- Matrix::rowSums(mat)
-    col.sum <- Matrix::colSums(mat)
+    row.sum <- rowSums(mat)
+    col.sum <- colSums(mat)
     expectedp <- row.w %*% t(col.w)
     expectedx <- row.sum %*% t(col.sum)
     
@@ -165,54 +90,22 @@ comp_ft_residuals <- function(mat){
 }
 
 
-#' Calculate residuals for Correspondence analysis
-#' 
-#' @description 
-#' `calc_residuals` provides optional residuals as the basis for Correspondence 
-#' Analysis
-#' 
-#' @param residuals character string. Specifies which kind of residuals should
-#' be calculated. Can be "pearson" (default), "freemantukey" or "NB" for 
-#' negative-binomial.
-#' @inheritParams comp_std_residuals  
-#' 
-#' @returns 
-#' A named list. The elements are:
-#' * "S": standardized residual matrix.
-#' * "tot": grand total of the original matrix.
-#' * "rowm": row masses.
-#' * "colm": column masses.
-#' 
-#' @md
-calc_residuals <- function(mat, residuals = "pearson", clip = TRUE, cutoff = NULL){
+pick_residuals <- function(mat, residuals){
   
   if (residuals == "pearson"){
-        message("\nusing pearson residuals")
-        if (is.null(cutoff)) cutoff <- 1
-        res <-  comp_std_residuals(mat=mat,
-                                   clip = TRUE,
-                                   cutoff = cutoff)
- 
-  } else if (residuals == "freemantukey"){
-        message("\nusing freeman-tukey residuals")
-        
-        if(!is.null(cutoff)){
-            warning("Clipping for freemantukey residuals is not implemented. Argument ignored.")
-        }
-        res <- comp_ft_residuals(mat)
-     
-  } else if (residuals == "NB"){
-      
-        message("\nusing negative-binomial residuals")
+    message("\nusing pearson residuals")
+    res <-  comp_std_residuals(mat=mat)
     
-        res <- comp_NB_residuals(mat = mat,
-                                 theta = 100,
-                                 cutoff = cutoff,
-                                 clip = TRUE)
-  } else {
-      stop("Unknown type of residuals.")
+  } else if (residuals == "sctransform"){
+    message("\nusing sctransform pearson residuals")
+    
+      res <- comp_sct_residuals(mat)
+
+  } else if (residuals == "freemantukey"){
+    message("\nusing freeman-tukey residuals")
+    
+     res <- comp_ft_residuals(mat)
   }
-  
   
   return(res)
 }
@@ -222,10 +115,10 @@ calc_residuals <- function(mat, residuals = "pearson", clip = TRUE, cutoff = NUL
 #' @param obj A matrix.
 #' @return Input matrix with rows & columns consisting of only 0 removed.
 rm_zeros <- function(obj){
-  stopifnot(is(obj, "matrix") | is(obj, "dgeMatrix")| is(obj, "dgCMatrix"))
+  stopifnot(is(obj, "matrix"))
 
-  no_zeros_rows <- Matrix::rowSums(obj) > 0
-  no_zeros_cols <- Matrix::colSums(obj) > 0
+  no_zeros_rows <- rowSums(obj) > 0
+  no_zeros_cols <- colSums(obj) > 0
   if (sum(!no_zeros_rows) != 0){
     ## Delete genes with only zero values across all columns
     warning("Matrix contains rows with only 0s. ",
@@ -270,16 +163,11 @@ rm_zeros <- function(obj){
 #' cnts <- var_rows(mat = cnts, top = 5000)
 #'
 #'
-var_rows <- function(mat,
-                     residuals = "pearson",
-                     top = 5000,
-                     cutoff = NULL,
-                     clip = TRUE){
+var_rows <- function(mat, residuals = "pearson", top = 5000){
   
-  res <- calc_residuals(mat = mat,
-                        residuals = residuals,
-                        cutoff = cutoff,
-                        clip = clip)
+  res <- pick_residuals(mat = mat,
+                        residuals = residuals)
+  # res <-  comp_std_residuals(mat=mat)
 
   if(top>nrow(mat)) {
     warning("Top is larger than the number of rows in matrix. ",
@@ -319,9 +207,9 @@ inertia_rows <- function(mat, top = 5000){
 
     top <- min(nrow(mat), top)
 
-    inertia <- res$S^2
-    inertia <- Matrix::rowSums(inertia)
-    ix <- order(inertia, decreasing = TRUE)
+    inertia <- apply(res$S, 1, function(x){x^2})
+    inertia <- rowSums(inertia)
+    ix <- order(inertia, decreasing = T)
     mat <- mat[ix[seq_len(top)],] # choose top rows
     return(mat)
 }
@@ -377,7 +265,7 @@ inertia_rows <- function(mat, top = 5000){
 #' @param rm_zeros Logical. Whether rows & cols containing only 0s should be 
 #' removed. Keeping zero only rows/cols might lead to unexpected results. 
 #' Default TRUE.
-#' @inheritParams calc_residuals
+#' @param residuals "pearson", "freemantukey", "sctransform"
 #' @param ... Arguments forwarded to methods.
 run_cacomp <- function(obj,
                    coords = TRUE,
@@ -388,117 +276,72 @@ run_cacomp <- function(obj,
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    residuals = "pearson",
-                   cutoff = NULL,
-                   clip = TRUE,
                    ...){
 
   stopifnot("Input matrix does not have any rownames!" =
               !is.null(rownames(obj)))
   stopifnot("Input matrix does not have any colnames!" = 
               !is.null(colnames(obj)))
-  
+
   if (rm_zeros == TRUE){
-    
-    if(top == nrow(obj)) {
-      update_top <- TRUE
-    } else {
-      update_top <- FALSE
-    }
-    
     obj <- rm_zeros(obj)
-    if(isTRUE(update_top)) top <- nrow(obj)
   }
 
-    # Choose only top # of variable genes
-  if (!is.null(top) && top < nrow(obj)){
+  # Choose only top # of variable genes
+  if (is.null(top) || top == nrow(obj)) {
+    res <- pick_residuals(mat = obj,
+                          residuals = residuals)
+    toptmp <- nrow(obj)
+  } else if (!is.null(top) && top < nrow(obj)){
 
-    obj <- var_rows(mat = obj,
-                    top = top, 
-                    residuals = residuals,
-                    clip = clip,
-                    cutoff = cutoff)
-    res <- calc_residuals(mat = obj,
-                          residuals = residuals,
-                          clip = clip,
-                          cutoff = cutoff)
+    obj <- var_rows(mat = obj, top = top, residuals = residuals)
+    res <- pick_residuals(mat = obj,
+                          residuals = residuals)
     toptmp <- top
     
+  } else if (top > nrow(obj)) {
+    warning("\nParameter top is >nrow(obj) and therefore ignored.")
+    res <-  pick_residuals(mat=obj,
+                           residuals = residuals)
+    toptmp <- nrow(obj)
   } else {
-      
-      if (top > nrow(obj)) {
-          warning("\nParameter top is >nrow(obj) and therefore ignored.")
-      } else if (is.null(top) || top == nrow(obj)){
-          # do nothing. just here to allow for else statement.
-      } else {
-          warning("\nUnusual input for top, argument ignored.")
-      }
-      
-      res <- calc_residuals(mat = obj,
-                            residuals = residuals,
-                            clip = clip,
-                            cutoff = cutoff)
-      toptmp <- nrow(obj)
-      
-  } 
+    warning("\nUnusual input for top, argument ignored.")
+    res <-  pick_residuals(mat=obj,
+                           residuals = residuals)
+    toptmp <- nrow(obj)
+  }
 
   S <- res$S
   tot <- res$tot
   rowm <- res$rowm
   colm <- res$colm
-  
+  rm(res)
+
   k <- min(dim(S))-1
 
-  if (is.null(dims) | (dims > k)){ 
-    dims <- k
-    # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
-    # message("Running singular value decomposition ...")
-  
-    if (python == TRUE){
-      svd_torch <- NULL
-      S <- Matrix::Matrix(S, sparse = FALSE)
-      # require(reticulate)
-      # source_python('./python_svd.py')
-      reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
-      SVD <- svd_torch(S)
-      # SVD <- svd_linalg_torch(S)
-      names(SVD) <- c("U", "D", "V")
-      SVD$D <- as.vector(SVD$D)
-  
-    } else {
-  
-      SVD <- svd(S, nu = dims, nv = dims)
-      names(SVD) <- c("D", "U", "V")
-      SVD <- SVD[c(2, 1, 3)]
-      SVD$D <- as.vector(SVD$D)
-      if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
-    }
-    }else {
-      ## if number of dimensions are given, turn to calculate partial SVD
-      
-      if (python == TRUE){
-        
-        svd_scipy <- NULL
-        reticulate::source_python(system.file("python/python_svd.py", package = "CAclust"), envir = globalenv())
-        if (!is(S, 'dgCMatrix') ){
-          S <- Matrix::Matrix(S, sparse = TRUE)
-        }
-        SVD <- svds_scipy(S, k = dims, which = 'LM', solver = 'lobpcg')
-        names(SVD) <- c("U", "D", "V")
-        
-      } else {
-        
-        SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
-        SVD = SVD[1:3]
-        names(SVD)[1:3] <- c("D", "U", "V")
-        
-      }
-      SVD$D <- as.vector(SVD$D)
-    }
-  
-  ord <- order(SVD$D, decreasing = TRUE)
-  SVD$D <- SVD$D[ord]
-  SVD$V <- SVD$V[,ord]
-  SVD$U <- SVD$U[,ord]
+  if (is.null(dims)) dims <- k
+  if (dims > k) dims <- k
+  # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
+  # message("Running singular value decomposition ...")
+
+  if (python == TRUE){
+    svd_torch <- NULL
+    # require(reticulate)
+    # source_python('./python_svd.py')
+    reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
+    SVD <- svd_torch(S)
+    # SVD <- svd_linalg_torch(S)
+    names(SVD) <- c("U", "D", "V")
+    SVD$D <- as.vector(SVD$D)
+
+  } else {
+
+    SVD <- svd(S, nu = dims, nv = dims)
+    names(SVD) <- c("D", "U", "V")
+    SVD <- SVD[c(2, 1, 3)]
+    if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
+  }
+
   names(SVD$D) <- paste0("Dim", seq_len(length(SVD$D)))
   dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ncol(SVD$V))))
   dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ncol(SVD$U))))
@@ -507,8 +350,8 @@ run_cacomp <- function(obj,
   if(inertia == TRUE){
     #calculate inertia
     SVD$tot_inertia <- sum(SVD$D^2)
-    SVD$row_inertia <- Matrix::rowSums(S^2)
-    SVD$col_inertia <- Matrix::colSums(S^2)
+    SVD$row_inertia <- rowSums(S^2)
+    SVD$col_inertia <- colSums(S^2)
   }
 
   SVD$row_masses <- rowm
@@ -551,16 +394,17 @@ run_cacomp <- function(obj,
     }
   }
     
-    # check if dimensions with ~zero singular values are selected, 
-    # in case the dimensions selected are more then rank of matrix
+    ## check if dimensions with ~zero singular values are selected, in case the dimensions selected are more then rank of matrix
     if (min(SVD@D) <= 1e-6){
+        sug_dim = sum(SVD@D > 1e-6)
         warning('Too many dimensions are selected!! Number of dimensions should be smaller than rank of matrix!')
+        warning(paste('A suitable number of dimensions to choose:', sug_dim))
+  
     }
 
   stopifnot(validObject(SVD))
   return(SVD)
 }
-
 
 
 #' Correspondance Analysis
@@ -666,35 +510,6 @@ setMethod(f = "cacomp",
 
 })
 
-#' @rdname cacomp
-#' @export
-setMethod(f = "cacomp",
-          signature=(obj="dgCMatrix"),
-          function(obj,
-                   coords = TRUE,
-                   princ_coords = 3,
-                   python = FALSE,
-                   dims = NULL,
-                   top = 5000,
-                   inertia = TRUE,
-                   rm_zeros = TRUE,
-                   residuals = "pearson",
-                   ...){
-            
-            caobj <- run_cacomp(obj = obj,
-                                coords = coords,
-                                princ_coords = princ_coords,
-                                python = python,
-                                dims = dims,
-                                top = top,
-                                inertia = inertia,
-                                rm_zeros = rm_zeros,
-                                residuals = residuals,
-                                ...)
-            
-            return(caobj)
-            
-          })
 
 #' Correspondance Analysis for Seurat objects
 #'
@@ -768,10 +583,7 @@ setMethod(f = "cacomp",
 
 
   seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
-  
-  if (!(is(seu, 'matrix') | is(seu, 'dgCMatrix') | is(seu, 'dgeMatrix'))){
-    seu <- as.matrix(seu)
-  }
+  seu <- as.matrix(seu)
 
   caobj <- run_cacomp(obj = seu,
                       coords = coords,
@@ -874,11 +686,8 @@ setMethod(f = "cacomp",
   stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
 
   mat <- SummarizedExperiment::assay(obj, assay)
+  mat <- as.matrix(mat)
 
-  if (!(is(mat, 'matrix') | is(mat, 'dgCMatrix') | is(mat, 'dgeMatrix'))){
-    mat <- as.matrix(mat)
-  }
-  
   top <- min(nrow(mat), top)
 
   caobj <- run_cacomp(obj = mat,
@@ -1191,8 +1000,8 @@ scree_plot <- function(df){
 elbow_method <- function(obj,
                          mat,
                          reps,
-                         python = FALSE,
-                         return_plot = FALSE){
+                         python,
+                         return_plot){
   ev <- obj@D^2
   expl_inertia <- (ev/sum(ev)) *100
   max_num_dims <- length(obj@D)
@@ -1203,7 +1012,7 @@ elbow_method <- function(obj,
   
   for (k in seq(reps)) {
     
-    # mat <- as.matrix(mat)
+    mat <- as.matrix(mat)
     mat_perm <- apply(mat, 2, FUN=sample)
     colnames(mat_perm) <- colnames(mat)
     rownames(mat_perm) <- seq_len(nrow(mat_perm))
@@ -1344,7 +1153,7 @@ setGeneric("pick_dims", function(obj,
                                  mat = NULL,
                                  method="scree_plot",
                                  reps=3,
-                                 python = FALSE,
+                                 python = TRUE,
                                  return_plot = FALSE,
                                  ...) {
   standardGeneric("pick_dims")
@@ -1359,7 +1168,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = FALSE,
+                   python = TRUE,
                    return_plot = FALSE,
                    ...){
 
@@ -1460,7 +1269,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = FALSE,
+                   python = TRUE,
                    return_plot = FALSE,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
@@ -1530,7 +1339,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = FALSE,
+                   python = TRUE,
                    return_plot = FALSE,
                    ...,
                    assay = "counts"){
@@ -1561,5 +1370,10 @@ setMethod(f = "pick_dims",
            python = python)
 
 })
+
+
+
+
+
 
 
