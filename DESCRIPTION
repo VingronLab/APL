@@ -38,6 +38,7 @@ VignetteBuilder: knitr
 Imports: 
     reticulate,
     Matrix,
+    irlba,
     ggrepel,
     ggplot2,
     viridisLite,
