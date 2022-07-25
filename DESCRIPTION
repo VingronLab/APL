@@ -32,9 +32,11 @@ biocViews:
   GeneExpression
 License: GPL (>= 3)
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
+StagedInstall: false
 VignetteBuilder: knitr
 Imports: 
+    basilisk,
     reticulate,
     ggrepel,
     ggplot2,
