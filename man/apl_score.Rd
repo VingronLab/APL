@@ -42,6 +42,9 @@ decomposition from the python package torch.}
 object.
 This implementation dramatically speeds up computation compared to `svd()` 
 in R.}
+
+\item{method}{Method to calculate the cutoff. Either "random" for random 
+direction method or "permutation" for the permutation method.}
 }
 \value{
 Returns the input "cacomp" object with "APL_score" component added.
@@ -59,6 +62,11 @@ cutoff angle of the 99% quantile.
 By default the permutation is repeated 10 times (for random direction min. 
 300 repetition is recommended!), but for very large matrices 
 this can be reduced.
+The method "permutation" permutes the columns in each row and calculates 
+AP-coordinates for each such permutation. The cutoff is then taken by the
+quantile specified by "quan". The "random" method in contrast calculates 
+AP-coordinates for the original data, but by looking into random directions.
+
 If store_perm is TRUE the permuted data is stored in the cacomp object and 
 can be used for future scoring.
 }
