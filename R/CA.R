@@ -482,23 +482,9 @@ run_cacomp <- function(obj,
     } else {
       ## if number of dimensions are given, turn to calculate partial SVD
       
-      if (python == TRUE){
-        
-        svd_scipy <- NULL
-        reticulate::source_python(system.file("python/python_svd.py", package = "CAclust"), envir = globalenv())
-        if (!is(S, 'dgCMatrix') ){
-          S <- Matrix::Matrix(S, sparse = TRUE)
-        }
-        SVD <- svds_scipy(S, k = dims, which = 'LM', solver = 'lobpcg')
-        names(SVD) <- c("U", "D", "V")
-        
-      } else {
-        
-        SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
-        SVD = SVD[1:3]
-        names(SVD)[1:3] <- c("D", "U", "V")
-        
-      }
+      SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
+      SVD = SVD[1:3]
+      names(SVD)[1:3] <- c("D", "U", "V")
       SVD$D <- as.vector(SVD$D)
     }
   
