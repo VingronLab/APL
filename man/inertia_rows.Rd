@@ -4,7 +4,14 @@
 \alias{inertia_rows}
 \title{Find most variable rows}
 \usage{
-inertia_rows(mat, top = 5000)
+inertia_rows(mat, top = 5000, ...)
+}
+\arguments{
+\item{mat}{A matrix with genes in rows and cells in columns.}
+
+\item{top}{Number of genes to select.}
+
+\item{...}{Further arguments for `comp_std_residuals`}
 }
 \value{
 Returns a matrix, which consists of the top variable rows of mat.

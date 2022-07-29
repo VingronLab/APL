@@ -4,7 +4,7 @@
 \alias{elbow_method}
 \title{Runs elbow method}
 \usage{
-elbow_method(obj, mat, reps, python, return_plot)
+elbow_method(obj, mat, reps, python = FALSE, return_plot = FALSE)
 }
 \arguments{
 \item{obj}{A "cacomp" object as outputted from `cacomp()`}

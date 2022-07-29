@@ -1,7 +1,7 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 0.99.4
+Version: 0.99.5
 Authors@R:
   c(person(given = "Elzbieta",
            family = "Gralinska",
@@ -36,8 +36,9 @@ RoxygenNote: 7.2.0
 StagedInstall: false
 VignetteBuilder: knitr
 Imports: 
-    basilisk,
     reticulate,
+    Matrix,
+    irlba,
     ggrepel,
     ggplot2,
     viridisLite,
@@ -58,10 +59,10 @@ Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
-    testthat,
     scRNAseq,
+    scater,
     scran,
-    scater
+    testthat
 Config/testthat/edition: 3
 Collate: 
     'constructor.R'
