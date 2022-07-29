@@ -442,6 +442,20 @@ cacomp_names <- function(caobj){
 }
 
 
+
+
+#' Subset rows and columns of a cacomp object.
+#' 
+#' @param x cacomp object
+#' @param i rows to subset to.
+#' @param j columns to subset to.
+#' @param drop Whether or not to coerce to the lowest possible dimension. Should
+#' be FALSE!
+#' @param ... Furhter arguments
+#' 
+#' @returns 
+#' Returns a cacomp object with rows and columns subsetted.
+#' @export
 setMethod(
   f = "[",
   signature="cacomp",

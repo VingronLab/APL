@@ -12,7 +12,7 @@ pick_dims(
   mat = NULL,
   method = "scree_plot",
   reps = 3,
-  python = TRUE,
+  python = FALSE,
   return_plot = FALSE,
   ...
 )
@@ -22,7 +22,7 @@ pick_dims(
   mat = NULL,
   method = "scree_plot",
   reps = 3,
-  python = TRUE,
+  python = FALSE,
   return_plot = FALSE,
   ...
 )
@@ -32,7 +32,7 @@ pick_dims(
   mat = NULL,
   method = "scree_plot",
   reps = 3,
-  python = TRUE,
+  python = FALSE,
   return_plot = FALSE,
   ...,
   assay = Seurat::DefaultAssay(obj),
@@ -44,7 +44,7 @@ pick_dims(
   mat = NULL,
   method = "scree_plot",
   reps = 3,
-  python = TRUE,
+  python = FALSE,
   return_plot = FALSE,
   ...,
   assay = "counts"
