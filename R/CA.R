@@ -159,7 +159,7 @@ comp_sct_residuals <- function(mat){
 #' @returns 
 #' Matrix of clipped residuals.
 clip_residuals <- function(S, cutoff = sqrt(ncol(S))){
-        message("Clipping residuals at lambda = ", cutoff)
+        # message("Clipping residuals at lambda = ", cutoff)
         S[S >  cutoff] <-  cutoff
         S[S < -cutoff] <- -cutoff
 
@@ -221,14 +221,14 @@ comp_ft_residuals <- function(mat){
 calc_residuals <- function(mat, residuals = "pearson", clip = TRUE, cutoff = NULL){
   
   if (residuals == "pearson"){
-        message("\nusing pearson residuals")
+        # message("\nusing pearson residuals")
         if (is.null(cutoff)) cutoff <- 1
         res <-  comp_std_residuals(mat=mat,
                                    clip = TRUE,
                                    cutoff = cutoff)
  
   } else if (residuals == "freemantukey"){
-        message("\nusing freeman-tukey residuals")
+        # message("\nusing freeman-tukey residuals")
         
         if(!is.null(cutoff)){
             warning("Clipping for freemantukey residuals is not implemented. Argument ignored.")
@@ -237,7 +237,7 @@ calc_residuals <- function(mat, residuals = "pearson", clip = TRUE, cutoff = NUL
      
   } else if (residuals == "NB"){
       
-        message("\nusing negative-binomial residuals")
+        # message("\nusing negative-binomial residuals")
     
         res <- comp_NB_residuals(mat = mat,
                                  theta = 100,
@@ -290,6 +290,8 @@ rm_zeros <- function(obj){
 #' gene expression values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
 #' @param top Integer. Number of most variable rows to retain. Default 5000.
+#' @inheritParams calc_residuals
+#' @param ... Further arguments for `calc_residuals`.
 #' @export
 #' @examples
 #' set.seed(1234)
@@ -307,13 +309,11 @@ rm_zeros <- function(obj){
 var_rows <- function(mat,
                      residuals = "pearson",
                      top = 5000,
-                     cutoff = NULL,
-                     clip = TRUE){
+                     ...){
   
   res <- calc_residuals(mat = mat,
                         residuals = residuals,
-                        cutoff = cutoff,
-                        clip = clip)
+                        ...)
 
   if(top>nrow(mat)) {
     warning("Top is larger than the number of rows in matrix. ",
@@ -338,13 +338,17 @@ var_rows <- function(mat,
 #' @description
 #' Calculates the contributing inertia of each row which is defined as sum of squares of pearson residuals and selects the 
 #' rows with the largested inertias, e.g. 5,000.
+#' 
+#' @param mat A matrix with genes in rows and cells in columns.
+#' @param top Number of genes to select.
+#' @param ... Further arguments for `comp_std_residuals`
 #'
 #' @return
 #' Returns a matrix, which consists of the top variable rows of mat.
+inertia_rows <- function(mat, top = 5000, ...){
 
-inertia_rows <- function(mat, top = 5000){
-
-    res <-  comp_std_residuals(mat = mat)
+    res <-  comp_std_residuals(mat= mat,
+                               ...)
 
     if(top>nrow(mat)) {
         warning("Top is larger than the number of rows in matrix. ",
@@ -355,7 +359,7 @@ inertia_rows <- function(mat, top = 5000){
 
     inertia <- res$S^2
     inertia <- Matrix::rowSums(inertia)
-    ix <- order(inertia, decreasing = T)
+    ix <- order(inertia, decreasing = TRUE)
     mat <- mat[ix[seq_len(top)],] # choose top rows
     return(mat)
 }
@@ -481,58 +485,47 @@ run_cacomp <- function(obj,
   colm <- res$colm
   
   k <- min(dim(S))-1
+  
+  if (is.null(dims)) dims <- k
+  if (dims > k) dims <- k
+  
+  if (isTRUE(dims == k)){ 
 
-  if (is.null(dims) | (dims > k)){ 
-    dims <- k
-    # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
-    # message("Running singular value decomposition ...")
-  
-    if (python == TRUE){
-      svd_torch <- NULL
-      S <- Matrix::Matrix(S, sparse = FALSE)
-      # require(reticulate)
-      # source_python('./python_svd.py')
-      reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
-      SVD <- svd_torch(S)
-      # SVD <- svd_linalg_torch(S)
-      names(SVD) <- c("U", "D", "V")
-      SVD$D <- as.vector(SVD$D)
-  
+        # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
+        # message("Running singular value decomposition ...")
+      
+        if (python == TRUE){
+          svd_torch <- NULL
+          S <- as.matrix(S)
+          # require(reticulate)
+          # source_python('./python_svd.py')
+          reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
+          SVD <- svd_torch(S)
+          # SVD <- svd_linalg_torch(S)
+          names(SVD) <- c("U", "D", "V")
+          SVD$D <- as.vector(SVD$D)
+      
+        } else {
+      
+          SVD <- svd(S, nu = dims, nv = dims)
+          names(SVD) <- c("D", "U", "V")
+          SVD <- SVD[c(2, 1, 3)]
+          SVD$D <- as.vector(SVD$D)
+          if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
+        }
     } else {
-  
-      SVD <- svd(S, nu = dims, nv = dims)
-      names(SVD) <- c("D", "U", "V")
-      SVD <- SVD[c(2, 1, 3)]
-      SVD$D <- as.vector(SVD$D)
-      if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
-    }
-    }else {
       ## if number of dimensions are given, turn to calculate partial SVD
       
-      if (python == TRUE){
-        
-        svd_scipy <- NULL
-        reticulate::source_python(system.file("python/python_svd.py", package = "CAclust"), envir = globalenv())
-        if (!is(S, 'dgCMatrix') ){
-          S <- Matrix::Matrix(S, sparse = TRUE)
-        }
-        SVD <- svds_scipy(S, k = dims, which = 'LM', solver = 'lobpcg')
-        names(SVD) <- c("U", "D", "V")
-        
-      } else {
-        
-        SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
-        SVD = SVD[1:3]
-        names(SVD)[1:3] <- c("D", "U", "V")
-        
-      }
+      SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
+      SVD = SVD[1:3]
+      names(SVD)[1:3] <- c("D", "U", "V")
       SVD$D <- as.vector(SVD$D)
     }
   
-  odr <- order(SVD$D, decreasing = TRUE)
-  SVD$D <- SVD$D[odr]
-  SVD$V <- SVD$V[,odr]
-  SVD$U <- SVD$U[,odr]
+  ord <- order(SVD$D, decreasing = TRUE)
+  SVD$D <- SVD$D[ord]
+  SVD$V <- SVD$V[,ord]
+  SVD$U <- SVD$U[,ord]
   names(SVD$D) <- paste0("Dim", seq_len(length(SVD$D)))
   dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ncol(SVD$V))))
   dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ncol(SVD$U))))
@@ -644,6 +637,7 @@ run_cacomp <- function(obj,
 #' @param rm_zeros Logical. Whether rows & cols containing only 0s should be 
 #' removed.
 #' Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
+#' @inheritParams calc_residuals
 #' @param ... Arguments forwarded to methods.
 #' @examples
 #' # Simulate scRNAseq data.
@@ -1225,8 +1219,8 @@ scree_plot <- function(df){
 elbow_method <- function(obj,
                          mat,
                          reps,
-                         python,
-                         return_plot){
+                         python = FALSE,
+                         return_plot = FALSE){
   ev <- obj@D^2
   expl_inertia <- (ev/sum(ev)) *100
   max_num_dims <- length(obj@D)
@@ -1378,7 +1372,7 @@ setGeneric("pick_dims", function(obj,
                                  mat = NULL,
                                  method="scree_plot",
                                  reps=3,
-                                 python = TRUE,
+                                 python = FALSE,
                                  return_plot = FALSE,
                                  ...) {
   standardGeneric("pick_dims")
@@ -1393,7 +1387,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = TRUE,
+                   python = FALSE,
                    return_plot = FALSE,
                    ...){
 
@@ -1494,7 +1488,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = TRUE,
+                   python = FALSE,
                    return_plot = FALSE,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
@@ -1564,7 +1558,7 @@ setMethod(f = "pick_dims",
                    mat = NULL,
                    method="scree_plot",
                    reps=3,
-                   python = TRUE,
+                   python = FALSE,
                    return_plot = FALSE,
                    ...,
                    assay = "counts"){
