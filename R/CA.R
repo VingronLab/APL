@@ -374,7 +374,8 @@ inertia_rows <- function(mat, top = 5000, ...){
 #' @param python A logical value indicating whether to use singular-value 
 #' decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` 
-#' in R.
+#' in R when calculating the full SVD. This parameter only works when dims==NULL
+#' or dims==rank(mat), where caculating a full SVD is demanded.
 #' @param princ_coords Integer. Number indicating whether principal 
 #' coordinates should be calculated for the rows (=1), columns (=2), 
 #' both (=3) or none (=0).
