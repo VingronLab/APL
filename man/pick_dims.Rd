@@ -129,13 +129,13 @@ pd <- pick_dims(obj = ca,
                 return_plot = TRUE,
                 reps = 10)
 pd$plot
-ca_sub <- select_dims(ca, dims = pd$dims)
+ca_sub <- subset_dims(ca, dims = pd$dims)
 
 # pick dimensions which explain cumulatively >80\% of total inertia.
 # Returns vector.
 pd <- pick_dims(obj = ca,
                 method = "maj_inertia")
-ca_sub <- select_dims(ca, dims = pd)
+ca_sub <- subset_dims(ca, dims = pd)
 
 ################################
 # pick_dims for Seurat objects #
