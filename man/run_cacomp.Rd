@@ -36,7 +36,8 @@ Default 1.}
 \item{python}{A logical value indicating whether to use singular-value 
 decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to `svd()` 
-in R.}
+in R when calculating the full SVD. This parameter only works when dims==NULL
+or dims==rank(mat), where caculating a full SVD is demanded.}
 
 \item{dims}{Integer. Number of CA dimensions to retain. Default NULL 
 (keeps all dimensions).}
