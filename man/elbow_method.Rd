@@ -48,7 +48,7 @@ pd <- pick_dims(obj = ca,
                 return_plot = TRUE,
                 reps = 10)
 pd$plot
-ca_sub <- select_dims(ca, dims = pd$dims)
+ca_sub <- subset_dims(ca, dims = pd$dims)
 
 }
 \references{
