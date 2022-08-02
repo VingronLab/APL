@@ -242,7 +242,7 @@ apl_score <- function(caobj,
     stopifnot("mat parameter required for permutation!" =
                 !is.null(mat))
     stopifnot("mat needs to be of class matrix" =
-                is(mat, "matrix"))
+                is(mat, "matrix") | is(mat, "Matrix"))
     
     res <- permutation_cutoff(caobj = caobj,
                               mat = mat,
@@ -325,7 +325,10 @@ permutation_cutoff <- function(caobj,
     
     #permute rows and rerun cacomp
     
-    if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
+    if(isTRUE(store_perm) & 
+       identical(reps, attr(caobj@permuted_data,'reps')) &
+       !is.empty(ca@permuted_data)){
+        
       calist <- caobj@permuted_data[[k]][seq_len(3)]
       mat <- caobj@permuted_data[[k]]$mat
       mat <- mat[rownames(mat) %in% rownames(calist$std_coords_rows),]
