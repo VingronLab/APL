@@ -39,27 +39,22 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
   E <- rowm %o% colm      # expected proportions
   # E <- rowm %*% Matrix::t(colm)
   
-  if (is(P, 'dgCMatrix')){
+  # if (is(P, 'dgCMatrix')){
+  #   
+  #   idx = cbind(P@i+1, rep(1:P@Dim[2], diff(P@p)))
+  #   S = -E/sqrt(E)
+  #   S[idx] = P@x/sqrt(E[idx]) + S[idx]
+  # }else{
+      
+  S <-  (P - E) / sqrt(E)         # standardized residuals
+
+  # }
     
-    idx = cbind(P@i+1, rep(1:P@Dim[2], diff(P@p)))
-    S = -E/sqrt(E)
-    S[idx] = P@x/sqrt(E[idx]) + S[idx]
-
-    
-  }else{
-    S <-  (P - E) / sqrt(E)         # standardized residuals
-
-  }
-
+  S[is.na(S)] <- 0
+  
   if (isTRUE(clip)){
     S <- clip_residuals(S, cutoff = cutoff)
   }
-
-  out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
-
-  S[is.na(S)] <- 0
-
-  rownames(S) = rownames(mat)
 
 
   out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
@@ -85,15 +80,18 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
 #' https://doi.org/10.1186/s13059-021-02451-7
 #' 
 #' @inherit calc_residuals return
-comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, cutoff = NULL, freq = TRUE){
+comp_NB_residuals <- function(mat,
+                              theta = 100,
+                              clip = TRUE,
+                              cutoff = NULL,
+                              freq = TRUE){
   
 
   if (isTRUE(freq)) mat <- mat/sum(mat)
 
-  rowS <- rowSums(mat)          
-  colS <- colSums(mat)          
+  rowS <- Matrix::rowSums(mat)          
+  colS <- Matrix::colSums(mat)          
 
-<<<<<<< HEAD
   tot <- sum(mat)
 
   mu <- (rowS %o% colS)/tot
@@ -112,32 +110,6 @@ comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, cutoff = NULL, freq
 
   return(list("S" = Z, "tot" = tot, "rowm" = rowS, "colm" = colS))
 
-=======
-comp_sct_residuals <- function(mat){
-  
-  stopifnot(is(obj, "matrix") | is(obj, "dgeMatrix")| is(obj, "dgCMatrix"))
-  
-  stopifnot(
-    "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
-  stopifnot(
-    "Input matrix does not have any colnames!" = !is.null(colnames(mat)))
-  
-  tot <- sum(mat)
-  P <- mat/tot               # proportions matrix
-  rowm <- Matrix::rowSums(P)          # row masses
-  colm <- Matrix::colSums(P)  
-  
-  vst_out <- sctransform::vst(mat,
-                              latent_var = c("log_umi"),
-                              return_gene_attr = TRUE, 
-                              return_cell_attr = TRUE,
-                              residual_type = "pearson",
-                              verbosity = 1,
-                              min_cells = 0)
-  
-  out <- list("S"=vst_out$y, "tot"=tot, "rowm"=rowm, "colm"=colm)
-  
->>>>>>> 7158255 (make functions compatible for spare matrix input)
 }
 
 
@@ -418,17 +390,17 @@ inertia_rows <- function(mat, top = 5000, ...){
 #' @inheritParams calc_residuals
 #' @param ... Arguments forwarded to methods.
 run_cacomp <- function(obj,
-                   coords = TRUE,
-                   princ_coords = 3,
-                   python = FALSE,
-                   dims = NULL,
-                   top = 5000,
-                   inertia = TRUE,
-                   rm_zeros = TRUE,
-                   residuals = "pearson",
-                   cutoff = NULL,
-                   clip = TRUE,
-                   ...){
+                       coords = TRUE,
+                       princ_coords = 3,
+                       python = FALSE,
+                       dims = NULL,
+                       top = 5000,
+                       inertia = TRUE,
+                       rm_zeros = TRUE,
+                       residuals = "pearson",
+                       cutoff = NULL,
+                       clip = TRUE,
+                       ...){
 
   stopifnot("Input matrix does not have any rownames!" =
               !is.null(rownames(obj)))
@@ -455,6 +427,7 @@ run_cacomp <- function(obj,
                     residuals = residuals,
                     clip = clip,
                     cutoff = cutoff)
+    
     res <- calc_residuals(mat = obj,
                           residuals = residuals,
                           clip = clip,
@@ -496,7 +469,8 @@ run_cacomp <- function(obj,
       
         if (python == TRUE){
           svd_torch <- NULL
-          S <- as.matrix(S)
+          if(!is(S, "matrix")) S <- as.matrix(S)
+          
           # require(reticulate)
           # source_python('./python_svd.py')
           reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
@@ -514,10 +488,10 @@ run_cacomp <- function(obj,
           if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
         }
     } else {
-      ## if number of dimensions are given, turn to calculate partial SVD
+      # if number of dimensions are given, turn to calculate partial SVD
       
       SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
-      SVD = SVD[1:3]
+      SVD <- SVD[1:3]
       names(SVD)[1:3] <- c("D", "U", "V")
       SVD$D <- as.vector(SVD$D)
     }
@@ -543,7 +517,7 @@ run_cacomp <- function(obj,
   SVD$top_rows <- toptmp
 
   SVD <- do.call(new_cacomp, SVD)
-  SVD <- select_dims(SVD, dims)
+  SVD <- subset_dims(SVD, dims)
   # class(SVD) <- "cacomp"
 
   if (coords == TRUE){
@@ -959,9 +933,9 @@ setMethod(f = "cacomp",
 #'
 #' # Run correspondence analysis.
 #' ca <- cacomp(cnts)
-#' ca <- select_dims(ca, 2)
+#' ca <- subset_dims(ca, 2)
 #' @export
-select_dims <- function(caobj, dims){
+subset_dims <- function(caobj, dims){
   
   if (dims == 1){stop("Please choose more than 1 dimension.")}
   
@@ -1056,7 +1030,7 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
               "dimensions obtained from the singular value ",
               "decomposition. Argument ignored.")
      }
-      caobj <- select_dims(caobj = caobj, dims = dims)
+      caobj <- subset_dims(caobj = caobj, dims = dims)
     }
 
 
@@ -1214,7 +1188,7 @@ scree_plot <- function(df){
 #'                 return_plot = TRUE,
 #'                 reps = 10)
 #' pd$plot
-#' ca_sub <- select_dims(ca, dims = pd$dims)
+#' ca_sub <- subset_dims(ca, dims = pd$dims)
 #' 
 elbow_method <- function(obj,
                          mat,
@@ -1359,13 +1333,13 @@ elbow_method <- function(obj,
 #'                 return_plot = TRUE,
 #'                 reps = 10)
 #' pd$plot
-#' ca_sub <- select_dims(ca, dims = pd$dims)
+#' ca_sub <- subset_dims(ca, dims = pd$dims)
 #'
 #' # pick dimensions which explain cumulatively >80% of total inertia.
 #' # Returns vector.
 #' pd <- pick_dims(obj = ca,
 #'                 method = "maj_inertia")
-#' ca_sub <- select_dims(ca, dims = pd)
+#' ca_sub <- subset_dims(ca, dims = pd)
 #' @export
 #' @md
 setGeneric("pick_dims", function(obj,
