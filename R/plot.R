@@ -269,7 +269,7 @@ setMethod(f = "ca_3Dplot",
 #' (label should be stored in colnames).
 #' Default NULL (no columns).
 #' @param type String. Type of plot to draw. Either "ggplot" or "plotly". 
-#' Default "plotly".
+#' Default "ggplot".
 #' @param ... Further arguments.
 #' @export
 #' @examples
@@ -289,7 +289,7 @@ setGeneric("ca_biplot", function(obj,
                                  princ_coords = 1,
                                  row_labels = NULL,
                                  col_labels = NULL,
-                                 type = "plotly",
+                                 type = "ggplot",
                                  ...) {
   standardGeneric("ca_biplot")
 })
@@ -306,7 +306,9 @@ setMethod(f = "ca_biplot",
                    princ_coords = 1,
                    row_labels = NULL,
                    col_labels = NULL,
-                   type = "plotly",
+                   type = "ggplot",
+                   col_metadata = NULL,
+                   row_metadata = NULL,
                    ...){
 
   if (!is(obj,"cacomp")){
@@ -333,31 +335,70 @@ setMethod(f = "ca_biplot",
   }
 
   rows <- as.data.frame(rows)
+  rows$name <- rownames(rows)
+  
   cols <- as.data.frame(cols)
-  if (type == "ggplot"){
-
-    # rows <- as.data.frame(rows)
-    # cols <- as.data.frame(cols)
-    #
-    rnmx <- colnames(rows)[xdim]
-    rnmy <- colnames(rows)[ydim]
-    cnmx <- colnames(cols)[xdim]
-    cnmy <- colnames(cols)[ydim]
-
-    p <- ggplot2::ggplot()+
-      ggplot2::geom_point(data=rows,
-                          ggplot2::aes_(x = as.name(rnmx), y = as.name(rnmy)),
-                          colour = "#0066FF",
-                          alpha = 0.7, 
-                          shape = 1) +
-      ggplot2::geom_point(data=cols,
-                          ggplot2::aes_(x = as.name(cnmx), y = as.name(cnmy)),
-                          colour = "#990000",
-                          shape = 4) +
-      ggplot2::theme_bw()
-
-    if (!is.null(row_labels)){
-      p <- p +
+  cols$name <- rownames(cols)
+  
+  if (is.null(col_metadata)) {
+    cols$group <- "column"
+  } else {
+    cols$group <- NA
+    
+    meta_cols <- col_metadata[names(col_metadata) %in% rownames(cols)]
+    col_idx <- base::match(rownames(cols), names(meta_cols))
+    meta_cols <- meta_cols[col_idx]
+    
+    cols$group <- meta_cols
+  }
+  
+  if (is.null(row_metadata)) {
+    rows$group <- "row"
+  } else {
+    rows$group <- NA
+    
+    meta_rows <- row_metadata[names(row_metadata) %in% rownames(rows)]
+    row_idx <- base::match(rownames(rows), names(meta_rows))
+    meta_rows <- meta_rows[row_idx]
+    
+    rows$group <- meta_rows
+  }
+  
+  rnmx <- colnames(rows)[xdim]
+  rnmy <- colnames(rows)[ydim]
+  cnmx <- colnames(cols)[xdim]
+  cnmy <- colnames(cols)[ydim]
+  
+  #TODO: get rid of plotly and use plotly::ggplotly
+  p <- ggplot2::ggplot()+
+    ggplot2::geom_point(data=rows,
+                        ggplot2::aes_(x = as.name(rnmx), 
+                                      y = as.name(rnmy),
+                                      color = ~group,
+                                      text = paste0(
+                                        "Name: ", rows$name, "\n",
+                                        "Group: ", rows$group)
+                        ),
+                        alpha = 0.7, 
+                        shape = 1) +
+    ggplot2::geom_point(data=cols,
+                        ggplot2::aes_(x = as.name(cnmx), 
+                                      y = as.name(cnmy),
+                                      color = ~group,
+                                      text = paste0(
+                                        "Name: ", cols$name, "\n",
+                                        "Group: ", cols$group)
+                        ),
+                        shape = 4)
+  
+  if(is.null(col_metadata) & is.null(row_metadata)){
+    p <- p +
+      ggplot2::scale_color_manual(values = c("column" = "#990000",
+                                             "row" = "#0066FF"))
+  }
+  
+  if (!is.null(row_labels)){
+    p <- p +
       ggplot2::geom_point(data=rows[row_labels,],
                           ggplot2::aes_(x = as.name(rnmx),
                                         y = as.name(rnmy)),
@@ -369,9 +410,9 @@ setMethod(f = "ca_biplot",
                                              label=rownames(rows[row_labels,])),
                                colour = "#FF0000",
                                max.overlaps = Inf)
-    }
-    if (!is.null(col_labels)){
-      p <- p +
+  }
+  if (!is.null(col_labels)){
+    p <- p +
       ggplot2::geom_point(data=cols[col_labels,],
                           ggplot2::aes_(x = as.name(cnmx),
                                         y = as.name(cnmy)),
@@ -383,74 +424,91 @@ setMethod(f = "ca_biplot",
                                              label=rownames(cols[col_labels,])),
                                colour = "#990000",
                                max.overlaps = Inf)
-    }
+  }
+  
+  p <- p +  ggplot2::theme_bw()
+  
+  
+  if (type == "ggplot"){
+
+  return(p)
+
+
   } else if (type == "plotly"){
-    p <- plotly::plot_ly(type='scatter',
-                         source='plot2D',
-                         mode='markers') %>%
-      plotly::add_trace(x = cols[,xdim],
-                y = cols[,ydim],
-                mode = 'markers',
-                text = rownames(cols),
-                textposition = "left",
-                opacity = 1,
-                marker = list(color = '#990000',
-                              symbol = 'x',
-                              size = 5),
-                name = 'Columns',
-                hoverinfo = 'text',
-                type = 'scatter') %>%
-      plotly::add_trace(x = rows[,xdim],
-                y = rows[,ydim],
-                mode = 'markers',
-                text = rownames(rows),
-                opacity = 0.7,
-                marker = list(color ='#0066FF',
-                              symbol = 'circle-open',
-                              size = 2.5),
-                name = 'genes',
-                hoverinfo = 'text',
-                type = 'scatter')
-
-    if (!is.null(row_labels)){
-      p <- p %>%
-        plotly::add_trace(x = rows[row_labels, xdim],
-                  y = rows[row_labels, ydim],
-                  mode = 'markers+text',
-                  text = rownames(rows)[row_labels],
-                  textposition = "left",
-                  textfont = list(color='#FF0000'),
-                  marker = list(symbol = 'circle',
-                                color ='#FF0000',
-                                size = 5),
-                  name = 'marked row(s)',
-                  hoverinfo = 'text',
-                  type = 'scatter')
-    }
-
-    if (!is.null(col_labels)){
-      p <- p %>%
-        plotly::add_trace(x = cols[col_labels, xdim],
-                  y = cols[col_labels, ydim],
-                  mode = 'markers+text',
-                  text = rownames(cols)[col_labels],
-                  textposition = "left",
-                  textfont = list(color='#990000'),
-                  marker = list(symbol = 'circle-open',
-                                color ='#990000',
-                                size = 6.5),
-                  name = 'marked column(s)',
-                  hoverinfo = 'text',
-                  type = 'scatter')
-    }
-
-    p <- p %>%
-      plotly::layout(autosize = TRUE,
-             title = '2D CA plot',
-             showlegend = FALSE,
-             xaxis = list(title = paste0('Dim', xdim)),
-             yaxis = list(title = paste0('Dim', ydim)))
-
+    
+  #   p <- plotly::plot_ly(type='scatter',
+  #                        source='plot2D',
+  #                        mode='markers') %>%
+  #     plotly::add_trace(data = cols,
+  #                       x = ~get(cnmx),
+  #               y = ~get(cnmy),
+  #               mode = 'markers',
+  #               text = rownames(cols),
+  #               textposition = "left",
+  #               opacity = 1,
+  #               color = ~group,
+  #               marker = list(#color = '#990000',
+  #                             symbol = 'x',
+  #                             size = 5),
+  #               name = 'Columns',
+  #               hoverinfo = 'text',
+  #               type = 'scatter',
+  #               showlegend = TRUE) %>%
+  #     plotly::add_trace(data = rows,
+  #                       x = ~get(rnmx),
+  #               y = ~get(rnmy),
+  #               mode = 'markers',
+  #               text = rownames(rows),
+  #               opacity = 0.7,
+  #               color = ~group,
+  #               marker = list(#color ='#0066FF',
+  #                             symbol = 'circle-open',
+  #                             size = 2.5),
+  #               name = 'genes',
+  #               hoverinfo = 'text',
+  #               type = 'scatter')
+  # 
+  #   if (!is.null(row_labels)){
+  #     p <- p %>%
+  #       plotly::add_trace(x = rows[row_labels, xdim],
+  #                 y = rows[row_labels, ydim],
+  #                 mode = 'markers+text',
+  #                 text = rownames(rows)[row_labels],
+  #                 textposition = "left",
+  #                 textfont = list(color='#FF0000'),
+  #                 marker = list(symbol = 'circle',
+  #                               color ='#FF0000',
+  #                               size = 5),
+  #                 name = 'marked row(s)',
+  #                 hoverinfo = 'text',
+  #                 type = 'scatter')
+  #   }
+  # 
+  #   if (!is.null(col_labels)){
+  #     p <- p %>%
+  #       plotly::add_trace(x = cols[col_labels, xdim],
+  #                 y = cols[col_labels, ydim],
+  #                 mode = 'markers+text',
+  #                 text = rownames(cols)[col_labels],
+  #                 textposition = "left",
+  #                 textfont = list(color='#990000'),
+  #                 marker = list(symbol = 'circle-open',
+  #                               color ='#990000',
+  #                               size = 6.5),
+  #                 name = 'marked column(s)',
+  #                 hoverinfo = 'text',
+  #                 type = 'scatter')
+  #   }
+  # 
+  #   p <- p %>%
+  #     plotly::layout(autosize = TRUE,
+  #            title = '2D CA plot',
+  #            showlegend = FALSE,
+  #            xaxis = list(title = paste0('Dim', xdim)),
+  #            yaxis = list(title = paste0('Dim', ydim)))
+  # 
+    
+    p <- plotly::ggplotly(p, tooltip = c("text"))
   }
 
   return(p)
@@ -470,7 +528,7 @@ setMethod(f = "ca_biplot",
                    princ_coords = 1,
                    row_labels = NULL,
                    col_labels = NULL,
-                   type = "plotly",
+                   type = "ggplot",
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts"){
@@ -507,7 +565,7 @@ setMethod(f = "ca_biplot",
                    princ_coords = 1,
                    row_labels = NULL,
                    col_labels = NULL,
-                   type = "plotly",
+                   type = "ggplot",
                    ...,
                    assay = "counts"){
 
