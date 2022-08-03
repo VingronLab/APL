@@ -1,6 +1,11 @@
 #' @include constructor.R
 NULL
 
+# TODO: change ca_3dplot in line with ca_biplot!!!
+# TODO: make rows/columns a specific color if only one of the metadata parameters
+# is NULL!
+
+
 #' Plot of the first 3D CA projection of the data.
 #'
 #' @description
@@ -270,6 +275,14 @@ setMethod(f = "ca_3Dplot",
 #' Default NULL (no columns).
 #' @param type String. Type of plot to draw. Either "ggplot" or "plotly". 
 #' Default "ggplot".
+#' @param col_metadata named vector of additional metadata to color points.
+#'  The names of the elements in col_metadata should correspond to the column 
+#'  names in 'obj'. If NULL columns will be in a single color. Can also specify
+#'  a metadata column for Seurat/SingleCellExperiment objects.
+#' @param row_metadata named vector of additional metadata to color points.
+#'  The names of the elements in row_metadata should correspond to the row 
+#'  names in 'obj'. If NULL rows will be in a single color. Can also specify
+#'  a metadata column for Seurat/SingleCellExperiment objects.
 #' @param ... Further arguments.
 #' @export
 #' @examples
@@ -290,6 +303,8 @@ setGeneric("ca_biplot", function(obj,
                                  row_labels = NULL,
                                  col_labels = NULL,
                                  type = "ggplot",
+                                 col_metadata = NULL,
+                                 row_metadata = NULL,
                                  ...) {
   standardGeneric("ca_biplot")
 })
@@ -369,7 +384,6 @@ setMethod(f = "ca_biplot",
   cnmx <- colnames(cols)[xdim]
   cnmy <- colnames(cols)[ydim]
   
-  #TODO: get rid of plotly and use plotly::ggplotly
   p <- ggplot2::ggplot()+
     ggplot2::geom_point(data=rows,
                         ggplot2::aes_(x = as.name(rnmx), 
@@ -435,6 +449,7 @@ setMethod(f = "ca_biplot",
 
 
   } else if (type == "plotly"){
+    p <- plotly::ggplotly(p, tooltip = c("text"))
     
   #   p <- plotly::plot_ly(type='scatter',
   #                        source='plot2D',
@@ -508,7 +523,6 @@ setMethod(f = "ca_biplot",
   #            yaxis = list(title = paste0('Dim', ydim)))
   # 
     
-    p <- plotly::ggplotly(p, tooltip = c("text"))
   }
 
   return(p)
@@ -529,6 +543,8 @@ setMethod(f = "ca_biplot",
                    row_labels = NULL,
                    col_labels = NULL,
                    type = "ggplot",
+                   col_metadata = NULL,
+                   row_metadata = NULL,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts"){
@@ -541,14 +557,36 @@ setMethod(f = "ca_biplot",
     stop("No 'CA' dim. reduction object found. ",
          "Please run cacomp(seurat_obj, assay) first.")
   }
+            
+            if (!is.null(col_metadata) & 
+                length(col_metadata) == 1 &
+                col_metadata %in% colnames(obj@meta.data)) {
+              
+              cell_meta <- obj@meta.data[,col_metadata]
+              names(cell_meta) <- rownames(obj@meta.data)
+            } else {
+              cell_meta <- col_metadata
+            }
+            
+            if (!is.null(row_metadata) & 
+                length(row_metadata) == 1 &
+                row_metadata %in% colnames(obj[[assay]][[]])) {
+              
+              gene_meta <- obj[[assay]][[]][,row_metadata]
+              names(gene_meta) <- rownames(obj[[assay]][[]])
+            } else {
+              gene_meta <- row_metadata
+            }
 
  p <-  ca_biplot(obj = caobj,
-            xdim = xdim,
-            ydim = ydim,
-            princ_coords = princ_coords,
-            row_labels = row_labels,
-            col_labels = col_labels,
-            type = type)
+                xdim = xdim,
+                ydim = ydim,
+                princ_coords = princ_coords,
+                row_labels = row_labels,
+                col_labels = col_labels,
+                type = type,
+                col_metadata = cell_meta,
+                row_metadata = gene_meta)
 
  return(p)
 })
@@ -566,6 +604,8 @@ setMethod(f = "ca_biplot",
                    row_labels = NULL,
                    col_labels = NULL,
                    type = "ggplot",
+                   col_metadata = NULL,
+                   row_metadata = NULL,
                    ...,
                    assay = "counts"){
 
@@ -579,7 +619,28 @@ setMethod(f = "ca_biplot",
          "Please run cacomp(sce, top, coords = FALSE, ",
          "return_input=TRUE) first.")
   }
-
+  
+  if (!is.null(col_metadata) & 
+      length(col_metadata) == 1 &
+      col_metadata %in% colnames(colData(obj))) {
+    
+      cell_meta <- colData(obj)[,col_metadata]
+      names(cell_meta) <- rownames(colData(obj))
+  } else {
+    cell_meta <- col_metadata
+  }
+            
+  if (!is.null(row_metadata) & 
+      length(row_metadata) == 1 &
+      row_metadata %in% colnames(rowData(obj))) {
+    
+    gene_meta <- rowData(obj)[,row_metadata]
+    names(gene_meta) <- rownames(rowData(obj))
+    
+  } else {
+    gene_meta <- row_metadata
+  }
+    
 
   p <-  ca_biplot(obj = caobj,
                   xdim = xdim,
@@ -587,7 +648,9 @@ setMethod(f = "ca_biplot",
                   princ_coords = princ_coords,
                   row_labels = row_labels,
                   col_labels = col_labels,
-                  type = type)
+                  type = type,
+                  col_metadata = cell_meta,
+                  row_metadata = gene_meta)
 
   return(p)
 })
