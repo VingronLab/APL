@@ -351,9 +351,11 @@ setMethod(f = "ca_biplot",
 
   rows <- as.data.frame(rows)
   rows$name <- rownames(rows)
+  rows$type <- "row"
   
   cols <- as.data.frame(cols)
   cols$name <- rownames(cols)
+  cols$type <- "column"
   
   if (is.null(col_metadata)) {
     cols$group <- "column"
@@ -391,7 +393,8 @@ setMethod(f = "ca_biplot",
                                       color = ~group,
                                       text = paste0(
                                         "Name: ", rows$name, "\n",
-                                        "Group: ", rows$group)
+                                        "Group: ", rows$group, "\n",
+                                        "Type: ", rows$type)
                         ),
                         alpha = 0.7, 
                         shape = 1) +
@@ -401,7 +404,8 @@ setMethod(f = "ca_biplot",
                                       color = ~group,
                                       text = paste0(
                                         "Name: ", cols$name, "\n",
-                                        "Group: ", cols$group)
+                                        "Group: ", cols$group, "\n",
+                                        "Type: ", cols$type)
                         ),
                         shape = 4)
   
