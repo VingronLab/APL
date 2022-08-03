@@ -469,19 +469,19 @@ setMethod(f = "ca_biplot",
                    color_by = NULL,
                    xdim = 1,
                    ydim = 2,
-                   coords = 1,
+                   princ_coords = 1,
                    row_labels = NULL,
                    col_labels = NULL,
                    type = "plotly",
                    show_all = TRUE,
                    ...){
             
-            if (!is(caobj,"cacomp")){
+            if (!is(obj,"cacomp")){
               stop("Not a CA object. Please run cacomp() first!")
             }
             
-            ngenes <- nrow(caobj@std_coords_rows)
-            ncells <- nrow(caobj@std_coords_cols)
+            ngenes <- nrow(obj@std_coords_rows)
+            ncells <- nrow(obj@std_coords_cols)
             
             if (!is.null(metadf)){
               if(isFALSE('name' %in% colnames(metadf))){
@@ -502,16 +502,16 @@ setMethod(f = "ca_biplot",
                 }
               }
               
-              gene.idx <- which(rownames(caobj@prin_coords_rows) %in% metadf$name)
-              cell.idx <- which(rownames(caobj@prin_coords_cols) %in% metadf$name)
+              gene.idx <- which(rownames(obj@prin_coords_rows) %in% metadf$name)
+              cell.idx <- which(rownames(obj@prin_coords_cols) %in% metadf$name)
               
               cells <- data.frame( rep('Other cells', ncells)) 
               colnames(cells) <- color_by
               genes <- data.frame(rep('Other genes', ngenes))
               colnames(genes) <- color_by
               
-              matched_genes <- match(rownames(caobj@prin_coords_rows)[gene.idx], metadf$name)
-              matched_cells <- match(rownames(caobj@prin_coords_cols)[cell.idx], metadf$name)
+              matched_genes <- match(rownames(obj@prin_coords_rows)[gene.idx], metadf$name)
+              matched_cells <- match(rownames(obj@prin_coords_cols)[cell.idx], metadf$name)
               cells[cell.idx,] <- as.vector(metadf[matched_cells, color_by])
               genes[gene.idx,] <- as.vector(metadf[matched_genes, color_by])
               
@@ -544,30 +544,30 @@ setMethod(f = "ca_biplot",
             }
             
             
-            if (coords == 1){
+            if (princ_coords == 1){
               
-              if(sum(!is.null(caobj@prin_coords_rows), !is.null(caobj@std_coords_cols)) != 2){
+              if(sum(!is.null(obj@prin_coords_rows), !is.null(obj@std_coords_cols)) != 2){
                 stop("Principal and/or standard coordinates not found, ",
                      "please run ca_coords() first!")
               }
-              rows <- cbind(caobj@prin_coords_rows, genes)
-              cols <- cbind(caobj@std_coords_cols, cells)
-            } else if (coords == 2){
-              if(sum(!is.null(caobj@prin_coords_cols), !is.null(caobj@std_coords_rows)) != 2){
+              rows <- cbind(obj@prin_coords_rows, genes)
+              cols <- cbind(obj@std_coords_cols, cells)
+            } else if (princ_coords == 2){
+              if(sum(!is.null(obj@prin_coords_cols), !is.null(obj@std_coords_rows)) != 2){
                 stop("Principal and/or standard coordinates not found, ",
                      "please run ca_coords() first!")
               }
-              rows <- cbind(caobj@std_coords_rows, genes)
-              cols <- cbind(caobj@prin_coords_cols, cells)
-            }else if (coords == 3){
-              if(sum(!is.null(caobj@U), !is.null(caobj@V)) != 2){
+              rows <- cbind(obj@std_coords_rows, genes)
+              cols <- cbind(obj@prin_coords_cols, cells)
+            }else if (princ_coords == 3){
+              if(sum(!is.null(obj@U), !is.null(caobj@V)) != 2){
                 stop("Singular eigenvectors not found, ",
                      "please run ca_coords() first!")
               }
-              rows <- cbind(caobj@U, genes)
-              cols <- cbind(caobj@V, cells)
+              rows <- cbind(obj@U, genes)
+              cols <- cbind(obj@V, cells)
             } else {
-              stop("princ_coords must be either 1 for rows or 2 for columns.")
+              stop("princ_coords must be either 1 for rows or 2 for columns, 3 for singular vectors.")
             }
             
             rows <- as.data.frame(rows)

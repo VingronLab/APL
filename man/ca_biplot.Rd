@@ -26,7 +26,7 @@ ca_biplot(
   color_by = NULL,
   xdim = 1,
   ydim = 2,
-  coords = 1,
+  princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
   type = "plotly",
