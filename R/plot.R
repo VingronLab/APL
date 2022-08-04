@@ -283,6 +283,9 @@ setMethod(f = "ca_3Dplot",
 #'  The names of the elements in row_metadata should correspond to the row 
 #'  names in 'obj'. If NULL rows will be in a single color. Can also specify
 #'  a metadata column for Seurat/SingleCellExperiment objects.
+#' @param show_all logical. If FALSE cells/genes that are not in col_metadata/
+#' row_metadata are not plotted. If *_metadata is NULL, the cell or genes 
+#' respectively will still be plotted.
 #' @param ... Further arguments.
 #' @export
 #' @examples
@@ -305,6 +308,7 @@ setGeneric("ca_biplot", function(obj,
                                  type = "ggplot",
                                  col_metadata = NULL,
                                  row_metadata = NULL,
+                                 show_all = TRUE,
                                  ...) {
   standardGeneric("ca_biplot")
 })
@@ -486,6 +490,7 @@ setMethod(f = "ca_biplot",
                    type = "ggplot",
                    col_metadata = NULL,
                    row_metadata = NULL,
+                   show_all = TRUE,
                    ...){
 
   if (!is(obj,"cacomp")){
@@ -541,6 +546,11 @@ setMethod(f = "ca_biplot",
     meta_rows <- meta_rows[row_idx]
     
     rows$group <- meta_rows
+  }
+  
+  if (isFALSE(show_all)){
+      rows <- rows[!is.na(rows$group),]
+      cols <- cols[!is.na(cols$group),]
   }
   
   rnmx <- colnames(rows)[xdim]
@@ -638,6 +648,7 @@ setMethod(f = "ca_biplot",
                    type = "ggplot",
                    col_metadata = NULL,
                    row_metadata = NULL,
+                   show_all = TRUE,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts"){
@@ -680,7 +691,8 @@ setMethod(f = "ca_biplot",
                 col_labels = col_labels,
                 type = type,
                 col_metadata = cell_meta,
-                row_metadata = gene_meta)
+                row_metadata = gene_meta,
+                show_all = show_all)
 
  return(p)
 })
@@ -700,6 +712,7 @@ setMethod(f = "ca_biplot",
                    type = "ggplot",
                    col_metadata = NULL,
                    row_metadata = NULL,
+                   show_all = TRUE,
                    ...,
                    assay = "counts"){
 
@@ -744,7 +757,8 @@ setMethod(f = "ca_biplot",
                   col_labels = col_labels,
                   type = type,
                   col_metadata = cell_meta,
-                  row_metadata = gene_meta)
+                  row_metadata = gene_meta,
+                  show_all = show_all)
 
   return(p)
 })
