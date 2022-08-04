@@ -230,8 +230,8 @@ recompute <- function(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...){
                              "*")
 
     calist$tot_inertia <- sum(calist$D^2)
-    calist$row_inertia <- rowSums(S^2)
-    calist$col_inertia <- colSums(S^2)
+    calist$row_inertia <- Matrix::rowSums(S^2)
+    calist$col_inertia <- Matrix::colSums(S^2)
 
     calist$top_rows <- nrow(mat)
     calist$dims <- length(calist$D)
