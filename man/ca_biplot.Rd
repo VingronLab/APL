@@ -9,6 +9,8 @@
 \usage{
 ca_biplot(
   obj,
+  metadf = NULL,
+  color_by = NULL,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
@@ -20,17 +22,22 @@ ca_biplot(
 
 \S4method{ca_biplot}{cacomp}(
   obj,
+  metadf = NULL,
+  color_by = NULL,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
   type = "plotly",
+  show_all = TRUE,
   ...
 )
 
 \S4method{ca_biplot}{Seurat}(
   obj,
+  metadf = NULL,
+  color_by = NULL,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
@@ -44,6 +51,8 @@ ca_biplot(
 
 \S4method{ca_biplot}{SingleCellExperiment}(
   obj,
+  metadf = NULL,
+  color_by = NULL,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
@@ -91,6 +100,10 @@ Plot of class "plotly" or "ggplot".
 }
 \description{
 Plots the first 2 dimensions of the rows and columns in the same plot.
+
+if (!is(obj,"cacomp")){
+    stop("Not a CA object. Please run cacomp() first!")
+  }
 }
 \details{
 Choosing type "plotly" will generate an interactive html plot with the 
@@ -102,6 +115,8 @@ are chosen. For the other the standard coordinates are plotted
 (assymetric biplot).
 Labels for rows and columns should be stored in the row and column names 
 respectively.
+
+
 }
 \examples{
 # Simulate counts
