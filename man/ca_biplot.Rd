@@ -9,41 +9,40 @@
 \usage{
 ca_biplot(
   obj,
-  metadf = NULL,
-  color_by = NULL,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
-  type = "plotly",
+  type = "ggplot",
+  col_metadata = NULL,
+  row_metadata = NULL,
   ...
 )
 
 \S4method{ca_biplot}{cacomp}(
   obj,
-  metadf = NULL,
-  color_by = NULL,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
-  type = "plotly",
-  show_all = TRUE,
+  type = "ggplot",
+  col_metadata = NULL,
+  row_metadata = NULL,
   ...
 )
 
 \S4method{ca_biplot}{Seurat}(
   obj,
-  metadf = NULL,
-  color_by = NULL,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
-  type = "plotly",
+  type = "ggplot",
+  col_metadata = NULL,
+  row_metadata = NULL,
   ...,
   assay = Seurat::DefaultAssay(obj),
   slot = "counts"
@@ -51,14 +50,14 @@ ca_biplot(
 
 \S4method{ca_biplot}{SingleCellExperiment}(
   obj,
-  metadf = NULL,
-  color_by = NULL,
   xdim = 1,
   ydim = 2,
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
-  type = "plotly",
+  type = "ggplot",
+  col_metadata = NULL,
+  row_metadata = NULL,
   ...,
   assay = "counts"
 )
@@ -87,7 +86,17 @@ should be added
 Default NULL (no columns).}
 
 \item{type}{String. Type of plot to draw. Either "ggplot" or "plotly". 
-Default "plotly".}
+Default "ggplot".}
+
+\item{col_metadata}{named vector of additional metadata to color points.
+The names of the elements in col_metadata should correspond to the column 
+names in 'obj'. If NULL columns will be in a single color. Can also specify
+a metadata column for Seurat/SingleCellExperiment objects.}
+
+\item{row_metadata}{named vector of additional metadata to color points.
+The names of the elements in row_metadata should correspond to the row 
+names in 'obj'. If NULL rows will be in a single color. Can also specify
+a metadata column for Seurat/SingleCellExperiment objects.}
 
 \item{...}{Further arguments.}
 
@@ -100,10 +109,6 @@ Plot of class "plotly" or "ggplot".
 }
 \description{
 Plots the first 2 dimensions of the rows and columns in the same plot.
-
-if (!is(obj,"cacomp")){
-    stop("Not a CA object. Please run cacomp() first!")
-  }
 }
 \details{
 Choosing type "plotly" will generate an interactive html plot with the 
@@ -115,8 +120,6 @@ are chosen. For the other the standard coordinates are plotted
 (assymetric biplot).
 Labels for rows and columns should be stored in the row and column names 
 respectively.
-
-
 }
 \examples{
 # Simulate counts
