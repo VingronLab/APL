@@ -15,16 +15,24 @@ NULL
 #'
 #' @param calist A list with std_coords_cols, the prin_coords_rows and D.
 #' @param mat A matrix from which the cacomp object is derived from.
-#' @param rm_zeros Removes rows & columns containing only zeros.
-#' @param top number of most variable rows to keep when running cacomp. 
-#' Default is nrow(mat).
 #' @param ... Further arguments forwarded to cacomp.
-recompute <- function(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...){
+recompute <- function(calist, mat, ...){
     
   stopifnot(is(calist, "list"))
   stopifnot(is(mat, "matrix") | is(mat, "Matrix"))
-
-  if(isTRUE(rm_zeros)){
+  
+  if(is.null(calist$params)){
+      warning("No parameters provided for recalcuation!")
+      calist$params <- list()
+      
+  }
+  
+  # if (is.null(calist$top_rows)) top <- nrow(mat)
+  if(exists("rm_zeros")){
+      if(isTRUE(rm_zeros)){
+          mat <- rm_zeros(mat)
+      }
+  } else if (isTRUE(parameters$rm_zeros)){
     mat <- rm_zeros(mat)
   }
   
@@ -194,10 +202,28 @@ recompute <- function(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...){
       done <- TRUE
     }
   }
+  
+  if (!is.null(calist$std_coords_rows)) top <- nrow(calist$std_coords_rows)
+  
+  if (!is.null(calist$std_coords_rows) | 
+      !is.null(calist$std_coords_cols) |
+      !is.null(calist$D)){
+      
+      dims <- min(ncol(calist$std_coords_rows), 
+                  ncol(calist$std_coords_cols),
+                  length(calist$D),
+                  na.rm = TRUE)
+  }
 
   if(isTRUE(call_svd)){
     message("Calling cacomp to recompute from matrix.")
-    ca <- cacomp(mat, princ_coords = 3, top = top, ...)
+    ca <- cacomp(mat, princ_coords = 3,
+                 top = top,
+                 residuals = parameters$residuals,
+                 clip = parameters$clip,
+                 cutoff = parameters$cutoff,
+                 rm_zeros = parameters$rm_zeros,
+                 ...)
     return(ca)
   } else {
 
@@ -233,8 +259,8 @@ recompute <- function(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...){
     calist$row_inertia <- Matrix::rowSums(S^2)
     calist$col_inertia <- Matrix::colSums(S^2)
 
-    calist$top_rows <- nrow(mat)
-    calist$dims <- length(calist$D)
+    calist$top_rows <- top
+    calist$dims <- dims
   }
 
   ca <- do.call(new_cacomp, calist)
@@ -357,7 +383,9 @@ setMethod(f = "as.cacomp",
 
   ca_list <- list("std_coords_cols" = Seurat::Embeddings(obj, reduction = "CA"),
                   "D" = Seurat::Stdev(obj, reduction = "CA"),
-                  "prin_coords_rows" = Seurat::Loadings(obj, reduction = "CA"))
+                  "prin_coords_rows" = Seurat::Loadings(obj, reduction = "CA"),
+                  "params" = obj@reductions$CA@misc)
+  
   ca_list$top_rows <- nrow(ca_list$prin_coords_rows)
   ca_list$dims <- length(ca_list$D)
 
@@ -416,7 +444,8 @@ setMethod(f = "as.cacomp",
 
   ca_list <- list("std_coords_cols" = sce_ca,
                   "D" = attr(sce_ca, "singval"),
-                  "prin_coords_rows" = attr(sce_ca, "prin_coords_rows"))
+                  "prin_coords_rows" = attr(sce_ca, "prin_coords_rows"),
+                  "params" = attr(sce_ca, "params"))
 
   if(is.null(assay)) assay <- "counts"
 
