@@ -317,6 +317,7 @@ check_cacomp <- function(object) {
 #' @slot row_inertia class "numeric". Row-wise inertia in CA space.
 #' @slot col_inertia class "numeric". Column-wise inertia in CA space.
 #' @slot permuted_data class "list". Storage slot for permuted data.
+#' @slot params class "list". List of parameters.
 #' @export
 setClass("cacomp",
          representation(
@@ -330,6 +331,7 @@ setClass("cacomp",
            apl_rows = "matrix",
            apl_cols = "matrix",
            APL_score = "data.frame",
+           params = "list",
            dims = "numeric",
            group = "numeric",
            row_masses = "numeric",
@@ -351,6 +353,7 @@ setClass("cacomp",
            apl_rows = matrix(0, 0, 0),
            apl_cols = matrix(0, 0, 0),
            APL_score = data.frame(),
+           params = list(),
            dims = numeric(),
            group = numeric(),
            row_masses = numeric(),
