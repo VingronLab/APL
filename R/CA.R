@@ -519,8 +519,7 @@ run_cacomp <- function(obj,
   SVD$col_masses <- colm
   
   
-  if(!is.null(dims)){
-      
+   if(!is.null(dims)){
       if (dims >= length(SVD$D)){
           if (dims > length(SVD$D)){
               warning("Chosen number of dimensions is larger than the ",
@@ -530,10 +529,17 @@ run_cacomp <- function(obj,
           dims <- length(SVD$D)
       } else {
           dims <- min(dims, length(SVD$D))
+          dimseq <- seq(dims)
+          
+          # subset to number of dimensions
+          SVD$U <- SVD$U[,dimseq]
+          SVD$V <- SVD$V[,dimseq]
+          SVD$D <- SVD$D[dimseq]
       }
   } else {
       dims <- length(SVD$D)
   }
+  
   
   SVD$dims <- dims
   SVD$top_rows <- toptmp
