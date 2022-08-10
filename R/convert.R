@@ -22,7 +22,7 @@ recompute <- function(calist, mat, ...){
   stopifnot(is(mat, "matrix") | is(mat, "Matrix"))
   
   if(is.null(calist$params)){
-      warning("No parameters provided for recalcuation!")
+      warning("No parameters provided for recalculation!")
       calist$params <- list()
       
   }
@@ -32,7 +32,7 @@ recompute <- function(calist, mat, ...){
       if(isTRUE(rm_zeros)){
           mat <- rm_zeros(mat)
       }
-  } else if (isTRUE(parameters$rm_zeros)){
+  } else if (isTRUE(calist$params$rm_zeros)){
     mat <- rm_zeros(mat)
   }
   
@@ -215,14 +215,16 @@ recompute <- function(calist, mat, ...){
                   na.rm = TRUE)
   }
 
+  if (calist$params$clip)
   if(isTRUE(call_svd)){
     message("Calling cacomp to recompute from matrix.")
-    ca <- cacomp(mat, princ_coords = 3,
+    ca <- cacomp(mat,
+                 princ_coords = 3,
                  top = top,
-                 residuals = parameters$residuals,
-                 clip = parameters$clip,
-                 cutoff = parameters$cutoff,
-                 rm_zeros = parameters$rm_zeros,
+                 residuals = calist$params$residuals,
+                 clip = calist$params$clip,
+                 cutoff = calist$params$cutoff,
+                 rm_zeros = calist$params$rm_zeros,
                  ...)
     return(ca)
   } else {
@@ -328,7 +330,7 @@ setMethod(f = "as.cacomp", signature=(obj="cacomp"), function(obj, ...) {
 #' ca_list <- as.list(ca)
 #'
 #' # Only keep subset of elements for demonstration
-#' ca_list <- ca_list[c("U", "std_coords_rows", "std_coords_cols")]
+#' ca_list <- ca_list[c("U", "std_coords_rows", "std_coords_cols", "params")]
 #'
 #' # convert (incomplete) list to cacomp object.
 #' ca <- as.cacomp(ca_list, mat = cnts)
@@ -452,7 +454,8 @@ setMethod(f = "as.cacomp",
   attr(ca_list$std_coords_cols, "prin_coords_rows") <- NULL
   attr(ca_list$std_coords_cols, "singval") <- NULL
   attr(ca_list$std_coords_cols, "percInertia") <- NULL
-
+  attr(ca_list$std_coords_cols, "params") <- NULL
+  
   ca_list$top_rows <- nrow(ca_list$prin_coords_rows)
   ca_list$dims <- length(ca_list$D)
 
