@@ -6,9 +6,7 @@
 
 When working with `APL` package please cite:
 ```
-Association Plots: Visualizing associations in high-dimensional correspondence analysis biplots
-Elzbieta Gralinska, Martin Vingron
-bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096
+Gralinska, E., Kohl, C., Fadakar, B. S., & Vingron, M. (2022). Visualizing Cluster-specific Genes from Single-cell Transcriptomics Data Using Association Plots. Journal of Molecular Biology, 434(11), 167525.
 ```
 
 ## Installation
