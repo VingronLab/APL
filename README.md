@@ -6,7 +6,9 @@
 
 When working with `APL` package please cite:
 ```
-Gralinska, E., Kohl, C., Fadakar, B. S., & Vingron, M. (2022). Visualizing Cluster-specific Genes from Single-cell Transcriptomics Data Using Association Plots. Journal of Molecular Biology, 434(11), 167525.
+Gralinska, E., Kohl, C., Fadakar, B. S., & Vingron, M. (2022). 
+Visualizing Cluster-specific Genes from Single-cell Transcriptomics Data Using Association Plots. 
+Journal of Molecular Biology, 434(11), 167525.
 ```
 
 ## Installation
