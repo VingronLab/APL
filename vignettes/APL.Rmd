@@ -80,7 +80,10 @@ For this, please use the argument `python = FALSE` wherever applicable in this v
 
 ```{r reticulate, eval=FALSE}
 library(reticulate)
-install_miniconda() 
+install_miniconda()
+use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
+             required=TRUE)
+      
 conda_install(envname = "r-reticulate", packages = "numpy")
 conda_install(envname = "r-reticulate", packages = "pytorch")
 ```
