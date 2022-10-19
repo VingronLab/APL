@@ -22,7 +22,7 @@ NULL
 #' 
 #' @inherit calc_residuals return
 #'
-comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
+comp_std_residuals <- function(mat, clip = TRUE, cutoff = NULL){
 
   stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix")| is(mat, "dgCMatrix"))
   
@@ -51,10 +51,18 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
   # }
     
   S[is.na(S)] <- 0
-  
+
   if (isTRUE(clip)){
-    S <- clip_residuals(S, cutoff = cutoff)
+    
+    if(is.null(cutoff)) cutoff <- sqrt(ncol(S)/tot)
+      
+    S <- clip_residuals(Z, cutoff = cutoff)
   }
+
+  
+  # if (isTRUE(clip)){
+  #   S <- clip_residuals(S, cutoff = cutoff)
+  # }
 
 
   out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
