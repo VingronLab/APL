@@ -56,7 +56,7 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = NULL){
     
     if(is.null(cutoff)) cutoff <- sqrt(ncol(S)/tot)
       
-    S <- clip_residuals(Z, cutoff = cutoff)
+    S <- clip_residuals(S, cutoff = cutoff)
   }
 
   
