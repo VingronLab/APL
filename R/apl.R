@@ -206,7 +206,7 @@ apl_score <- function(caobj,
                       quant = 0.99,
                       python = FALSE,
                       store_perm = TRUE,
-                      method = "random"){
+                      method = "permutation"){
   
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
