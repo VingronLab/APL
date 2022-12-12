@@ -317,6 +317,7 @@ check_cacomp <- function(object) {
 #' @slot row_inertia class "numeric". Row-wise inertia in CA space.
 #' @slot col_inertia class "numeric". Column-wise inertia in CA space.
 #' @slot permuted_data class "list". Storage slot for permuted data.
+#' @slot params class "list". List of parameters.
 #' @export
 setClass("cacomp",
          representation(
@@ -330,6 +331,7 @@ setClass("cacomp",
            apl_rows = "matrix",
            apl_cols = "matrix",
            APL_score = "data.frame",
+           params = "list",
            dims = "numeric",
            group = "numeric",
            row_masses = "numeric",
@@ -351,6 +353,7 @@ setClass("cacomp",
            apl_rows = matrix(0, 0, 0),
            apl_cols = matrix(0, 0, 0),
            APL_score = data.frame(),
+           params = list(),
            dims = numeric(),
            group = numeric(),
            row_masses = numeric(),
@@ -443,46 +446,47 @@ cacomp_names <- function(caobj){
 
 
 
-
-#' Subset rows and columns of a cacomp object.
+# Left here for potential future inclusion:
+#
+#' #' Subset rows and columns of a cacomp object.
+#' #' 
+#' #' @param x cacomp object
+#' #' @param i rows to subset to.
+#' #' @param j columns to subset to.
+#' #' @param drop Whether or not to coerce to the lowest possible dimension. Should
+#' #' be FALSE!
+#' #' @param ... Furhter arguments
+#' #' 
+#' #' @returns 
+#' #' Returns a cacomp object with rows and columns subsetted.
+#' #' @export
+#' setMethod(
+#'   f = "[",
+#'   signature="cacomp",
+#'   definition=function(x, i=NULL, j=NULL,...,drop=FALSE){ 
+#'     if (is.null(i)) i <- seq_len(nrow(x@U))
+#'     if (is.null(j)) j <- seq_len(nrow(x@V))
 #' 
-#' @param x cacomp object
-#' @param i rows to subset to.
-#' @param j columns to subset to.
-#' @param drop Whether or not to coerce to the lowest possible dimension. Should
-#' be FALSE!
-#' @param ... Furhter arguments
-#' 
-#' @returns 
-#' Returns a cacomp object with rows and columns subsetted.
-#' @export
-setMethod(
-  f = "[",
-  signature="cacomp",
-  definition=function(x, i=NULL, j=NULL,...,drop=FALSE){ 
-    if (is.null(i)) i <- seq_len(nrow(x@U))
-    if (is.null(j)) j <- seq_len(nrow(x@V))
-
-    initialize(x,            
-           U = x@U[i,],
-           V = x@V[j,],
-           D = x@D,
-           std_coords_rows = x@std_coords_rows[i,],
-           std_coords_cols = x@std_coords_cols[j,],
-           prin_coords_rows = if(!is.empty(x@prin_coords_rows)) x@prin_coords_rows[i,] else matrix(0, 0, 0),
-           prin_coords_cols = if(!is.empty(x@prin_coords_cols)) x@prin_coords_cols[j,] else matrix(0, 0, 0),
-           apl_rows = if(!is.empty(x@apl_rows)) x@apl_rows[i,] else matrix(0, 0, 0),
-           apl_cols = if(!is.empty(x@apl_cols)) x@apl_cols[j,] else matrix(0, 0, 0),
-           APL_score = if(!is.empty(x@APL_score)) x@APL_score[which(x@APL_score$Row_num %in% i),] else data.frame(),
-           dims = x@dims,
-           group = intersect(x@group, j),
-           row_masses = x@row_masses[i],
-           col_masses = x@col_masses[j],
-           top_rows = min(length(i), x@top_rows),
-           tot_inertia = sum(x@row_inertia[i]),
-           row_inertia = x@row_inertia[i],
-           col_inertia = x@col_inertia[j],
-           permuted_data = list()
-         )
-  }
-)
+#'     initialize(x,            
+#'            U = x@U[i,],
+#'            V = x@V[j,],
+#'            D = x@D,
+#'            std_coords_rows = x@std_coords_rows[i,],
+#'            std_coords_cols = x@std_coords_cols[j,],
+#'            prin_coords_rows = if(!is.empty(x@prin_coords_rows)) x@prin_coords_rows[i,] else matrix(0, 0, 0),
+#'            prin_coords_cols = if(!is.empty(x@prin_coords_cols)) x@prin_coords_cols[j,] else matrix(0, 0, 0),
+#'            apl_rows = if(!is.empty(x@apl_rows)) x@apl_rows[i,] else matrix(0, 0, 0),
+#'            apl_cols = if(!is.empty(x@apl_cols)) x@apl_cols[j,] else matrix(0, 0, 0),
+#'            APL_score = if(!is.empty(x@APL_score)) x@APL_score[which(x@APL_score$Row_num %in% i),] else data.frame(),
+#'            dims = x@dims,
+#'            group = intersect(x@group, j),
+#'            row_masses = x@row_masses[i],
+#'            col_masses = x@col_masses[j],
+#'            top_rows = min(length(i), x@top_rows),
+#'            tot_inertia = sum(x@row_inertia[i]),
+#'            row_inertia = x@row_inertia[i],
+#'            col_inertia = x@col_inertia[j],
+#'            permuted_data = list()
+#'          )
+#'   }
+#' )
