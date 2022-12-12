@@ -1,6 +1,11 @@
 #' @include constructor.R
 NULL
 
+# TODO: change ca_3dplot in line with ca_biplot!!!
+# TODO: make rows/columns a specific color if only one of the metadata parameters
+# is NULL!
+
+
 #' Plot of the first 3D CA projection of the data.
 #'
 #' @description
@@ -269,7 +274,18 @@ setMethod(f = "ca_3Dplot",
 #' (label should be stored in colnames).
 #' Default NULL (no columns).
 #' @param type String. Type of plot to draw. Either "ggplot" or "plotly". 
-#' Default "plotly".
+#' Default "ggplot".
+#' @param col_metadata named vector of additional metadata to color points.
+#'  The names of the elements in col_metadata should correspond to the column 
+#'  names in 'obj'. If NULL columns will be in a single color. Can also specify
+#'  a metadata column for Seurat/SingleCellExperiment objects.
+#' @param row_metadata named vector of additional metadata to color points.
+#'  The names of the elements in row_metadata should correspond to the row 
+#'  names in 'obj'. If NULL rows will be in a single color. Can also specify
+#'  a metadata column for Seurat/SingleCellExperiment objects.
+#' @param show_all logical. If FALSE cells/genes that are not in col_metadata/
+#' row_metadata are not plotted. If *_metadata is NULL, the cell or genes 
+#' respectively will still be plotted.
 #' @param ... Further arguments.
 #' @export
 #' @examples
@@ -289,24 +305,192 @@ setGeneric("ca_biplot", function(obj,
                                  princ_coords = 1,
                                  row_labels = NULL,
                                  col_labels = NULL,
-                                 type = "plotly",
+                                 type = "ggplot",
+                                 col_metadata = NULL,
+                                 row_metadata = NULL,
+                                 show_all = TRUE,
                                  ...) {
   standardGeneric("ca_biplot")
 })
 
+
+# #' @rdname ca_biplot
+# #' @export
+# setMethod(f = "ca_biplot",
+#           signature=(obj="cacomp"),
+#           function(obj,
+#                    xdim = 1,
+#                    ydim = 2,
+#                    princ_coords = 1,
+#                    row_labels = NULL,
+#                    col_labels = NULL,
+#                    type = "plotly",
+#                    ...){
+# 
+#   if (!is(obj,"cacomp")){
+#     stop("Not a CA object. Please run cacomp() first!")
+#   }
+# 
+#   if (princ_coords == 1){
+# 
+#     if(sum(!is.null(obj@prin_coords_rows), !is.null(obj@std_coords_cols)) != 2){
+#       stop("Principal and/or standard coordinates not found, ",
+#            "please run ca_coords() first!")
+#     }
+#     rows <- obj@prin_coords_rows
+#     cols <- obj@std_coords_cols
+#   } else if (princ_coords == 2){
+#     if(sum(!is.null(obj@prin_coords_cols), !is.null(obj@std_coords_rows)) != 2){
+#       stop("Principal and/or standard coordinates not found, ",
+#            "please run ca_coords() first!")
+#     }
+#     rows <- obj@std_coords_rows
+#     cols <- obj@prin_coords_cols
+#   } else {
+#     stop("princ_coords must be either 1 for rows or 2 for columns.")
+#   }
+# 
+#   rows <- as.data.frame(rows)
+#   cols <- as.data.frame(cols)
+#   if (type == "ggplot"){
+# 
+#     # rows <- as.data.frame(rows)
+#     # cols <- as.data.frame(cols)
+#     #
+#     rnmx <- colnames(rows)[xdim]
+#     rnmy <- colnames(rows)[ydim]
+#     cnmx <- colnames(cols)[xdim]
+#     cnmy <- colnames(cols)[ydim]
+# 
+#     p <- ggplot2::ggplot()+
+#       ggplot2::geom_point(data=rows,
+#                           ggplot2::aes_(x = as.name(rnmx), y = as.name(rnmy)),
+#                           colour = "#0066FF",
+#                           alpha = 0.7, 
+#                           shape = 1) +
+#       ggplot2::geom_point(data=cols,
+#                           ggplot2::aes_(x = as.name(cnmx), y = as.name(cnmy)),
+#                           colour = "#990000",
+#                           shape = 4) +
+#       ggplot2::theme_bw()
+# 
+#     if (!is.null(row_labels)){
+#       p <- p +
+#       ggplot2::geom_point(data=rows[row_labels,],
+#                           ggplot2::aes_(x = as.name(rnmx),
+#                                         y = as.name(rnmy)),
+#                           colour = "#FF0000",
+#                           shape = 16) +
+#       ggrepel::geom_text_repel(data=rows[row_labels,],
+#                                ggplot2::aes_(x = as.name(rnmx),
+#                                              y = as.name(rnmy),
+#                                              label=rownames(rows[row_labels,])),
+#                                colour = "#FF0000",
+#                                max.overlaps = Inf)
+#     }
+#     if (!is.null(col_labels)){
+#       p <- p +
+#       ggplot2::geom_point(data=cols[col_labels,],
+#                           ggplot2::aes_(x = as.name(cnmx),
+#                                         y = as.name(cnmy)),
+#                           colour = "#990000",
+#                           shape = 1) +
+#       ggrepel::geom_text_repel(data=cols[col_labels,],
+#                                ggplot2::aes_(x = as.name(cnmx),
+#                                              y = as.name(cnmy),
+#                                              label=rownames(cols[col_labels,])),
+#                                colour = "#990000",
+#                                max.overlaps = Inf)
+#     }
+#   } else if (type == "plotly"){
+#     p <- plotly::plot_ly(type='scatter',
+#                          source='plot2D',
+#                          mode='markers') %>%
+#       plotly::add_trace(x = cols[,xdim],
+#                 y = cols[,ydim],
+#                 mode = 'markers',
+#                 text = rownames(cols),
+#                 textposition = "left",
+#                 opacity = 1,
+#                 marker = list(color = '#990000',
+#                               symbol = 'x',
+#                               size = 5),
+#                 name = 'Columns',
+#                 hoverinfo = 'text',
+#                 type = 'scatter') %>%
+#       plotly::add_trace(x = rows[,xdim],
+#                 y = rows[,ydim],
+#                 mode = 'markers',
+#                 text = rownames(rows),
+#                 opacity = 0.7,
+#                 marker = list(color ='#0066FF',
+#                               symbol = 'circle-open',
+#                               size = 2.5),
+#                 name = 'genes',
+#                 hoverinfo = 'text',
+#                 type = 'scatter')
+# 
+#     if (!is.null(row_labels)){
+#       p <- p %>%
+#         plotly::add_trace(x = rows[row_labels, xdim],
+#                   y = rows[row_labels, ydim],
+#                   mode = 'markers+text',
+#                   text = rownames(rows)[row_labels],
+#                   textposition = "left",
+#                   textfont = list(color='#FF0000'),
+#                   marker = list(symbol = 'circle',
+#                                 color ='#FF0000',
+#                                 size = 5),
+#                   name = 'marked row(s)',
+#                   hoverinfo = 'text',
+#                   type = 'scatter')
+#     }
+# 
+#     if (!is.null(col_labels)){
+#       p <- p %>%
+#         plotly::add_trace(x = cols[col_labels, xdim],
+#                   y = cols[col_labels, ydim],
+#                   mode = 'markers+text',
+#                   text = rownames(cols)[col_labels],
+#                   textposition = "left",
+#                   textfont = list(color='#990000'),
+#                   marker = list(symbol = 'circle-open',
+#                                 color ='#990000',
+#                                 size = 6.5),
+#                   name = 'marked column(s)',
+#                   hoverinfo = 'text',
+#                   type = 'scatter')
+#     }
+# 
+#     p <- p %>%
+#       plotly::layout(autosize = TRUE,
+#              title = '2D CA plot',
+#              showlegend = FALSE,
+#              xaxis = list(title = paste0('Dim', xdim)),
+#              yaxis = list(title = paste0('Dim', ydim)))
+# 
+#   }
+# 
+#   return(p)
+# 
+# })
+# 
 
 
 #' @rdname ca_biplot
 #' @export
 setMethod(f = "ca_biplot",
           signature=(obj="cacomp"),
-          function(obj,
+          function(obj, 
                    xdim = 1,
                    ydim = 2,
                    princ_coords = 1,
                    row_labels = NULL,
                    col_labels = NULL,
-                   type = "plotly",
+                   type = "ggplot",
+                   col_metadata = NULL,
+                   row_metadata = NULL,
+                   show_all = TRUE,
                    ...){
 
   if (!is(obj,"cacomp")){
@@ -333,31 +517,78 @@ setMethod(f = "ca_biplot",
   }
 
   rows <- as.data.frame(rows)
+  rows$name <- rownames(rows)
+  rows$type <- "row"
+  
   cols <- as.data.frame(cols)
-  if (type == "ggplot"){
-
-    # rows <- as.data.frame(rows)
-    # cols <- as.data.frame(cols)
-    #
-    rnmx <- colnames(rows)[xdim]
-    rnmy <- colnames(rows)[ydim]
-    cnmx <- colnames(cols)[xdim]
-    cnmy <- colnames(cols)[ydim]
-
-    p <- ggplot2::ggplot()+
-      ggplot2::geom_point(data=rows,
-                          ggplot2::aes_(x = as.name(rnmx), y = as.name(rnmy)),
-                          colour = "#0066FF",
-                          alpha = 0.7, 
-                          shape = 1) +
-      ggplot2::geom_point(data=cols,
-                          ggplot2::aes_(x = as.name(cnmx), y = as.name(cnmy)),
-                          colour = "#990000",
-                          shape = 4) +
-      ggplot2::theme_bw()
-
-    if (!is.null(row_labels)){
-      p <- p +
+  cols$name <- rownames(cols)
+  cols$type <- "column"
+  
+  if (is.null(col_metadata)) {
+    cols$group <- "column"
+  } else {
+    cols$group <- NA
+    
+    meta_cols <- col_metadata[names(col_metadata) %in% rownames(cols)]
+    col_idx <- base::match(rownames(cols), names(meta_cols))
+    meta_cols <- meta_cols[col_idx]
+    
+    cols$group <- meta_cols
+  }
+  
+  if (is.null(row_metadata)) {
+    rows$group <- "row"
+  } else {
+    rows$group <- NA
+    
+    meta_rows <- row_metadata[names(row_metadata) %in% rownames(rows)]
+    row_idx <- base::match(rownames(rows), names(meta_rows))
+    meta_rows <- meta_rows[row_idx]
+    
+    rows$group <- meta_rows
+  }
+  
+  if (isFALSE(show_all)){
+      rows <- rows[!is.na(rows$group),]
+      cols <- cols[!is.na(cols$group),]
+  }
+  
+  rnmx <- colnames(rows)[xdim]
+  rnmy <- colnames(rows)[ydim]
+  cnmx <- colnames(cols)[xdim]
+  cnmy <- colnames(cols)[ydim]
+  
+  p <- ggplot2::ggplot()+
+    ggplot2::geom_point(data=rows,
+                        ggplot2::aes_(x = as.name(rnmx), 
+                                      y = as.name(rnmy),
+                                      color = ~group,
+                                      text = paste0(
+                                        "Name: ", rows$name, "\n",
+                                        "Group: ", rows$group, "\n",
+                                        "Type: ", rows$type)
+                        ),
+                        alpha = 0.7, 
+                        shape = 1) +
+    ggplot2::geom_point(data=cols,
+                        ggplot2::aes_(x = as.name(cnmx), 
+                                      y = as.name(cnmy),
+                                      color = ~group,
+                                      text = paste0(
+                                        "Name: ", cols$name, "\n",
+                                        "Group: ", cols$group, "\n",
+                                        "Type: ", cols$type)
+                        ),
+                        shape = 4)
+  
+  if(is.null(col_metadata) & is.null(row_metadata)){
+    p <- p +
+      ggplot2::scale_color_manual(values = c("column" = "#990000",
+                                             "row" = "#0066FF"))
+  }
+  
+  if (!is.null(row_labels)){
+    p <- p +
       ggplot2::geom_point(data=rows[row_labels,],
                           ggplot2::aes_(x = as.name(rnmx),
                                         y = as.name(rnmy)),
@@ -369,9 +600,9 @@ setMethod(f = "ca_biplot",
                                              label=rownames(rows[row_labels,])),
                                colour = "#FF0000",
                                max.overlaps = Inf)
-    }
-    if (!is.null(col_labels)){
-      p <- p +
+  }
+  if (!is.null(col_labels)){
+    p <- p +
       ggplot2::geom_point(data=cols[col_labels,],
                           ggplot2::aes_(x = as.name(cnmx),
                                         y = as.name(cnmy)),
@@ -383,74 +614,18 @@ setMethod(f = "ca_biplot",
                                              label=rownames(cols[col_labels,])),
                                colour = "#990000",
                                max.overlaps = Inf)
-    }
+  }
+  
+  p <- p +  ggplot2::theme_bw()
+  
+  
+  if (type == "ggplot"){
+
+    return(p)
+
+
   } else if (type == "plotly"){
-    p <- plotly::plot_ly(type='scatter',
-                         source='plot2D',
-                         mode='markers') %>%
-      plotly::add_trace(x = cols[,xdim],
-                y = cols[,ydim],
-                mode = 'markers',
-                text = rownames(cols),
-                textposition = "left",
-                opacity = 1,
-                marker = list(color = '#990000',
-                              symbol = 'x',
-                              size = 5),
-                name = 'Columns',
-                hoverinfo = 'text',
-                type = 'scatter') %>%
-      plotly::add_trace(x = rows[,xdim],
-                y = rows[,ydim],
-                mode = 'markers',
-                text = rownames(rows),
-                opacity = 0.7,
-                marker = list(color ='#0066FF',
-                              symbol = 'circle-open',
-                              size = 2.5),
-                name = 'genes',
-                hoverinfo = 'text',
-                type = 'scatter')
-
-    if (!is.null(row_labels)){
-      p <- p %>%
-        plotly::add_trace(x = rows[row_labels, xdim],
-                  y = rows[row_labels, ydim],
-                  mode = 'markers+text',
-                  text = rownames(rows)[row_labels],
-                  textposition = "left",
-                  textfont = list(color='#FF0000'),
-                  marker = list(symbol = 'circle',
-                                color ='#FF0000',
-                                size = 5),
-                  name = 'marked row(s)',
-                  hoverinfo = 'text',
-                  type = 'scatter')
-    }
-
-    if (!is.null(col_labels)){
-      p <- p %>%
-        plotly::add_trace(x = cols[col_labels, xdim],
-                  y = cols[col_labels, ydim],
-                  mode = 'markers+text',
-                  text = rownames(cols)[col_labels],
-                  textposition = "left",
-                  textfont = list(color='#990000'),
-                  marker = list(symbol = 'circle-open',
-                                color ='#990000',
-                                size = 6.5),
-                  name = 'marked column(s)',
-                  hoverinfo = 'text',
-                  type = 'scatter')
-    }
-
-    p <- p %>%
-      plotly::layout(autosize = TRUE,
-             title = '2D CA plot',
-             showlegend = FALSE,
-             xaxis = list(title = paste0('Dim', xdim)),
-             yaxis = list(title = paste0('Dim', ydim)))
-
+    p <- plotly::ggplotly(p, tooltip = c("text"))
   }
 
   return(p)
@@ -470,7 +645,10 @@ setMethod(f = "ca_biplot",
                    princ_coords = 1,
                    row_labels = NULL,
                    col_labels = NULL,
-                   type = "plotly",
+                   type = "ggplot",
+                   col_metadata = NULL,
+                   row_metadata = NULL,
+                   show_all = TRUE,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts"){
@@ -483,14 +661,38 @@ setMethod(f = "ca_biplot",
     stop("No 'CA' dim. reduction object found. ",
          "Please run cacomp(seurat_obj, assay) first.")
   }
+            
+            if (!is.null(col_metadata) & 
+                length(col_metadata) == 1 &
+                isTRUE(col_metadata %in% colnames(obj@meta.data))) {
+              
+              cell_meta <- obj@meta.data[,col_metadata]
+              names(cell_meta) <- rownames(obj@meta.data)
+            } else {
+              cell_meta <- col_metadata
+            }
+            
+            if (!is.null(row_metadata) & 
+                length(row_metadata) == 1 &
+                isTRUE(row_metadata %in% colnames(obj[[assay]][[]]))) {
+              
+              gene_meta <- obj[[assay]][[]][,row_metadata]
+              names(gene_meta) <- rownames(obj[[assay]][[]])
+            } else {
+              gene_meta <- row_metadata
+            }
 
+  
  p <-  ca_biplot(obj = caobj,
-            xdim = xdim,
-            ydim = ydim,
-            princ_coords = princ_coords,
-            row_labels = row_labels,
-            col_labels = col_labels,
-            type = type)
+                xdim = xdim,
+                ydim = ydim,
+                princ_coords = princ_coords,
+                row_labels = row_labels,
+                col_labels = col_labels,
+                type = type,
+                col_metadata = cell_meta,
+                row_metadata = gene_meta,
+                show_all = show_all)
 
  return(p)
 })
@@ -507,7 +709,10 @@ setMethod(f = "ca_biplot",
                    princ_coords = 1,
                    row_labels = NULL,
                    col_labels = NULL,
-                   type = "plotly",
+                   type = "ggplot",
+                   col_metadata = NULL,
+                   row_metadata = NULL,
+                   show_all = TRUE,
                    ...,
                    assay = "counts"){
 
@@ -521,7 +726,28 @@ setMethod(f = "ca_biplot",
          "Please run cacomp(sce, top, coords = FALSE, ",
          "return_input=TRUE) first.")
   }
-
+  
+  if (!is.null(col_metadata) & 
+      length(col_metadata) == 1 &
+      isTRUE(col_metadata %in% colnames(colData(obj)))) {
+    
+      cell_meta <- colData(obj)[,col_metadata]
+      names(cell_meta) <- rownames(colData(obj))
+  } else {
+    cell_meta <- col_metadata
+  }
+            
+  if (!is.null(row_metadata) & 
+      length(row_metadata) == 1 &
+      isTRUE(row_metadata %in% colnames(rowData(obj)))) {
+    
+    gene_meta <- rowData(obj)[,row_metadata]
+    names(gene_meta) <- rownames(rowData(obj))
+    
+  } else {
+    gene_meta <- row_metadata
+  }
+    
 
   p <-  ca_biplot(obj = caobj,
                   xdim = xdim,
@@ -529,7 +755,10 @@ setMethod(f = "ca_biplot",
                   princ_coords = princ_coords,
                   row_labels = row_labels,
                   col_labels = col_labels,
-                  type = type)
+                  type = type,
+                  col_metadata = cell_meta,
+                  row_metadata = gene_meta,
+                  show_all = show_all)
 
   return(p)
 })
