@@ -71,6 +71,8 @@ calculations.}
 \item{\code{col_inertia}}{class "numeric". Column-wise inertia in CA space.}
 
 \item{\code{permuted_data}}{class "list". Storage slot for permuted data.}
+
+\item{\code{params}}{class "list". List of parameters.}
 }}
 
 \examples{

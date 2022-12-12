@@ -22,7 +22,7 @@ NULL
 #' 
 #' @inherit calc_residuals return
 #'
-comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
+comp_std_residuals <- function(mat, clip = TRUE, cutoff = NULL){
 
   stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix")| is(mat, "dgCMatrix"))
   
@@ -39,24 +39,34 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
   E <- rowm %o% colm      # expected proportions
   # E <- rowm %*% Matrix::t(colm)
   
-  if (is(P, 'dgCMatrix')){
-    
-    idx = cbind(P@i+1, rep(1:P@Dim[2], diff(P@p)))
-    S = -E/sqrt(E)
-    S[idx] = P@x/sqrt(E[idx]) + S[idx]
-    
-  }else{
-    S <-  (P - E) / sqrt(E)         # standardized residuals
-  }
+  # if (is(P, 'dgCMatrix')){
+  #   
+  #   idx = cbind(P@i+1, rep(1:P@Dim[2], diff(P@p)))
+  #   S = -E/sqrt(E)
+  #   S[idx] = P@x/sqrt(E[idx]) + S[idx]
+  # }else{
+      
+  S <-  (P - E) / sqrt(E)         # standardized residuals
 
+  # }
+    
   S[is.na(S)] <- 0
-  rownames(S) = rownames(mat)
 
   if (isTRUE(clip)){
+    
+    if(is.null(cutoff)) cutoff <- sqrt(ncol(S)/tot)
+      
     S <- clip_residuals(S, cutoff = cutoff)
   }
 
+  
+  # if (isTRUE(clip)){
+  #   S <- clip_residuals(S, cutoff = cutoff)
+  # }
+
+
   out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
+
   return(out)
 }
 
@@ -78,13 +88,17 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = 1){
 #' https://doi.org/10.1186/s13059-021-02451-7
 #' 
 #' @inherit calc_residuals return
-comp_NB_residuals <- function(mat, theta = 100, clip = TRUE, cutoff = NULL, freq = TRUE){
+comp_NB_residuals <- function(mat,
+                              theta = 100,
+                              clip = TRUE,
+                              cutoff = NULL,
+                              freq = TRUE){
   
 
   if (isTRUE(freq)) mat <- mat/sum(mat)
 
-  rowS <- rowSums(mat)          
-  colS <- colSums(mat)          
+  rowS <- Matrix::rowSums(mat)          
+  colS <- Matrix::colSums(mat)          
 
   tot <- sum(mat)
 
@@ -364,42 +378,44 @@ inertia_rows <- function(mat, top = 5000, ...){
 #' samples/cells in columns.
 #' Should contain row and column names.
 #' @param coords Logical. Indicates whether CA standard coordinates should be 
-#' calculated. Default TRUE
+#' calculated.
 #' @param python A logical value indicating whether to use singular-value 
 #' decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()` 
-#' in R.
+#' in R when calculating the full SVD. This parameter only works when dims==NULL
+#' or dims==rank(mat), where caculating a full SVD is demanded.
 #' @param princ_coords Integer. Number indicating whether principal 
 #' coordinates should be calculated for the rows (=1), columns (=2), 
 #' both (=3) or none (=0).
-#' Default 1.
 #' @param dims Integer. Number of CA dimensions to retain. Default NULL 
 #' (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. Default 5000.
-#' @param inertia Logical.. Whether total, row and column inertias should be 
-#' calculated and returned. Default TRUE.
+#' @param top Integer. Number of most variable rows to retain. 
+#' Set NULL to keep all.
+#' @param inertia Logical. Whether total, row and column inertias should be 
+#' calculated and returned.
 #' @param rm_zeros Logical. Whether rows & cols containing only 0s should be 
-#' removed. Keeping zero only rows/cols might lead to unexpected results. 
-#' Default TRUE.
+#' removed. Keeping zero only rows/cols might lead to unexpected results.
 #' @inheritParams calc_residuals
 #' @param ... Arguments forwarded to methods.
 run_cacomp <- function(obj,
-                   coords = TRUE,
-                   princ_coords = 3,
-                   python = FALSE,
-                   dims = NULL,
-                   top = 5000,
-                   inertia = TRUE,
-                   rm_zeros = TRUE,
-                   residuals = "pearson",
-                   cutoff = NULL,
-                   clip = TRUE,
-                   ...){
+                       coords = TRUE,
+                       princ_coords = 3,
+                       python = FALSE,
+                       dims = NULL,
+                       top = 5000,
+                       inertia = TRUE,
+                       rm_zeros = TRUE,
+                       residuals = "pearson",
+                       cutoff = NULL,
+                       clip = TRUE,
+                       ...){
 
   stopifnot("Input matrix does not have any rownames!" =
               !is.null(rownames(obj)))
   stopifnot("Input matrix does not have any colnames!" = 
               !is.null(colnames(obj)))
+  
+  parameters <- list()
   
   if (rm_zeros == TRUE){
     
@@ -421,6 +437,7 @@ run_cacomp <- function(obj,
                     residuals = residuals,
                     clip = clip,
                     cutoff = cutoff)
+    
     res <- calc_residuals(mat = obj,
                           residuals = residuals,
                           clip = clip,
@@ -444,11 +461,12 @@ run_cacomp <- function(obj,
       toptmp <- nrow(obj)
       
   } 
-
+    
   S <- res$S
   tot <- res$tot
   rowm <- res$rowm
   colm <- res$colm
+  
   
   k <- min(dim(S))-1
   
@@ -462,7 +480,8 @@ run_cacomp <- function(obj,
       
         if (python == TRUE){
           svd_torch <- NULL
-          S <- as.matrix(S)
+          if(!is(S, "matrix")) S <- as.matrix(S)
+          
           # require(reticulate)
           # source_python('./python_svd.py')
           reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
@@ -480,25 +499,11 @@ run_cacomp <- function(obj,
           if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
         }
     } else {
-      ## if number of dimensions are given, turn to calculate partial SVD
+      # if number of dimensions are given, turn to calculate partial SVD
       
-      if (python == TRUE){
-        
-        svd_scipy <- NULL
-        reticulate::source_python(system.file("python/python_svd.py", package = "CAclust"), envir = globalenv())
-        if (!is(S, 'dgCMatrix') ){
-          S <- Matrix::Matrix(S, sparse = TRUE)
-        }
-        SVD <- svds_scipy(S, k = dims, which = 'LM', solver = 'lobpcg')
-        names(SVD) <- c("U", "D", "V")
-        
-      } else {
-        
-        SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
-        SVD = SVD[1:3]
-        names(SVD)[1:3] <- c("D", "U", "V")
-        
-      }
+      SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
+      SVD <- SVD[1:3]
+      names(SVD)[1:3] <- c("D", "U", "V")
       SVD$D <- as.vector(SVD$D)
     }
   
@@ -520,11 +525,44 @@ run_cacomp <- function(obj,
 
   SVD$row_masses <- rowm
   SVD$col_masses <- colm
+  
+  
+   if(!is.null(dims)){
+      if (dims >= length(SVD$D)){
+          if (dims > length(SVD$D)){
+              warning("Chosen number of dimensions is larger than the ",
+                      "number of dimensions obtained from the singular ",
+                      "value decomposition. Argument ignored.")
+          }
+          dims <- length(SVD$D)
+      } else {
+          dims <- min(dims, length(SVD$D))
+          dimseq <- seq(dims)
+          
+          # subset to number of dimensions
+          SVD$U <- SVD$U[,dimseq]
+          SVD$V <- SVD$V[,dimseq]
+          SVD$D <- SVD$D[dimseq]
+      }
+  } else {
+      dims <- length(SVD$D)
+  }
+  
+  
+  SVD$dims <- dims
   SVD$top_rows <- toptmp
-
+  
+  # parameters$top_rows <- toptmp
+  # parameters$dims <- dims
+  parameters$residuals <- residuals
+  parameters$clip <- clip
+  parameters$cutoff <- cutoff
+  parameters$rm_zeros <- rm_zeros
+  parameters$python <- python
+  
+  SVD$params <- parameters
+  
   SVD <- do.call(new_cacomp, SVD)
-  SVD <- subset_dims(SVD, dims)
-  # class(SVD) <- "cacomp"
 
   if (coords == TRUE){
     # message("Calculating coordinates...")
@@ -533,36 +571,15 @@ run_cacomp <- function(obj,
                      dims = dims,
                      princ_coords = princ_coords,
                      princ_only = FALSE)
-  } else {
-    if(!is.null(dims)){
-      if (dims >= length(SVD@D)){
-        if (dims > length(SVD@D)){
-          warning("Chosen number of dimensions is larger than the ",
-                  "number of dimensions obtained from the singular ",
-                  "value decomposition. Argument ignored.")
-        }
-        SVD@dims <- length(SVD@D)
-      } else {
-        dims <- min(dims, length(SVD@D))
-        SVD@dims <- dims
-
-        dims <- seq(dims)
-
-        # subset to number of dimensions
-        SVD@U <- SVD@U[,dims]
-        SVD@V <- SVD@V[,dims]
-        SVD@D <- SVD@D[dims]
-      }
-    } else {
-      SVD@dims <- length(SVD@D)
-    }
+  } 
+  
+  # check if dimensions with ~zero singular values are selected, 
+  # in case the dimensions selected are more then rank of matrix
+  if (min(SVD@D) <= 1e-6){
+      warning(paste('Too many dimensions are selected!',
+                    'Number of dimensions should be smaller than rank of matrix!'))
   }
-    
-    # check if dimensions with ~zero singular values are selected, 
-    # in case the dimensions selected are more then rank of matrix
-    if (min(SVD@D) <= 1e-6){
-        warning('Too many dimensions are selected!! Number of dimensions should be smaller than rank of matrix!')
-    }
+  
 
   stopifnot(validObject(SVD))
   return(SVD)
@@ -598,25 +615,7 @@ run_cacomp <- function(obj,
 #' For sequencing a count matrix, gene expression values with genes in rows 
 #' and samples/cells in columns.
 #' Should contain row and column names.
-#' @param coords Logical. Indicates whether CA standard coordinates should be 
-#' calculated. Default TRUE
-#' @param python A logical value indicating whether to use singular-value 
-#' decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` 
-#' in R.
-#' @param princ_coords Integer. Number indicating whether principal 
-#' coordinates should be calculated for the rows (=1), columns (=2), 
-#' both (=3) or none (=0).
-#' Default 1.
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL 
-#' (keeps all dimensions).
-#' @param top Integer. Number of most variable rows to retain. 
-#' Default 5000. (set NULL to keep all).
-#' @param inertia Logical.. Whether total, row and column inertias should be 
-#' calculated and returned. Default TRUE.
-#' @param rm_zeros Logical. Whether rows & cols containing only 0s should be 
-#' removed.
-#' Keeping zero only rows/cols might lead to unexpected results. Default TRUE.
+#' @inheritParams run_cacomp
 #' @inheritParams calc_residuals
 #' @param ... Arguments forwarded to methods.
 #' @examples
@@ -639,6 +638,8 @@ setGeneric("cacomp", function(obj,
                               inertia = TRUE,
                               rm_zeros = TRUE,
                               residuals = "pearson",
+                              cutoff = NULL,
+                              clip = TRUE,
                               ...) {
   standardGeneric("cacomp")
 })
@@ -657,6 +658,8 @@ setMethod(f = "cacomp",
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    residuals = "pearson",
+                   cutoff = NULL,
+                   clip = TRUE,
                    ...){
 
     caobj <- run_cacomp(obj = obj,
@@ -668,6 +671,8 @@ setMethod(f = "cacomp",
                         inertia = inertia,
                         rm_zeros = rm_zeros,
                         residuals = residuals,
+                        cutoff = cutoff,
+                        clip = clip,
                         ...)
 
     return(caobj)
@@ -687,6 +692,8 @@ setMethod(f = "cacomp",
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    residuals = "pearson",
+                   cutoff = NULL,
+                   clip = TRUE,
                    ...){
             
             caobj <- run_cacomp(obj = obj,
@@ -698,6 +705,8 @@ setMethod(f = "cacomp",
                                 inertia = inertia,
                                 rm_zeros = rm_zeros,
                                 residuals = residuals,
+                                cutoff = cutoff,
+                                clip = clip,
                                 ...)
             
             return(caobj)
@@ -765,6 +774,8 @@ setMethod(f = "cacomp",
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    residuals = "pearson",
+                   cutoff = NULL,
+                   clip = TRUE,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts",
@@ -790,6 +801,8 @@ setMethod(f = "cacomp",
                       rm_zeros = rm_zeros,
                       inertia = inertia,
                       residuals = residuals,
+                      cutoff = cutoff,
+                      clip = clip,
                       ...)
 
   if (return_input == TRUE){
@@ -800,7 +813,8 @@ setMethod(f = "cacomp",
                                                loadings = caobj@prin_coords_rows,
                                                stdev = caobj@D,
                                                key = "Dim_",
-                                               assay = assay)
+                                               assay = assay,
+                                               misc = caobj@params)
 
     return(obj)
   } else {
@@ -874,6 +888,8 @@ setMethod(f = "cacomp",
                    inertia = TRUE,
                    rm_zeros = TRUE,
                    residuals = "pearson",
+                   cutoff = NULL,
+                   clip = TRUE,
                    ...,
                    assay = "counts",
                    return_input = FALSE){
@@ -898,6 +914,8 @@ setMethod(f = "cacomp",
                      rm_zeros = rm_zeros,
                      inertia = inertia,
                      residuals = residuals,
+                     cutoff = cutoff,
+                     clip = clip,
                      ...)
 
   if (return_input == TRUE){
@@ -909,7 +927,8 @@ setMethod(f = "cacomp",
     attr(ca, "prin_coords_rows") <- caobj@prin_coords_rows
     attr(ca, "singval") <- caobj@D
     attr(ca, "percInertia") <- percentInertia
-
+    attr(ca, "params") <- caobj@params
+    
     SingleCellExperiment::reducedDim(obj, "CA") <- ca
 
     return(obj)
@@ -1205,6 +1224,10 @@ elbow_method <- function(obj,
   expl_inertia <- (ev/sum(ev)) *100
   max_num_dims <- length(obj@D)
   
+  if(isTRUE(obj@params$rm_zeros)){
+      mat <- rm_zeros(mat)
+  }
+  
   matrix_expl_inertia_perm <- matrix(0, nrow = max_num_dims , ncol = reps)
   
   pb <- txtProgressBar(min = 0, max = reps, style = 3)
@@ -1220,7 +1243,10 @@ elbow_method <- function(obj,
                        top = obj@top_rows,
                        dims = obj@dims,
                        coords = FALSE,
-                       python = python)
+                       python = python,
+                       residuals = obj@params$residuals,
+                       cutoff = obj@params$cutoff,
+                       clip = obj@params$clip)
     
     ev_perm <- obj_perm@D^2
     expl_inertia_perm <- (ev_perm/sum(ev_perm))*100

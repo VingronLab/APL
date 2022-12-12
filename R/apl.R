@@ -206,7 +206,7 @@ apl_score <- function(caobj,
                       quant = 0.99,
                       python = FALSE,
                       store_perm = TRUE,
-                      method = "random"){
+                      method = "permutation"){
   
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
@@ -242,7 +242,7 @@ apl_score <- function(caobj,
     stopifnot("mat parameter required for permutation!" =
                 !is.null(mat))
     stopifnot("mat needs to be of class matrix" =
-                is(mat, "matrix"))
+                is(mat, "matrix") | is(mat, "Matrix"))
     
     res <- permutation_cutoff(caobj = caobj,
                               mat = mat,
@@ -325,8 +325,11 @@ permutation_cutoff <- function(caobj,
     
     #permute rows and rerun cacomp
     
-    if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
-      calist <- caobj@permuted_data[[k]][seq_len(3)]
+    if(isTRUE(store_perm) & 
+       identical(reps, attr(caobj@permuted_data,'reps')) &
+       !is.empty(caobj@permuted_data)){
+        
+      calist <- caobj@permuted_data[[k]][seq_len(4)]
       mat <- caobj@permuted_data[[k]]$mat
       mat <- mat[rownames(mat) %in% rownames(calist$std_coords_rows),]
       caobjp <- recompute(calist, mat)
@@ -342,12 +345,17 @@ permutation_cutoff <- function(caobj,
                                         princ_coords = pc,
                                         dims = dims,
                                         top = caobj@top_rows,
+                                        residuals = caobj@params$residuals,
+                                        clip = caobj@params$clip,
+                                        cutoff = caobj@params$cutoff,
+                                        rm_zeros = caobj@params$rm_zeros,
                                         inertia = FALSE))
       
       if(isTRUE(store_perm)){
         x <- list("std_coords_cols" = caobjp@std_coords_cols,
                   "std_coords_rows" = caobjp@std_coords_rows,
                   "D" = caobjp@D,
+                  "params" = caobjp@params,
                   "mat" = mat_perm)
         
         saved_ca[[k]] <- x
@@ -1114,36 +1122,21 @@ apl <- function(caobj,
 #' Should contain row and column names.
 #' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied 
 #' will be calculated. Default NULL.
-#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all 
-#' dimensions).
-#' @param group Numeric/Character. Vector of indices or column names of the 
-#' columns to calculate centroid/x-axis direction.
+#' @inheritParams cacomp
+#' @inheritParams apl_coords
+#' @inheritParams apl
+#' @inheritParams apl_score
 #' @param nrow Integer. The top nrow scored row labels will be added to the 
 #' plot if score = TRUE. Default 10.
-#' @param top Integer. Number of most variable rows to retain. Default 5000 
-#' rows (set NULL to keep all).
 #' @param score Logical. Whether rows should be scored and ranked. Ignored when 
 #' a vector is supplied to mark_rows. Default TRUE.
+#' @param score_method Method to calculate the cutoff. Either "random" for random 
+#' direction method or "permutation" for the permutation method.
 #' @param mark_rows Character vector. Names of rows that should be highlighted 
 #' in the plot. If not NULL, score is ignored. Default NULL.
 #' @param mark_cols Character vector. Names of cols that should be highlighted 
 #' in the plot.
 #' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param python A logical value indicating whether to use singular value 
-#' decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` 
-#' in R.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
-#' should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx 
-#' should be labeled with text. Default TRUE.
-#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an 
-#' interactive plot "plotly". Default "plotly".
-#' @param show_cols Logical. Whether column points should be plotted.
-#' @param show_rows Logical. Whether row points should be plotted.
-#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff
-#' will be colored according to their score if show_score = TRUE.
-#' @param score_color Either "rainbow" or "viridis".
 #' @param pd_method Which method to use for pick_dims (\link[APL]{pick_dims}).
 #' @param pd_reps Number of repetitions performed when using "elbow_rule" in 
 #' `pick_dims`.
@@ -1159,6 +1152,7 @@ setGeneric("runAPL", function(obj,
                               nrow = 10,
                               top = 5000,
                               score = TRUE,
+                              score_method = "random",
                               mark_rows = NULL,
                               mark_cols = caobj@group,
                               reps = 3,
@@ -1205,6 +1199,7 @@ setMethod(f = "runAPL",
                    nrow = 10,
                    top = 5000,
                    score = TRUE,
+                   score_method = "random",
                    mark_rows = NULL,
                    mark_cols = NULL,
                    reps = 3,
@@ -1232,7 +1227,10 @@ setMethod(f = "runAPL",
                     top = top,
                     princ_coords = 3,
                     dims = dims,
-                    python = python)
+                    python = python,
+                    residuals = "pearson",
+                    clip = TRUE,
+                    cutoff = 1)
     
     if(is.null(dims) & isTRUE(pd_use)){
       
@@ -1335,6 +1333,7 @@ setMethod(f = "runAPL",
                          mat = obj,
                          dims = caobj@dims,
                          group = caobj@group,
+                         method = score_method,
                          reps= reps,
                          python = python)
 
@@ -1441,6 +1440,7 @@ setMethod(f = "runAPL",
                    nrow = 10,
                    top = 5000,
                    score = TRUE,
+                   score_method = "random",
                    mark_rows = NULL,
                    mark_cols = NULL,
                    reps = 3,
@@ -1476,6 +1476,7 @@ setMethod(f = "runAPL",
         nrow = nrow,
         top = top,
         score = score,
+        score_method = score_method,
         reps = reps,
         python = python,
         row_labs = row_labs,
@@ -1539,6 +1540,7 @@ setMethod(f = "runAPL",
                    nrow = 10,
                    top = 5000,
                    score = TRUE,
+                   score_method = "random",
                    mark_rows = NULL,
                    mark_cols = NULL,
                    reps = 3,
@@ -1574,6 +1576,7 @@ setMethod(f = "runAPL",
         dims= dims,
         group = group,
         score = score,
+        score_method = score_method,
         reps = reps,
         python = python,
         mark_rows = mark_rows,
