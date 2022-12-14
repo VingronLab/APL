@@ -42,9 +42,9 @@ test_that("check recompute function", {
 
 # seu <- CreateSeuratObject(smoke)
 # seu <- cacomp(seu,
-#               princ_coords = 3, 
+#               princ_coords = 3,
 #               return_input = TRUE,
-#               assay = "RNA", 
+#               assay = "RNA",
 #               slot = "counts")
 # 
 # sce <- SingleCellExperiment(list(counts=smoke))
