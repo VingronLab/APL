@@ -4,7 +4,7 @@
 \alias{comp_NB_residuals}
 \title{Compute Negative-Binomial residuals}
 \usage{
-comp_NB_residuals(mat, theta = 100, clip = TRUE, cutoff = NULL, freq = TRUE)
+comp_NB_residuals(mat, theta = 100, clip = FALSE, cutoff = NULL, freq = TRUE)
 }
 \arguments{
 \item{mat}{A numerical matrix or coercible to one by `as.matrix()`.

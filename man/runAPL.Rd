@@ -14,8 +14,9 @@ runAPL(
   dims = NULL,
   nrow = 10,
   top = 5000,
+  clip = FALSE,
   score = TRUE,
-  score_method = "random",
+  score_method = "permutation",
   mark_rows = NULL,
   mark_cols = caobj@group,
   reps = 3,
@@ -40,8 +41,9 @@ runAPL(
   dims = NULL,
   nrow = 10,
   top = 5000,
+  clip = FALSE,
   score = TRUE,
-  score_method = "random",
+  score_method = "permutation",
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
@@ -66,8 +68,9 @@ runAPL(
   dims = NULL,
   nrow = 10,
   top = 5000,
+  clip = FALSE,
   score = TRUE,
-  score_method = "random",
+  score_method = "permutation",
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
@@ -93,8 +96,9 @@ runAPL(
   dims = NULL,
   nrow = 10,
   top = 5000,
+  clip = FALSE,
   score = TRUE,
-  score_method = "random",
+  score_method = "permutation",
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
@@ -134,6 +138,9 @@ plot if score = TRUE. Default 10.}
 
 \item{top}{Integer. Number of most variable rows to retain. 
 Set NULL to keep all.}
+
+\item{clip}{logical. Whether residuals should be clipped if they are 
+higher/lower than a specified cutoff}
 
 \item{score}{Logical. Whether rows should be scored and ranked. Ignored when 
 a vector is supplied to mark_rows. Default TRUE.}
