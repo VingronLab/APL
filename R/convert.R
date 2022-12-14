@@ -215,7 +215,7 @@ recompute <- function(calist, mat, ...){
                   na.rm = TRUE)
   }
 
-  if (calist$params$clip)
+  # if (calist$params$clip)
   if(isTRUE(call_svd)){
     message("Calling cacomp to recompute from matrix.")
     ca <- cacomp(mat,
@@ -261,8 +261,8 @@ recompute <- function(calist, mat, ...){
     calist$row_inertia <- Matrix::rowSums(S^2)
     calist$col_inertia <- Matrix::colSums(S^2)
 
-    calist$top_rows <- top
-    calist$dims <- dims
+    calist$top_rows <- nrow(mat)
+    calist$dims <- length(calist$D)
   }
 
   ca <- do.call(new_cacomp, calist)

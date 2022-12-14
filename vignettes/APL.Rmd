@@ -264,7 +264,7 @@ It is therefore often easier to work with a `cacomp` object instead.
 We can convert `r BiocStyle::CRANpkg("Seurat")` or `r BiocStyle::Biocpkg("SingleCellExperiment")` objects which have CA results stored to a `cacomp` object using the function `as.cacomp()`:
 
 ```{r convert}
-# Converting the object pbmc to cacomp
+# Converting the object darmanis to cacomp
 ca <- as.cacomp(darmanis)
 ```
 
