@@ -19,7 +19,7 @@ cacomp(
   rm_zeros = TRUE,
   residuals = "pearson",
   cutoff = NULL,
-  clip = TRUE,
+  clip = FALSE,
   ...
 )
 
@@ -34,7 +34,7 @@ cacomp(
   rm_zeros = TRUE,
   residuals = "pearson",
   cutoff = NULL,
-  clip = TRUE,
+  clip = FALSE,
   ...
 )
 
@@ -49,7 +49,7 @@ cacomp(
   rm_zeros = TRUE,
   residuals = "pearson",
   cutoff = NULL,
-  clip = TRUE,
+  clip = FALSE,
   ...
 )
 
@@ -64,7 +64,7 @@ cacomp(
   rm_zeros = TRUE,
   residuals = "pearson",
   cutoff = NULL,
-  clip = TRUE,
+  clip = FALSE,
   ...,
   assay = Seurat::DefaultAssay(obj),
   slot = "counts",
@@ -82,7 +82,7 @@ cacomp(
   rm_zeros = TRUE,
   residuals = "pearson",
   cutoff = NULL,
-  clip = TRUE,
+  clip = FALSE,
   ...,
   assay = "counts",
   return_input = FALSE

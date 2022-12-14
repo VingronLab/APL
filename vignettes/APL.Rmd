@@ -271,7 +271,7 @@ ca <- as.cacomp(darmanis)
 ## Reducing the number of CA dimensions {#dim_reduc}
 
 When working with high-dimensional data, after singular value decomposition there will often be many dimensions which are representing the noise in the data.
-In order to minimize the noise, it is generally recommended to reduce the dimensionsionality of the data before generating Association Plots.
+In order to minimize the noise, it is generally recommended to reduce the dimensionality of the data before generating Association Plots.
 
 The number of dimensions to retain can be computed using the function `pick_dims`.
 This function offers three standard methods which we implemented:

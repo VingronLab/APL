@@ -22,7 +22,7 @@ NULL
 #' 
 #' @inherit calc_residuals return
 #'
-comp_std_residuals <- function(mat, clip = TRUE, cutoff = NULL){
+comp_std_residuals <- function(mat, clip = FALSE, cutoff = NULL){
 
   stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix")| is(mat, "dgCMatrix"))
   
@@ -37,19 +37,8 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = NULL){
   colm <- Matrix::colSums(P)          # column masses
 
   E <- rowm %o% colm      # expected proportions
-  # E <- rowm %*% Matrix::t(colm)
-  
-  # if (is(P, 'dgCMatrix')){
-  #   
-  #   idx = cbind(P@i+1, rep(1:P@Dim[2], diff(P@p)))
-  #   S = -E/sqrt(E)
-  #   S[idx] = P@x/sqrt(E[idx]) + S[idx]
-  # }else{
-      
   S <-  (P - E) / sqrt(E)         # standardized residuals
 
-  # }
-    
   S[is.na(S)] <- 0
 
   if (isTRUE(clip)){
@@ -90,7 +79,7 @@ comp_std_residuals <- function(mat, clip = TRUE, cutoff = NULL){
 #' @inherit calc_residuals return
 comp_NB_residuals <- function(mat,
                               theta = 100,
-                              clip = TRUE,
+                              clip = FALSE,
                               cutoff = NULL,
                               freq = TRUE){
   
@@ -174,7 +163,7 @@ comp_ft_residuals <- function(mat){
     
     S <- pmat^.5 + (pmat + 1/N)^.5 - (4*expectedp + 1/N)^.5
     
-    return(list("S"=S, "tot"=N, "rowm"=row.w, "colm"=col.w))
+    return(list("S" = S, "tot" = N, "rowm" = row.w, "colm" = col.w))
 
 }
 
@@ -198,7 +187,7 @@ comp_ft_residuals <- function(mat){
 #' * "colm": column masses.
 #' 
 #' @md
-calc_residuals <- function(mat, residuals = "pearson", clip = TRUE, cutoff = NULL){
+calc_residuals <- function(mat, residuals = "pearson", clip = FALSE, cutoff = NULL){
   
   if (residuals == "pearson"){
         # message("\nusing pearson residuals")
@@ -407,7 +396,7 @@ run_cacomp <- function(obj,
                        rm_zeros = TRUE,
                        residuals = "pearson",
                        cutoff = NULL,
-                       clip = TRUE,
+                       clip = FALSE,
                        ...){
 
   stopifnot("Input matrix does not have any rownames!" =
@@ -639,7 +628,7 @@ setGeneric("cacomp", function(obj,
                               rm_zeros = TRUE,
                               residuals = "pearson",
                               cutoff = NULL,
-                              clip = TRUE,
+                              clip = FALSE,
                               ...) {
   standardGeneric("cacomp")
 })
@@ -659,7 +648,7 @@ setMethod(f = "cacomp",
                    rm_zeros = TRUE,
                    residuals = "pearson",
                    cutoff = NULL,
-                   clip = TRUE,
+                   clip = FALSE,
                    ...){
 
     caobj <- run_cacomp(obj = obj,
@@ -693,7 +682,7 @@ setMethod(f = "cacomp",
                    rm_zeros = TRUE,
                    residuals = "pearson",
                    cutoff = NULL,
-                   clip = TRUE,
+                   clip = FALSE,
                    ...){
             
             caobj <- run_cacomp(obj = obj,
@@ -775,7 +764,7 @@ setMethod(f = "cacomp",
                    rm_zeros = TRUE,
                    residuals = "pearson",
                    cutoff = NULL,
-                   clip = TRUE,
+                   clip = FALSE,
                    ...,
                    assay = Seurat::DefaultAssay(obj),
                    slot = "counts",
@@ -889,7 +878,7 @@ setMethod(f = "cacomp",
                    rm_zeros = TRUE,
                    residuals = "pearson",
                    cutoff = NULL,
-                   clip = TRUE,
+                   clip = FALSE,
                    ...,
                    assay = "counts",
                    return_input = FALSE){
