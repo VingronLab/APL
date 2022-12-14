@@ -13,7 +13,7 @@ apl_score(
   quant = 0.99,
   python = FALSE,
   store_perm = TRUE,
-  method = "random"
+  method = "permutation"
 )
 }
 \arguments{

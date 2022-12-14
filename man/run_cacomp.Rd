@@ -15,7 +15,7 @@ run_cacomp(
   rm_zeros = TRUE,
   residuals = "pearson",
   cutoff = NULL,
-  clip = TRUE,
+  clip = FALSE,
   ...
 )
 }

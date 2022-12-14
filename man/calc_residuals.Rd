@@ -4,7 +4,7 @@
 \alias{calc_residuals}
 \title{Calculate residuals for Correspondence analysis}
 \usage{
-calc_residuals(mat, residuals = "pearson", clip = TRUE, cutoff = NULL)
+calc_residuals(mat, residuals = "pearson", clip = FALSE, cutoff = NULL)
 }
 \arguments{
 \item{mat}{A numerical matrix or coercible to one by `as.matrix()`.

@@ -76,7 +76,7 @@ ca <- cacomp(obj = cnts, princ_coords = 3)
 ca_list <- as.list(ca)
 
 # Only keep subset of elements for demonstration
-ca_list <- ca_list[c("U", "std_coords_rows", "std_coords_cols")]
+ca_list <- ca_list[c("U", "std_coords_rows", "std_coords_cols", "params")]
 
 # convert (incomplete) list to cacomp object.
 ca <- as.cacomp(ca_list, mat = cnts)
