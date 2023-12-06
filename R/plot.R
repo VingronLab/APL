@@ -1,11 +1,6 @@
 #' @include constructor.R
 NULL
 
-# TODO: change ca_3dplot in line with ca_biplot!!!
-# TODO: make rows/columns a specific color if only one of the metadata parameters
-# is NULL!
-
-
 #' Plot of the first 3D CA projection of the data.
 #'
 #' @description
@@ -63,7 +58,7 @@ setGeneric("ca_3Dplot", function(obj,
 #' @rdname ca_3Dplot
 #' @export
 setMethod(f = "ca_3Dplot",
-          signature=(obj="cacomp"),
+          signature = (obj = "cacomp"),
           function(obj,
                    xdim = 1,
                    ydim = 2,
@@ -73,11 +68,11 @@ setMethod(f = "ca_3Dplot",
                    col_labels = NULL,
                    ...){
 
-  if (!is(obj,"cacomp")){
+  if ( !is(obj, "cacomp") ) {
     stop("Not a CA object. Please run cacomp() first!")
   }
 
-  if (princ_coords == 1){
+  if ( princ_coords == 1 ) {
 
     if(sum(!is.null(obj@prin_coords_rows), !is.null(obj@std_coords_cols)) != 2){
       stop("Principal and/or standard coordinates not found, ",

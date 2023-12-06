@@ -4,7 +4,7 @@
 \alias{random_direction_cutoff}
 \title{Random direction association plot coordinates}
 \usage{
-random_direction_cutoff(caobj, dims = caobj@dims, reps = 300)
+random_direction_cutoff(caobj, dims = caobj@dims, reps = 100)
 }
 \arguments{
 \item{caobj}{A "cacomp" object with principal row coordinates and 

@@ -222,7 +222,9 @@ apl_score <- function(caobj,
   }
   
   if(method == "random"){
-    
+   
+    if ( reps < 100 ) warning("For 'random' direction cutoff we recommend to set 'reps' to >= 100")
+
     if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data, 'reps'))) {
       cutoff_cotan <- attr(caobj@permuted_data, 'cutoff')
     }
@@ -388,7 +390,7 @@ permutation_cutoff <- function(caobj,
 #' List with permuted apl coordinates ("apl_perm") and, a list of saved ca 
 #' components ("saved_ca") that allow for quick recomputation of the CA results.
 #'  For random_direction_cutoff this saved_ca is empty.
-random_direction_cutoff <- function(caobj, dims = caobj@dims, reps = 300){
+random_direction_cutoff <- function(caobj, dims = caobj@dims, reps = 100){
   
   row_num <- nrow(caobj@apl_rows)
   

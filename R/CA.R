@@ -561,9 +561,9 @@ run_cacomp <- function(obj,
   
   # check if dimensions with ~zero singular values are selected, 
   # in case the dimensions selected are more then rank of matrix
-  if (min(SVD@D) <= 1e-6){
-      warning(paste('Too many dimensions are selected!',
-                    'Number of dimensions should be smaller than rank of matrix!'))
+  if (min(SVD@D) <= 1e-7){
+      warning(paste("Too many dimensions are selected!",
+                    "Number of dimensions should be smaller than rank of matrix!"))
   }
   
 
