@@ -44,7 +44,7 @@ comp_std_residuals <- function(mat, clip = FALSE, cutoff = NULL){
   if (isTRUE(clip)){
     
     if(is.null(cutoff)) cutoff <- sqrt(ncol(S)/tot)
-      
+ 
     S <- clip_residuals(S, cutoff = cutoff)
   }
 
@@ -465,17 +465,13 @@ run_cacomp <- function(obj,
   if (isTRUE(dims == k)){ 
 
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
-        # message("Running singular value decomposition ...")
       
         if (python == TRUE){
           svd_torch <- NULL
           if(!is(S, "matrix")) S <- as.matrix(S)
           
-          # require(reticulate)
-          # source_python('./python_svd.py')
           reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
           SVD <- svd_torch(S)
-          # SVD <- svd_linalg_torch(S)
           names(SVD) <- c("U", "D", "V")
           SVD$D <- as.vector(SVD$D)
       
@@ -488,9 +484,10 @@ run_cacomp <- function(obj,
           if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
         }
     } else {
+
       # if number of dimensions are given, turn to calculate partial SVD
       
-      SVD <- irlba::irlba(S, nv =dims, smallest = FALSE) # eigenvalues in a decreasing order
+      SVD <- irlba::irlba(S, nv = dims, smallest = FALSE) # eigenvalues in a decreasing order
       SVD <- SVD[1:3]
       names(SVD)[1:3] <- c("D", "U", "V")
       SVD$D <- as.vector(SVD$D)
