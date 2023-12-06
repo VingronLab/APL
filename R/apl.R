@@ -60,14 +60,14 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
 
   if (is(group, "numeric")){
-    subgroup <- cent[group,]
+    subgroup <- cent[group, ]
   } else if (is(group, "character")){
     idx <- match(group, rownames(cent))
     idx <- na.omit(idx)
     group <- idx
-    subgroup <- cent[idx,]
+    subgroup <- cent[idx, ]
 
-    if (anyNA(idx)){
+    if (anyNA(idx)) {
       warning("Not all names in 'group' are contained in the column names. ",
               "Non-matching values were ignored.")
     }
@@ -75,7 +75,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     stop("Parameter group has to be either of type 'numeric' or 'character'.")
   }
 
-  if (length(group) == 1){
+  if (length(group) == 1) {
     avg_group_coords <- subgroup # single sample
   } else {
     avg_group_coords <- colMeans(subgroup) # centroid vector.
@@ -84,8 +84,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
   length_vector_rows <- sqrt(rowSums(rows^2))
   length_vector_cols <- sqrt(rowSums(cols^2))
 
-  if (calc_rows == TRUE){
-    # message("Calculating APL row coordinates ...")
+  if (calc_rows == TRUE) {
     # r⋅X = |r|*|X|*cosθ
     # x(r) = (r⋅X)/|X| = |r|*cosθ
     rowx <- drop(rows %*% avg_group_coords)/length_vector_group
@@ -94,23 +93,18 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
     rowx[is.na(rowx)] <- 0
     rowy[is.na(rowy)] <- 0
-    # rowx[is.infinite(rowx)] <- 0
-    # rowy[is.infinite(rowy)] <- 0
 
     caobj@apl_rows <- cbind("x"=rowx, "y"=rowy)
   }
 
 
   if (calc_cols == TRUE){
-    # message("Calculating APL column coordinates ...")
 
     colx <- drop(cols %*% avg_group_coords)/length_vector_group
     coly <- sqrt(length_vector_cols^2 - colx^2)
 
     colx[is.na(colx)] <- 0
     coly[is.na(coly)] <- 0
-    # colx[is.infinite(colx)] <- 0
-    # coly[is.infinite(coly)] <- 0
 
     caobj@apl_cols <- cbind("x"=colx, "y"=coly)
   }
@@ -229,15 +223,15 @@ apl_score <- function(caobj,
   
   if(method == "random"){
     
-    if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
-      cutoff_cotan <- attr(caobj@permuted_data,'cutoff')
+    if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data, 'reps'))) {
+      cutoff_cotan <- attr(caobj@permuted_data, 'cutoff')
     }
     
     res <- random_direction_cutoff(caobj = caobj,
-                                   dims = dims, 
+                                   dims = dims,
                                    reps = reps)
-    
-  } else if (method == "permutation"){
+
+  } else if (method == "permutation") {
     
     stopifnot("mat parameter required for permutation!" =
                 !is.null(mat))
@@ -272,7 +266,7 @@ apl_score <- function(caobj,
   
   caobj@APL_score <- ranking
   
-  if(isTRUE(store_perm) & !identical(reps, attr(caobj@permuted_data,'reps'))){
+  if(isTRUE( store_perm ) & !identical( reps, attr(caobj@permuted_data,'reps') )){
     caobj@permuted_data <- res$saved_ca
     attr(caobj@permuted_data,'cutoff') <- cutoff_cotan
     attr(caobj@permuted_data,'reps') <- reps
