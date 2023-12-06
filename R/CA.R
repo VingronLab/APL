@@ -159,7 +159,7 @@ comp_ft_residuals <- function(mat){
     row.sum <- Matrix::rowSums(mat)
     col.sum <- Matrix::colSums(mat)
     expectedp <- row.w %*% t(col.w)
-    expectedx <- row.sum %*% t(col.sum)
+    # expectedx <- row.sum %*% t(col.sum)
     
     S <- pmat^.5 + (pmat + 1/N)^.5 - (4*expectedp + 1/N)^.5
     
@@ -1581,5 +1581,3 @@ setMethod(f = "pick_dims",
            python = python)
 
 })
-
-
