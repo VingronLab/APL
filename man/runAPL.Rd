@@ -14,7 +14,9 @@ runAPL(
   dims = NULL,
   nrow = 10,
   top = 5000,
+  clip = FALSE,
   score = TRUE,
+  score_method = "permutation",
   mark_rows = NULL,
   mark_cols = caobj@group,
   reps = 3,
@@ -39,7 +41,9 @@ runAPL(
   dims = NULL,
   nrow = 10,
   top = 5000,
+  clip = FALSE,
   score = TRUE,
+  score_method = "permutation",
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
@@ -64,7 +68,9 @@ runAPL(
   dims = NULL,
   nrow = 10,
   top = 5000,
+  clip = FALSE,
   score = TRUE,
+  score_method = "permutation",
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
@@ -90,7 +96,9 @@ runAPL(
   dims = NULL,
   nrow = 10,
   top = 5000,
+  clip = FALSE,
   score = TRUE,
+  score_method = "permutation",
   mark_rows = NULL,
   mark_cols = NULL,
   reps = 3,
@@ -116,23 +124,29 @@ sequencing a count matrix, gene expression values with genes in rows and
 samples/cells in columns.
 Should contain row and column names.}
 
-\item{group}{Numeric/Character. Vector of indices or column names of the 
-columns to calculate centroid/x-axis direction.}
+\item{group}{Numeric/Character. Vector of indices or column names of 
+the columns to calculate centroid/x-axis direction.}
 
 \item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied 
 will be calculated. Default NULL.}
 
-\item{dims}{Integer. Number of dimensions to keep. Default NULL (keeps all 
-dimensions).}
+\item{dims}{Integer. Number of CA dimensions to retain. Default NULL 
+(keeps all dimensions).}
 
 \item{nrow}{Integer. The top nrow scored row labels will be added to the 
 plot if score = TRUE. Default 10.}
 
-\item{top}{Integer. Number of most variable rows to retain. Default 5000 
-rows (set NULL to keep all).}
+\item{top}{Integer. Number of most variable rows to retain. 
+Set NULL to keep all.}
+
+\item{clip}{logical. Whether residuals should be clipped if they are 
+higher/lower than a specified cutoff}
 
 \item{score}{Logical. Whether rows should be scored and ranked. Ignored when 
 a vector is supplied to mark_rows. Default TRUE.}
+
+\item{score_method}{Method to calculate the cutoff. Either "random" for random 
+direction method or "permutation" for the permutation method.}
 
 \item{mark_rows}{Character vector. Names of rows that should be highlighted 
 in the plot. If not NULL, score is ignored. Default NULL.}
@@ -142,26 +156,27 @@ in the plot.}
 
 \item{reps}{Integer. Number of permutations during scoring. Default 3.}
 
-\item{python}{A logical value indicating whether to use singular value 
+\item{python}{A logical value indicating whether to use singular-value 
 decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to `svd()` 
-in R.}
+in R when calculating the full SVD. This parameter only works when dims==NULL
+or dims==rank(mat), where caculating a full SVD is demanded.}
 
 \item{row_labs}{Logical. Whether labels for rows indicated by rows_idx 
 should be labeled with text. Default TRUE.}
 
 \item{col_labs}{Logical. Whether labels for columns indicated by cols_idx 
-should be labeled with text. Default TRUE.}
+shouls be labeled with text. Default FALSE.}
 
-\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", for an 
-interactive plot "plotly". Default "plotly".}
+\item{type}{"ggplot"/"plotly". For a static plot a string "ggplot", 
+for an interactive plot "plotly". Default "ggplot".}
 
 \item{show_cols}{Logical. Whether column points should be plotted.}
 
 \item{show_rows}{Logical. Whether row points should be plotted.}
 
-\item{score_cutoff}{Numeric. Rows (genes) with a score >= score_cutoff
-will be colored according to their score if show_score = TRUE.}
+\item{score_cutoff}{Numeric. Rows (genes) with a score >= score_cutoff will 
+be colored according to their score if show_score = TRUE.}
 
 \item{score_color}{Either "rainbow" or "viridis".}
 

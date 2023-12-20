@@ -1,7 +1,7 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 1.1.0
+Version: 1.2.0
 Authors@R:
   c(person(given = "Elzbieta",
            family = "Gralinska",
@@ -32,10 +32,13 @@ biocViews:
   GeneExpression
 License: GPL (>= 3)
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
+StagedInstall: false
 VignetteBuilder: knitr
 Imports: 
     reticulate,
+    Matrix,
+    irlba,
     ggrepel,
     ggplot2,
     viridisLite,

@@ -13,6 +13,9 @@ run_cacomp(
   top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
+  residuals = "pearson",
+  cutoff = NULL,
+  clip = FALSE,
   ...
 )
 }
@@ -23,29 +26,39 @@ samples/cells in columns.
 Should contain row and column names.}
 
 \item{coords}{Logical. Indicates whether CA standard coordinates should be 
-calculated. Default TRUE}
+calculated.}
 
 \item{princ_coords}{Integer. Number indicating whether principal 
 coordinates should be calculated for the rows (=1), columns (=2), 
-both (=3) or none (=0).
-Default 1.}
+both (=3) or none (=0).}
 
 \item{python}{A logical value indicating whether to use singular-value 
 decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to `svd()` 
-in R.}
+in R when calculating the full SVD. This parameter only works when dims==NULL
+or dims==rank(mat), where caculating a full SVD is demanded.}
 
 \item{dims}{Integer. Number of CA dimensions to retain. Default NULL 
 (keeps all dimensions).}
 
-\item{top}{Integer. Number of most variable rows to retain. Default 5000.}
+\item{top}{Integer. Number of most variable rows to retain. 
+Set NULL to keep all.}
 
-\item{inertia}{Logical.. Whether total, row and column inertias should be 
-calculated and returned. Default TRUE.}
+\item{inertia}{Logical. Whether total, row and column inertias should be 
+calculated and returned.}
 
 \item{rm_zeros}{Logical. Whether rows & cols containing only 0s should be 
-removed. Keeping zero only rows/cols might lead to unexpected results. 
-Default TRUE.}
+removed. Keeping zero only rows/cols might lead to unexpected results.}
+
+\item{residuals}{character string. Specifies which kind of residuals should
+be calculated. Can be "pearson" (default), "freemantukey" or "NB" for
+negative-binomial.}
+
+\item{cutoff}{numeric. Residuals that are larger than cutoff or lower than
+-cutoff are clipped to cutoff.}
+
+\item{clip}{logical. Whether residuals should be clipped if they are 
+higher/lower than a specified cutoff}
 
 \item{...}{Arguments forwarded to methods.}
 }

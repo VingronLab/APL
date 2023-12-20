@@ -60,14 +60,14 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
 
   if (is(group, "numeric")){
-    subgroup <- cent[group,]
+    subgroup <- cent[group, ]
   } else if (is(group, "character")){
     idx <- match(group, rownames(cent))
     idx <- na.omit(idx)
     group <- idx
-    subgroup <- cent[idx,]
+    subgroup <- cent[idx, ]
 
-    if (anyNA(idx)){
+    if (anyNA(idx)) {
       warning("Not all names in 'group' are contained in the column names. ",
               "Non-matching values were ignored.")
     }
@@ -75,7 +75,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     stop("Parameter group has to be either of type 'numeric' or 'character'.")
   }
 
-  if (length(group) == 1){
+  if (length(group) == 1) {
     avg_group_coords <- subgroup # single sample
   } else {
     avg_group_coords <- colMeans(subgroup) # centroid vector.
@@ -84,8 +84,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
   length_vector_rows <- sqrt(rowSums(rows^2))
   length_vector_cols <- sqrt(rowSums(cols^2))
 
-  if (calc_rows == TRUE){
-    # message("Calculating APL row coordinates ...")
+  if (calc_rows == TRUE) {
     # r⋅X = |r|*|X|*cosθ
     # x(r) = (r⋅X)/|X| = |r|*cosθ
     rowx <- drop(rows %*% avg_group_coords)/length_vector_group
@@ -94,23 +93,18 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 
     rowx[is.na(rowx)] <- 0
     rowy[is.na(rowy)] <- 0
-    # rowx[is.infinite(rowx)] <- 0
-    # rowy[is.infinite(rowy)] <- 0
 
     caobj@apl_rows <- cbind("x"=rowx, "y"=rowy)
   }
 
 
   if (calc_cols == TRUE){
-    # message("Calculating APL column coordinates ...")
 
     colx <- drop(cols %*% avg_group_coords)/length_vector_group
     coly <- sqrt(length_vector_cols^2 - colx^2)
 
     colx[is.na(colx)] <- 0
     coly[is.na(coly)] <- 0
-    # colx[is.infinite(colx)] <- 0
-    # coly[is.infinite(coly)] <- 0
 
     caobj@apl_cols <- cbind("x"=colx, "y"=coly)
   }
@@ -127,6 +121,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
   return(caobj)
 }
 
+
 #' Find rows most highly associated with a condition
 #'
 #' @description
@@ -137,8 +132,14 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' The score is calculated by permuting the values of each row to determine the 
 #' cutoff angle of the 99% quantile.
 #' \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
-#' By default the permutation is repeated 10 times, but for very large matrices 
+#' By default the permutation is repeated 10 times (for random direction min. 
+#' 300 repetition is recommended!), but for very large matrices 
 #' this can be reduced.
+#' The method "permutation" permutes the columns in each row and calculates 
+#' AP-coordinates for each such permutation. The cutoff is then taken by the
+#' quantile specified by "quan". The "random" method in contrast calculates 
+#' AP-coordinates for the original data, but by looking into random directions.
+#' 
 #' If store_perm is TRUE the permuted data is stored in the cacomp object and 
 #' can be used for future scoring.
 #' @return
@@ -161,9 +162,11 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' as in caobj!
 #' @param group Vector of indices of the columns to calculate centroid/x-axis 
 #' direction.
-#' @param reps Integer. Number of permutations to perform. Default = 10.
+#' @param reps Integer. Number of permutations to perform.
 #' @param quant Numeric. Single number between 0 and 1 indicating the quantile 
 #' used to calculate the cutoff. Default 0.99.
+#' @param method Method to calculate the cutoff. Either "random" for random 
+#' direction method or "permutation" for the permutation method.
 #' @param python A logical value indicating whether to use singular-value 
 #' decomposition from the python package torch.
 #' @param store_perm Logical. Whether permuted data should be stored in the CA 
@@ -190,119 +193,247 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
 #' # Rank genes by S-alpha score
 #' ca <- apl_score(ca, mat = cnts)
 apl_score <- function(caobj,
-                      mat,
+                      mat = NULL,
                       dims = caobj@dims,
                       group = caobj@group,
-                      reps=10,
+                      reps= 10,
                       quant = 0.99,
                       python = FALSE,
-                      store_perm = TRUE){
-
+                      store_perm = TRUE,
+                      method = "permutation"){
+  
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
-
+  
   if (is.empty(caobj@apl_rows)){
     stop("Please run apl_coords() first!")
   }
-
+  
+  stopifnot("Only input single number for dims!" = length(dims) == 1)
+  
+  
   names <- colnames(mat)
-  row_num <- nrow(caobj@apl_rows)
-  margin <- 1
-  pc <- 1
-  cc <- FALSE
-  cr <- TRUE
-
+  
   if (is(group, "character")){
     idx <- match(group, names)
     idx <- na.omit(idx)
     group <- idx
   }
+  
+  if(method == "random"){
+   
+    if ( reps < 100 ) warning("For 'random' direction cutoff we recommend to set 'reps' to >= 100")
 
+    if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data, 'reps'))) {
+      cutoff_cotan <- attr(caobj@permuted_data, 'cutoff')
+    }
+    
+    res <- random_direction_cutoff(caobj = caobj,
+                                   dims = dims,
+                                   reps = reps)
+
+  } else if (method == "permutation") {
+    
+    stopifnot("mat parameter required for permutation!" =
+                !is.null(mat))
+    stopifnot("mat needs to be of class matrix" =
+                is(mat, "matrix") | is(mat, "Matrix"))
+    
+    res <- permutation_cutoff(caobj = caobj,
+                              mat = mat,
+                              group = group,
+                              dims = dims,
+                              reps = reps,
+                              store_perm = store_perm,
+                              python = python)
+    
+  } else {
+    stop("Unknown method chosen. Either 'random' (default) or 'permutation'.")
+  }
+  
+  # cotan between row and x axis
+  res$apl_perm[,3] <- res$apl_perm[,1]/res$apl_perm[,2]
+  res$apl_perm[,3][is.na(res$apl_perm[,3])] <- 0
+  
+  cutoff_cotan <- quantile(res$apl_perm[,3], quant)
+  
+  score <- caobj@apl_rows[,1] - (caobj@apl_rows[,2] * cutoff_cotan)
+  ranking <- data.frame("Rowname" = rownames(caobj@apl_rows),
+                        "Score" = score,
+                        "Row_num" = seq_len(nrow(caobj@apl_rows)))
+  
+  ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
+  ranking$Rank <- seq_len(nrow(ranking))
+  
+  caobj@APL_score <- ranking
+  
+  if(isTRUE( store_perm ) & !identical( reps, attr(caobj@permuted_data,'reps') )){
+    caobj@permuted_data <- res$saved_ca
+    attr(caobj@permuted_data,'cutoff') <- cutoff_cotan
+    attr(caobj@permuted_data,'reps') <- reps
+  }
+  
+  stopifnot(validObject(caobj))
+  return(caobj)
+  
+  
+}
+
+#' Calculates permuted association plot coordinates
+#' 
+#' @description 
+#' Calculates matrix of apl coordinates when permuting the original data.
+#' 
+#' @inheritParams apl_score
+#' 
+#' @inherit random_direction_cutoff return
+#' 
+permutation_cutoff <- function(caobj,
+                               mat,
+                               group = caobj@group,
+                               dims = caobj@dims,
+                               reps = 10,
+                               store_perm = FALSE,
+                               python = TRUE){
+  
+  row_num <- nrow(caobj@apl_rows)
+  
+  apl_perm <- data.frame("x" = rep(0, row_num*reps),
+                         "y" = rep(0, row_num*reps))
+  
+  
   if (caobj@dims == 1 && !is.empty(caobj@dims)){
     row_num <- 1
   }
-
-  apl_perm <- data.frame("x" = rep(0, row_num*reps),
-                         "y" = rep(0, row_num*reps))
+  
+  names <- colnames(mat)
+  margin <- 1
+  pc <- 1
+  cc <- FALSE
+  cr <- TRUE
+  
   saved_ca <- list()
+  
   pb <- txtProgressBar(min = 0, max = reps, style = 3)
-
+  
   for (k in seq(reps)){
-
+    
     #permute rows and rerun cacomp
-
-    if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data,'reps'))){
-      calist <- caobj@permuted_data[[k]][seq_len(3)]
+    
+    if(isTRUE(store_perm) & 
+       identical(reps, attr(caobj@permuted_data,'reps')) &
+       !is.empty(caobj@permuted_data)){
+        
+      calist <- caobj@permuted_data[[k]][seq_len(4)]
       mat <- caobj@permuted_data[[k]]$mat
       mat <- mat[rownames(mat) %in% rownames(calist$std_coords_rows),]
-      
       caobjp <- recompute(calist, mat)
-
+      
     } else {
       mat_perm <- t(apply(mat, margin, FUN=sample))
       colnames(mat_perm) <- colnames(mat)
-
-
+      
+      
       suppressWarnings(caobjp <- cacomp(obj = mat_perm,
-                                         python = python,
-                                         coords = TRUE,
-                                         princ_coords = pc,
-                                         dims = dims,
-                                         top = caobj@top_rows,
-                                         inertia = FALSE))
-
+                                        python = python,
+                                        coords = TRUE,
+                                        princ_coords = pc,
+                                        dims = dims,
+                                        top = caobj@top_rows,
+                                        residuals = caobj@params$residuals,
+                                        clip = caobj@params$clip,
+                                        cutoff = caobj@params$cutoff,
+                                        rm_zeros = caobj@params$rm_zeros,
+                                        inertia = FALSE))
+      
       if(isTRUE(store_perm)){
         x <- list("std_coords_cols" = caobjp@std_coords_cols,
                   "std_coords_rows" = caobjp@std_coords_rows,
                   "D" = caobjp@D,
+                  "params" = caobjp@params,
                   "mat" = mat_perm)
-
+        
         saved_ca[[k]] <- x
-
+        
       }
     }
-
+    
     caobjp <- apl_coords(caobj = caobjp,
                          group = group,
                          calc_cols = cc,
                          calc_rows = cr)
     idx <- ((seq_len(row_num)+((k-1)*row_num)))
-
+    
     apl_perm[idx,] <- caobjp@apl_rows
-
+    
     setTxtProgressBar(pb, k)
-
+    
   }
-
+  
   close(pb)
-
-  apl_perm[,3] <- apl_perm[,1]/apl_perm[,2] # cotan between row and x axis
-  apl_perm[,3][is.na(apl_perm[,3])] <- 0
-
-  cutoff_cotan <- quantile(apl_perm[,3], quant)
-
-  score <- caobj@apl_rows[,1] - (caobj@apl_rows[,2] * cutoff_cotan)
-  ranking <- data.frame("Rowname" = rownames(caobj@apl_rows),
-                        "Score" = score,
-                        "Row_num" = seq_len(nrow(caobj@apl_rows)))
-
-  ranking <- ranking[order(ranking$Score, decreasing = TRUE),]
-  ranking$Rank <- seq_len(nrow(ranking))
-
-  caobj@APL_score <- ranking
-
-  if(isTRUE(store_perm) & !identical(reps, attr(caobj@permuted_data,'reps'))){
-    caobj@permuted_data <- saved_ca
-    attr(caobj@permuted_data,'cutoff') <- cutoff_cotan
-    attr(caobj@permuted_data,'reps') <- reps
-  }
-
-  stopifnot(validObject(caobj))
-  return(caobj)
-
+  
+  
+  
+  return(list("apl_perm" = apl_perm, "saved_ca" = saved_ca))
 }
 
+
+#' Random direction association plot coordinates
+#' 
+#' @description 
+#' Calculates matrix of apl coordinates for random directions
+#' 
+#' @inheritParams apl_score
+#' 
+#' @returns 
+#' List with permuted apl coordinates ("apl_perm") and, a list of saved ca 
+#' components ("saved_ca") that allow for quick recomputation of the CA results.
+#'  For random_direction_cutoff this saved_ca is empty.
+random_direction_cutoff <- function(caobj, dims = caobj@dims, reps = 100){
+  
+  row_num <- nrow(caobj@apl_rows)
+  
+  if (caobj@dims == 1 && !is.empty(caobj@dims)){
+    row_num <- 1
+  }
+  
+  if(dims < caobj@dims){
+    caobj <- subset_dims(caobj = caobj, dims = dims)
+  }
+  
+  rows <- t(caobj@prin_coords_rows)
+  cols <- t(caobj@std_coords_cols)
+  
+  apl_perm <- data.frame("x" = rep(0, row_num*reps),
+                         "y" = rep(0, row_num*reps))
+
+  pb <- txtProgressBar(min = 0, max = reps, style = 3)
+  
+  for (k in seq(reps)){
+    
+    # avg_group_coords <- rowMeans(subgroup) # centroid vector.
+    avg_group_coords <- runif(n=dims, min=0, max = quantile(cols, 0.99))
+    length_vector_group <- sqrt(drop(avg_group_coords %*% avg_group_coords))
+    length_vector_rows <- sqrt(colSums(rows^2))
+    
+    rowx <- drop(t(rows) %*% avg_group_coords)/length_vector_group
+    # pythagoras, y(r)=b²=c²-a²
+    rowy <- sqrt(length_vector_rows^2 - rowx^2)
+    
+    rowx[is.na(rowx)] <- 0
+    rowy[is.na(rowy)] <- 0
+    
+    idx <- ((1:row_num)+((k-1)*row_num))
+    apl_perm[idx,] <- cbind("x"=rowx, "y"=rowy)
+    
+    setTxtProgressBar(pb, k)
+  }  
+  
+  close(pb)
+  
+  return(list("apl_perm" = apl_perm, "saved_ca" = list()))
+}
 
 
 
@@ -987,36 +1118,21 @@ apl <- function(caobj,
 #' Should contain row and column names.
 #' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied 
 #' will be calculated. Default NULL.
-#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all 
-#' dimensions).
-#' @param group Numeric/Character. Vector of indices or column names of the 
-#' columns to calculate centroid/x-axis direction.
+#' @inheritParams cacomp
+#' @inheritParams apl_coords
+#' @inheritParams apl
+#' @inheritParams apl_score
 #' @param nrow Integer. The top nrow scored row labels will be added to the 
 #' plot if score = TRUE. Default 10.
-#' @param top Integer. Number of most variable rows to retain. Default 5000 
-#' rows (set NULL to keep all).
 #' @param score Logical. Whether rows should be scored and ranked. Ignored when 
 #' a vector is supplied to mark_rows. Default TRUE.
+#' @param score_method Method to calculate the cutoff. Either "random" for random 
+#' direction method or "permutation" for the permutation method.
 #' @param mark_rows Character vector. Names of rows that should be highlighted 
 #' in the plot. If not NULL, score is ignored. Default NULL.
 #' @param mark_cols Character vector. Names of cols that should be highlighted 
 #' in the plot.
 #' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param python A logical value indicating whether to use singular value 
-#' decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` 
-#' in R.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
-#' should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx 
-#' should be labeled with text. Default TRUE.
-#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an 
-#' interactive plot "plotly". Default "plotly".
-#' @param show_cols Logical. Whether column points should be plotted.
-#' @param show_rows Logical. Whether row points should be plotted.
-#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff
-#' will be colored according to their score if show_score = TRUE.
-#' @param score_color Either "rainbow" or "viridis".
 #' @param pd_method Which method to use for pick_dims (\link[APL]{pick_dims}).
 #' @param pd_reps Number of repetitions performed when using "elbow_rule" in 
 #' `pick_dims`.
@@ -1031,7 +1147,9 @@ setGeneric("runAPL", function(obj,
                               dims = NULL,
                               nrow = 10,
                               top = 5000,
+                              clip = FALSE,
                               score = TRUE,
+                              score_method = "permutation",
                               mark_rows = NULL,
                               mark_cols = caobj@group,
                               reps = 3,
@@ -1077,7 +1195,9 @@ setMethod(f = "runAPL",
                    dims = NULL,
                    nrow = 10,
                    top = 5000,
+                   clip = FALSE,
                    score = TRUE,
+                   score_method = "permutation",
                    mark_rows = NULL,
                    mark_cols = NULL,
                    reps = 3,
@@ -1105,7 +1225,9 @@ setMethod(f = "runAPL",
                     top = top,
                     princ_coords = 3,
                     dims = dims,
-                    python = python)
+                    python = python,
+                    residuals = "pearson",
+                    clip = clip)
     
     if(is.null(dims) & isTRUE(pd_use)){
       
@@ -1208,6 +1330,7 @@ setMethod(f = "runAPL",
                          mat = obj,
                          dims = caobj@dims,
                          group = caobj@group,
+                         method = score_method,
                          reps= reps,
                          python = python)
 
@@ -1313,7 +1436,9 @@ setMethod(f = "runAPL",
                    dims = NULL,
                    nrow = 10,
                    top = 5000,
+                   clip = FALSE,
                    score = TRUE,
+                   score_method = "permutation",
                    mark_rows = NULL,
                    mark_cols = NULL,
                    reps = 3,
@@ -1348,7 +1473,9 @@ setMethod(f = "runAPL",
         mark_cols = mark_cols,
         nrow = nrow,
         top = top,
+        clip = clip,
         score = score,
+        score_method = score_method,
         reps = reps,
         python = python,
         row_labs = row_labs,
@@ -1411,7 +1538,9 @@ setMethod(f = "runAPL",
                    dims = NULL,
                    nrow = 10,
                    top = 5000,
+                   clip = FALSE,
                    score = TRUE,
+                   score_method = "permutation",
                    mark_rows = NULL,
                    mark_cols = NULL,
                    reps = 3,
@@ -1444,9 +1573,11 @@ setMethod(f = "runAPL",
   runAPL(obj = seu,
         caobj = caobj,
         top = top,
+        clip = clip,
         dims= dims,
         group = group,
         score = score,
+        score_method = score_method,
         reps = reps,
         python = python,
         mark_rows = mark_rows,
