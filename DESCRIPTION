@@ -3,18 +3,18 @@ Type: Package
 Title: Association Plots
 Version: 1.1.0
 Authors@R:
-  c(person(given = "Elzbieta",
-           family = "Gralinska",
-           role = c("cre", "aut"),
-           email = "gralinska@molgen.mpg.de"),
-    person(given = "Clemens",
-           family = "Kohl",
-           role = c("aut"),
-           email = "kohl@molgen.mpg.de"),
-     person(given = "Martin",
-            family = "Vingron",
-            role = c("aut"),
-            email = "vingron@molgen.mpg.de"))
+    c(person(given = "Clemens",
+        family = "Kohl",
+        role = c("cre", "aut"),
+        email = "kohl.clemens@gmail.com"),
+    person(given = "Elzbieta",
+        family = "Gralinska",
+        role = c("aut"),
+        email = "gralinska@molgen.mpg.de"),
+    person(given = "Martin",
+        family = "Vingron",
+        role = c("aut"),
+        email = "vingron@molgen.mpg.de"))
 Description: APL is a package developed for computation of Association Plots
   (AP), a method for visualization and analysis of single cell transcriptomics 
   data. The main focus of APL is the identification of genes characteristic for
