@@ -32,14 +32,18 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown, local::.
+          extra-packages: 
+            any::pkgdown
+            local::.
+            any::remotes
           needs: website
 
       - name: Install Miniconda
         run: |
           Rscript -e "remotes::install_github('rstudio/reticulate')"
           Rscript -e "reticulate::install_miniconda()"
-      - name: Install TensorFlow
+
+      - name: Install Python dependencies
         run: |
           Rscript -e "reticulate::conda_create('r-reticulate', packages = c('python==3.6.11', 'numpy', 'pytorch'))"
 
