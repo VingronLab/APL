@@ -71,3 +71,4 @@ Collate:
     'plot.R'
     'utils-pipe.R'
 SystemRequirements: python, pytorch, numpy
+URL: https://vingronlab.github.io/APL/
