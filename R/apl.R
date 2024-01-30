@@ -50,7 +50,7 @@ NULL
 #' ca <- cacomp(obj = cnts, princ_coords = 3)
 #' # Calculate APL coordinates
 #' ca <- apl_coords(ca, group = 3:4)
-apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
+apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE) {
 
   stopifnot(is(caobj, "cacomp"))
 
@@ -65,7 +65,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE){
     idx <- match(group, rownames(cent))
     idx <- na.omit(idx)
     group <- idx
-    subgroup <- cent[idx,]
+    subgroup <- cent[idx, ]
 
     if (anyNA(idx)){
       warning("Not all names in 'group' are contained in the column names. ",
@@ -348,7 +348,7 @@ apl_score <- function(caobj,
 #' @examples
 #' library(Seurat)
 #' set.seed(1234)
-#' cnts <- GetAssayData(pbmc_small, slot = "counts")
+#' cnts <- GetAssayData(pbmc_small, assay = "RNA", slot = "counts")
 #' cnts <- as.matrix(cnts)
 #'
 #' # Run CA on example from Seurat
