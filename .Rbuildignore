@@ -9,3 +9,6 @@
 ^docs$
 ^Meta$
 ^README\.Rmd$
+^_pkgdown\.yml$
+^pkgdown$
+^\.github$

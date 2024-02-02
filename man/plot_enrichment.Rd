@@ -20,7 +20,7 @@ Plots the results from the data frame generated via apl_topGO.
 \examples{
 library(Seurat)
 set.seed(1234)
-cnts <- GetAssayData(pbmc_small, slot = "counts")
+cnts <- GetAssayData(pbmc_small, assay = "RNA", slot = "counts")
 cnts <- as.matrix(cnts)
 
 # Run CA on example from Seurat
