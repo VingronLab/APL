@@ -423,7 +423,11 @@ setMethod(f = "ca_biplot",
     p <- p +
       ggplot2::geom_point(data=rows[row_labels,],
                           ggplot2::aes_(x = as.name(rnmx),
-                                        y = as.name(rnmy)),
+                                        y = as.name(rnmy),
+                                        text = paste0(
+                                            "Name: ", rows[row_labels,]$name, "\n",
+                                            "Group: ", rows[row_labels,]$group, "\n",
+                                            "Type: ", rows[row_labels,]$type)),
                           colour = "#FF0000",
                           shape = 16) +
       ggrepel::geom_text_repel(data=rows[row_labels,],
@@ -437,7 +441,11 @@ setMethod(f = "ca_biplot",
     p <- p +
       ggplot2::geom_point(data=cols[col_labels,],
                           ggplot2::aes_(x = as.name(cnmx),
-                                        y = as.name(cnmy)),
+                                        y = as.name(cnmy),
+                                        text = paste0(
+                                            "Name: ", cols[col_labels,]$name, "\n",
+                                            "Group: ", cols[col_labels,]$group, "\n",
+                                            "Type: ", cols[col_labels,]$type)),
                           colour = "#990000",
                           shape = 1) +
       ggrepel::geom_text_repel(data=cols[col_labels,],

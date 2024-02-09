@@ -201,7 +201,7 @@ apl_score <- function(caobj,
                       python = FALSE,
                       store_perm = TRUE,
                       method = "permutation"){
-  
+  # TODO: Handle saved results more coherently.
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
@@ -221,17 +221,24 @@ apl_score <- function(caobj,
     group <- idx
   }
   
+  # Set to NULL to prevent unnecessary calc.
+  cutoff_cotan <- NULL
+  
   if(method == "random"){
    
     if ( reps < 100 ) warning("For 'random' direction cutoff we recommend to set 'reps' to >= 100")
 
-    if(isTRUE(store_perm) & identical(reps, attr(caobj@permuted_data, 'reps'))) {
-      cutoff_cotan <- attr(caobj@permuted_data, 'cutoff')
+    if(isTRUE(store_perm) &&
+       identical(reps, attr(caobj@permuted_data, 'reps')) &&
+       isTRUE(caobj@params$score_method == method)) {
+        
+        cutoff_cotan <- attr(caobj@permuted_data, 'cutoff')
+        
+    } else {
+        res <- random_direction_cutoff(caobj = caobj,
+                                       dims = dims,
+                                       reps = reps)
     }
-    
-    res <- random_direction_cutoff(caobj = caobj,
-                                   dims = dims,
-                                   reps = reps)
 
   } else if (method == "permutation") {
     
@@ -252,12 +259,14 @@ apl_score <- function(caobj,
     stop("Unknown method chosen. Either 'random' (default) or 'permutation'.")
   }
   
-  # cotan between row and x axis
-  res$apl_perm[,3] <- res$apl_perm[,1]/res$apl_perm[,2]
-  res$apl_perm[,3][is.na(res$apl_perm[,3])] <- 0
-  
-  cutoff_cotan <- quantile(res$apl_perm[,3], quant)
-  
+  if (is.null(cutoff_cotan)){
+      # cotan between row and x axis
+      res$apl_perm[,3] <- res$apl_perm[,1]/res$apl_perm[,2]
+      res$apl_perm[,3][is.na(res$apl_perm[,3])] <- 0
+      
+      cutoff_cotan <- quantile(res$apl_perm[,3], quant)
+  }
+
   score <- caobj@apl_rows[,1] - (caobj@apl_rows[,2] * cutoff_cotan)
   ranking <- data.frame("Rowname" = rownames(caobj@apl_rows),
                         "Score" = score,
@@ -267,11 +276,13 @@ apl_score <- function(caobj,
   ranking$Rank <- seq_len(nrow(ranking))
   
   caobj@APL_score <- ranking
+  caobj@params$score_method <- method
   
   if(isTRUE( store_perm ) & !identical( reps, attr(caobj@permuted_data,'reps') )){
     caobj@permuted_data <- res$saved_ca
     attr(caobj@permuted_data,'cutoff') <- cutoff_cotan
     attr(caobj@permuted_data,'reps') <- reps
+    caobj@params$score_method <- method
   }
   
   stopifnot(validObject(caobj))
@@ -321,9 +332,10 @@ permutation_cutoff <- function(caobj,
     
     #permute rows and rerun cacomp
     
-    if(isTRUE(store_perm) & 
-       identical(reps, attr(caobj@permuted_data,'reps')) &
-       !is.empty(caobj@permuted_data)){
+    if(isTRUE(store_perm) && 
+       identical(reps, attr(caobj@permuted_data,'reps')) &&
+       !is.empty(caobj@permuted_data) &&
+       caobj@params$score_method == "permutation"){
         
       calist <- caobj@permuted_data[[k]][seq_len(4)]
       mat <- caobj@permuted_data[[k]]$mat

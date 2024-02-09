@@ -460,7 +460,11 @@ run_cacomp <- function(obj,
   k <- min(dim(S))-1
   
   if (is.null(dims)) dims <- k
-  if (dims > k) dims <- k
+  if (dims > k) {
+        warning(paste0("Number of dimensions is larger than the rank of the matrix. ",
+            "Reducing number of dimensions to rank of the matrix."))
+        dims <- k
+    }
   
   if (isTRUE(dims == k)){ 
 
