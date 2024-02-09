@@ -1,3 +1,14 @@
+
+<!-- badges: start -->
+[![Bioc release status](http://www.bioconductor.org/shields/build/release/bioc/APL.svg)](https://bioconductor.org/checkResults/release/bioc-LATEST/APL)
+[![Bioc devel status](http://www.bioconductor.org/shields/build/devel/bioc/APL.svg)](https://bioconductor.org/checkResults/devel/bioc-LATEST/APL)
+[![Bioc downloads rank](https://bioconductor.org/shields/downloads/release/APL.svg)](http://bioconductor.org/packages/stats/bioc/APL/)
+[![Bioc support](https://bioconductor.org/shields/posts/APL.svg)](https://support.bioconductor.org/tag/APL)
+[![Bioc history](https://bioconductor.org/shields/years-in-bioc/APL.svg)](https://bioconductor.org/packages/release/bioc/html/APL.html#since)
+[![Bioc last commit](https://bioconductor.org/shields/lastcommit/devel/bioc/APL.svg)](http://bioconductor.org/checkResults/devel/bioc-LATEST/APL/)
+[![Bioc dependencies](https://bioconductor.org/shields/dependencies/release/APL.svg)](https://bioconductor.org/packages/release/bioc/html/APL.html#since)
+<!-- badges: end -->
+
 <img src="man/figures/fig_AP.png" width="700">
 
 # APL
