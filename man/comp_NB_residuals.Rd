@@ -13,13 +13,13 @@ Should have row and column names.}
 \item{theta}{Overdispersion parameter. By default set to 100 as described in
 Lause and Berens, 2021 (see references).}
 
-\item{clip}{logical. Whether residuals should be clipped if they are 
+\item{clip}{logical. Whether residuals should be clipped if they are
 higher/lower than a specified cutoff}
 
 \item{cutoff}{numeric. Residuals that are larger than cutoff or lower than
 -cutoff are clipped to cutoff.}
 
-\item{freq}{logical. Whether a table of frequencies (as used in CA) should 
+\item{freq}{logical. Whether a table of frequencies (as used in CA) should
 be used.}
 }
 \value{
@@ -36,7 +36,7 @@ Computes the residuals based on the negative binomial model. By default a
 theta of 100 is used to capture technical variation.
 }
 \references{
-Lause, J., Berens, P. & Kobak, D. Analytic Pearson residuals for 
-normalization of single-cell RNA-seq UMI data. Genome Biol 22, 258 (2021). 
+Lause, J., Berens, P. & Kobak, D. Analytic Pearson residuals for
+normalization of single-cell RNA-seq UMI data. Genome Biol 22, 258 (2021).
 https://doi.org/10.1186/s13059-021-02451-7
 }

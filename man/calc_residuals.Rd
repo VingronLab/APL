@@ -14,7 +14,7 @@ Should have row and column names.}
 be calculated. Can be "pearson" (default), "freemantukey" or "NB" for
 negative-binomial.}
 
-\item{clip}{logical. Whether residuals should be clipped if they are 
+\item{clip}{logical. Whether residuals should be clipped if they are
 higher/lower than a specified cutoff}
 
 \item{cutoff}{numeric. Residuals that are larger than cutoff or lower than

@@ -17,6 +17,6 @@ inertia_rows(mat, top = 5000, ...)
 Returns a matrix, which consists of the top variable rows of mat.
 }
 \description{
-Calculates the contributing inertia of each row which is defined as sum of squares of pearson residuals and selects the 
+Calculates the contributing inertia of each row which is defined as sum of squares of pearson residuals and selects the
 rows with the largested inertias, e.g. 5,000.
 }

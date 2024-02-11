@@ -15,12 +15,12 @@ clip_residuals(S, cutoff = sqrt(ncol(S)))
 Matrix of clipped residuals.
 }
 \description{
-Clips Pearson or negative-binomial residuals above or below a determined 
+Clips Pearson or negative-binomial residuals above or below a determined
 value. For Pearson (Poisson) residuals it is set by default for 1, for NB at
 sqrt(n).
 }
 \references{
-Lause, J., Berens, P. & Kobak, D. Analytic Pearson residuals for 
-normalization of single-cell RNA-seq UMI data. Genome Biol 22, 258 (2021). 
+Lause, J., Berens, P. & Kobak, D. Analytic Pearson residuals for
+normalization of single-cell RNA-seq UMI data. Genome Biol 22, 258 (2021).
 https://doi.org/10.1186/s13059-021-02451-7
 }

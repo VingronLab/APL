@@ -75,11 +75,11 @@ choosing "elbow_rule". Default FALSE.}
 
 \item{...}{Arguments forwarded to methods.}
 
-\item{assay}{Character. The assay from which to extract the count matrix 
-for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+\item{assay}{Character. The assay from which to extract the count matrix
+for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for
 SingleCellExperiments.}
 
-\item{slot}{Character. Data slot of the Seurat assay. 
+\item{slot}{Character. Data slot of the Seurat assay.
 E.g. "data" or "counts". Default "counts".}
 }
 \value{

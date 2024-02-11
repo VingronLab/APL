@@ -23,7 +23,7 @@ negative-binomial.}
 Returns a matrix, which consists of the top variable rows of mat.
 }
 \description{
-Calculates the variance of the chi-square component matrix and selects the 
+Calculates the variance of the chi-square component matrix and selects the
 rows with the highest variance, e.g. 5,000.
 }
 \examples{

@@ -10,7 +10,7 @@ comp_std_residuals(mat, clip = FALSE, cutoff = NULL)
 \item{mat}{A numerical matrix or coercible to one by `as.matrix()`.
 Should have row and column names.}
 
-\item{clip}{logical. Whether residuals should be clipped if they are 
+\item{clip}{logical. Whether residuals should be clipped if they are
 higher/lower than a specified cutoff}
 
 \item{cutoff}{numeric. Residuals that are larger than cutoff or lower than

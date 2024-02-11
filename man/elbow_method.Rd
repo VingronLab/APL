@@ -9,24 +9,24 @@ elbow_method(obj, mat, reps, python = FALSE, return_plot = FALSE)
 \arguments{
 \item{obj}{A "cacomp" object as outputted from `cacomp()`}
 
-\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression 
+\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression
 values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
-\item{reps}{Integer. Number of permutations to perform when choosing 
+\item{reps}{Integer. Number of permutations to perform when choosing
 "elbow_rule".}
 
-\item{python}{A logical value indicating whether to use singular value 
+\item{python}{A logical value indicating whether to use singular value
 decomposition from the python package torch.
-This implementation dramatically speeds up computation compared to `svd()` 
+This implementation dramatically speeds up computation compared to `svd()`
 in R.}
 
-\item{return_plot}{TRUE/FALSE. Whether a plot should be returned when 
+\item{return_plot}{TRUE/FALSE. Whether a plot should be returned when
 choosing "elbow_rule".}
 }
 \value{
-`elbow_method` (for `return_plot=TRUE`) returns a list with two elements: 
-"dims" contains the number of dimensions and "plot" a ggplot. if 
+`elbow_method` (for `return_plot=TRUE`) returns a list with two elements:
+"dims" contains the number of dimensions and "plot" a ggplot. if
 `return_plot=TRUE` it just returns the number of picked dimensions.
 }
 \description{

@@ -130,16 +130,16 @@ the columns to calculate centroid/x-axis direction.}
 \item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied 
 will be calculated. Default NULL.}
 
-\item{dims}{Integer. Number of CA dimensions to retain. Default NULL 
+\item{dims}{Integer. Number of CA dimensions to retain. Default NULL
 (keeps all dimensions).}
 
 \item{nrow}{Integer. The top nrow scored row labels will be added to the 
 plot if score = TRUE. Default 10.}
 
-\item{top}{Integer. Number of most variable rows to retain. 
+\item{top}{Integer. Number of most variable rows to retain.
 Set NULL to keep all.}
 
-\item{clip}{logical. Whether residuals should be clipped if they are 
+\item{clip}{logical. Whether residuals should be clipped if they are
 higher/lower than a specified cutoff}
 
 \item{score}{Logical. Whether rows should be scored and ranked. Ignored when 
@@ -156,9 +156,9 @@ in the plot.}
 
 \item{reps}{Integer. Number of permutations during scoring. Default 3.}
 
-\item{python}{A logical value indicating whether to use singular-value 
+\item{python}{A logical value indicating whether to use singular-value
 decomposition from the python package torch.
-This implementation dramatically speeds up computation compared to `svd()` 
+This implementation dramatically speeds up computation compared to `svd()`
 in R when calculating the full SVD. This parameter only works when dims==NULL
 or dims==rank(mat), where caculating a full SVD is demanded.}
 
