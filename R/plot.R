@@ -447,7 +447,7 @@ setMethod(f = "ca_biplot",
                                             "Group: ", cols[col_labels,]$group, "\n",
                                             "Type: ", cols[col_labels,]$type)),
                           colour = "#990000",
-                          shape = 1) +
+                          shape = 4) +
       ggrepel::geom_text_repel(data=cols[col_labels,],
                                ggplot2::aes_(x = as.name(cnmx),
                                              y = as.name(cnmy),

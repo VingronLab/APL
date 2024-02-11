@@ -200,8 +200,10 @@ apl_score <- function(caobj,
                       quant = 0.99,
                       python = FALSE,
                       store_perm = TRUE,
-                      method = "permutation"){
+                      method = "permutation") {
+
   # TODO: Handle saved results more coherently.
+
   if (!is(caobj,"cacomp")){
     stop("Not a CA object. Please run cacomp() and apl_coords() first!")
   }
@@ -550,8 +552,10 @@ apl_topGO <- function(caobj,
   }
 
   if (organism == "hs"){
+    # require(org.Hs.eg.db)
     organism <- "org.Hs.eg.db"
   } else if (organism == "mm"){
+    # require(org.Mm.eg.db)
     organism <- "org.Mm.eg.db"
   } else {
     warning("Custom organism chosen.\n")

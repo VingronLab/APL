@@ -438,6 +438,7 @@ setMethod(f = "as.cacomp",
           signature=(obj="SingleCellExperiment"),
           function(obj, ..., assay="counts") {
 
+# TODO: Change to principal coordingates or columns.
   sce_ca <- SingleCellExperiment::reducedDim(obj, "CA")
   stopifnot("Attribute singval of dimension reduction slot CA is empty.\nThis can happen after subsetting the sce obj." = 
               !is.null(attr(sce_ca, "singval")))
