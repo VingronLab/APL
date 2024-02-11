@@ -219,7 +219,7 @@ calc_residuals <- function(mat,
 #'
 #' @param obj A matrix.
 #' @return Input matrix with rows & columns consisting of only 0 removed.
-rm_zeros <- function(obj){
+rm_zeros <- function(obj) {
     stopifnot(is(obj, "matrix") | is(obj, "dgeMatrix") | is(obj, "dgCMatrix"))
 
     no_zeros_rows <- Matrix::rowSums(obj) > 0
@@ -275,27 +275,27 @@ rm_zeros <- function(obj){
 var_rows <- function(mat,
                      residuals = "pearson",
                      top = 5000,
-                     ...){
+                     ...) {
 
-  res <- calc_residuals(mat = mat,
-                        residuals = residuals,
-                        ...)
+    res <- calc_residuals(mat = mat,
+                          residuals = residuals,
+                          ...)
 
-  if(top>nrow(mat)) {
-    warning("Top is larger than the number of rows in matrix. ",
+    if(top > nrow(mat)) {
+        warning("Top is larger than the number of rows in matrix. ",
             "Top was set to nrow(mat).")
-  }
+    }
 
-  top <- min(nrow(mat), top)
-  S <- res$S
-  if (residuals == "pearson"){
-    S <- res$tot * (S^2)		# chi-square components matrix
-  }
+    top <- min(nrow(mat), top)
+    S <- res$S
+    if (residuals == "pearson") {
+        S <- res$tot * (S^2)		# chi-square components matrix
+    }
 
-  variances <- apply(S,1,var) #row-wise variances
-  ix_var <- order(-variances)
-  mat <- mat[ix_var[seq_len(top)],] # choose top rows
-  return(mat)
+    variances <- apply(S, 1, var) #row-wise variances
+    ix_var <- order(-variances)
+    mat <- mat[ix_var[seq_len(top)], ] # choose top rows
+    return(mat)
 
 }
 
@@ -311,12 +311,12 @@ var_rows <- function(mat,
 #'
 #' @return
 #' Returns a matrix, which consists of the top variable rows of mat.
-inertia_rows <- function(mat, top = 5000, ...){
+inertia_rows <- function(mat, top = 5000, ...) {
 
-    res <-  comp_std_residuals(mat= mat,
+    res <-  comp_std_residuals(mat = mat,
                                ...)
 
-    if(top>nrow(mat)) {
+    if(top > nrow(mat)) {
         warning("Top is larger than the number of rows in matrix. ",
             "Top was set to nrow(mat).")
     }
@@ -326,12 +326,13 @@ inertia_rows <- function(mat, top = 5000, ...){
     inertia <- res$S^2
     inertia <- Matrix::rowSums(inertia)
     ix <- order(inertia, decreasing = TRUE)
-    mat <- mat[ix[seq_len(top)],] # choose top rows
+    mat <- mat[ix[seq_len(top)], ] # choose top rows
+
     return(mat)
 }
 
 
-
+# TODO: Stopped 20240211
 #' Internal function for `cacomp`
 #'
 #' @description
@@ -358,7 +359,7 @@ inertia_rows <- function(mat, top = 5000, ...){
 #' row and column inertia respectively.
 #' @references
 #' Greenacre, M. Correspondence Analysis in Practice, Third Edition, 2017.
-
+#'
 #' @param obj A numeric matrix or Seurat/SingleCellExperiment object. For
 #' sequencing a count matrix, gene expression values with genes in rows and
 #' samples/cells in columns.
@@ -394,7 +395,7 @@ run_cacomp <- function(obj,
                        residuals = "pearson",
                        cutoff = NULL,
                        clip = FALSE,
-                       ...){
+                       ...) {
 
   stopifnot("Input matrix does not have any rownames!" =
               !is.null(rownames(obj)))
@@ -403,7 +404,7 @@ run_cacomp <- function(obj,
 
   parameters <- list()
 
-  if (rm_zeros == TRUE){
+  if (rm_zeros == TRUE) {
 
     if(top == nrow(obj)) {
       update_top <- TRUE
