@@ -1340,6 +1340,10 @@ setMethod(f = "runAPL",
     caobj <- as.cacomp(obj, assay = assay)
   }
 
+  if (!is(mat, "matrix")) {
+    mat <- as.matrix(mat)
+  }
+
   runAPL(obj = mat,
         caobj = caobj,
         dims = dims,
