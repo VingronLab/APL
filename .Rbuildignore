@@ -1,3 +1,5 @@
+^renv$
+^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
@@ -12,3 +14,5 @@
 ^pkgdown$
 ^\.github$
 ^.lintr
+^renv
+^renv.lock
