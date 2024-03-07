@@ -31,8 +31,8 @@ comp_std_residuals <- function(mat) {
 
   tot <- sum(mat)
   P <- mat/tot               # proportions matrix
-  rowm <- rowSums(P)          # row masses
-  colm <- colSums(P)          # column masses
+  rowm <- Matrix::rowSums(P)          # row masses
+  colm <- Matrix::colSums(P)          # column masses
 
   E <- rowm %o% colm      # expected proportions
   S <-  (P - E) / sqrt(E)         # standardized residuals
@@ -218,11 +218,18 @@ run_cacomp <- function(obj,
   # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
   # message("Running singular value decomposition ...")
 
-  if (python == TRUE){
+  if (python == TRUE) {
+
+    # python implementation currently can only handle dense matrices of the base class.
+    if (!is(S, "matrix")) {
+      S <- as.matrix(S)
+    }
+
     svd_torch <- NULL
     # require(reticulate)
     # source_python('./python_svd.py')
     reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
+    
     SVD <- svd_torch(S)
     # SVD <- svd_linalg_torch(S)
     names(SVD) <- c("U", "D", "V")
@@ -244,8 +251,8 @@ run_cacomp <- function(obj,
   if(inertia == TRUE){
     #calculate inertia
     SVD$tot_inertia <- sum(SVD$D^2)
-    SVD$row_inertia <- rowSums(S^2)
-    SVD$col_inertia <- colSums(S^2)
+    SVD$row_inertia <- Matrix::rowSums(S^2)
+    SVD$col_inertia <- Matrix::colSums(S^2)
   }
 
   SVD$row_masses <- rowm

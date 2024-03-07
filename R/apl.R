@@ -81,8 +81,8 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE) {
     avg_group_coords <- colMeans(subgroup) # centroid vector.
   }
   length_vector_group <- sqrt(drop(avg_group_coords %*% avg_group_coords))
-  length_vector_rows <- sqrt(rowSums(rows^2))
-  length_vector_cols <- sqrt(rowSums(cols^2))
+  length_vector_rows <- sqrt(Matrix::rowSums(rows^2))
+  length_vector_cols <- sqrt(Matrix::rowSums(cols^2))
 
   if (calc_rows == TRUE){
     # message("Calculating APL row coordinates ...")
@@ -958,6 +958,261 @@ apl <- function(caobj,
 
 }
 
+
+
+#' Internal function to compute and plot Association Plot
+#'
+#' @description
+#' Computes singular value decomposition and coordinates for 
+#' the Association Plot.
+#'
+#' @details
+#' The function is a wrapper that calls `cacomp()`, `apl_coords()`, 
+#' `apl_score()` and finally `apl()` for ease of use.
+#' The chosen defaults are most useful for genomics experiments, but for more 
+#' fine grained control the functions
+#' can be also run individually for the same results.
+#' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score 
+#' is treated as if FALSE.
+#' @return
+#' Association Plot (plotly object).
+#' 
+#' @references
+#' Association Plots: Visualizing associations in high-dimensional 
+#' correspondence analysis biplots \cr
+#' Elzbieta Gralinska, Martin Vingron \cr
+#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
+#' @inheritParams runAPL
+#' @examples
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(1:100, 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#'
+#' # (nonsensical) APL
+#' APL:::run_APL(obj = cnts,
+#'        group = 1:10,
+#'        dims = 10,
+#'        top = 500,
+#'        score = TRUE,
+#'        show_cols = TRUE,
+#'        type = "ggplot")
+run_APL <- function(obj,
+                    group,
+                    caobj = NULL,
+                    dims = NULL,
+                    nrow = 10,
+                    top = 5000,
+                    score = TRUE,
+                    mark_rows = NULL,
+                    mark_cols = NULL,
+                    reps = 3,
+                    python = FALSE,
+                    row_labs = TRUE,
+                    col_labs = TRUE,
+                    type = "plotly",
+                    show_cols = FALSE,
+                    show_rows = TRUE,
+                    score_cutoff = 0,
+                    score_color = "rainbow",
+                    pd_method = "elbow_rule",
+                    pd_reps = 1,
+                    pd_use = TRUE) {
+
+  if (is.null(caobj)) {
+    caobj <- cacomp(
+      obj = obj,
+      coords = TRUE,
+      top = top,
+      princ_coords = 3,
+      dims = dims,
+      python = python
+    )
+
+    if (is.null(dims) & isTRUE(pd_use)) {
+      stopifnot("Cannot use scree plot to pick dimensions" = pd_method != "scree_plot")
+      pd <- pick_dims(
+        obj = caobj,
+        mat = obj,
+        method = pd_method,
+        reps = pd_reps,
+        python = python,
+        return_plot = FALSE
+      )
+
+      message(
+        "\n Using ",
+        pd,
+        " dimensions. Subsetting."
+      )
+
+      dims <- pd
+      caobj <- subset_dims(caobj, dims)
+    } else if (is.null(dims) & !isTRUE(pd_use)) {
+      dims <- caobj@dims
+      message(
+        "\n Using ",
+        dims,
+        " dimensions. No subsetting performed."
+      )
+    } else if (!is.null(dims) & !isTRUE(pd_use)) {
+      message("\n Using ", dims, " dimensions.")
+    } else if (!is.null(dims) & isTRUE(pd_use)) {
+      message("\nBoth dims and pd_use set. Using dimensions specified by dims.")
+      message("\nUsing ", dims, " dimensions.")
+    }
+  } else {
+    if (!is.empty(caobj@dims) && is.null(dims)) {
+      if (isTRUE(pd_use)) {
+        stopifnot(
+          "Cannot use scree plot to pick dimensions" =
+            pd_method != "scree_plot"
+        )
+        pd <- pick_dims(
+          obj = caobj,
+          mat = obj,
+          method = pd_method,
+          reps = pd_reps,
+          python = python,
+          return_plot = FALSE
+        )
+
+        message(
+          "\n Using ",
+          pd,
+          " dimensions"
+        )
+
+        dims <- pd
+        caobj <- subset_dims(caobj, dims)
+      } else {
+        dims <- caobj@dims
+        message(
+          "\n Using ",
+          dims,
+          " dimensions. No subsetting performed."
+        )
+      }
+    } else if (!is.empty(caobj@dims) && !is.null(dims)) {
+      if (dims < caobj@dims) {
+        if (!isTRUE(pd_use)) {
+          message("\n Using ", dims, " dimensions.")
+        } else if (isTRUE(pd_use)) {
+          message("\nBoth dims and pd_use set. Using dimensions specified by dims.")
+          message(
+            "\nUsing ",
+            dims,
+            " dimensions."
+          )
+        }
+
+        caobj <- subset_dims(caobj, dims = dims)
+      } else if (dims > length(caobj@D)) {
+        warning(
+          "dims is larger than the number of available dimensions. ",
+          "Argument ignored"
+        )
+      }
+    }
+
+    if (is.empty(caobj@prin_coords_rows) && !is.empty(caobj@std_coords_rows)) {
+      caobj <- ca_coords(
+        caobj = caobj,
+        dims = dims,
+        princ_only = TRUE,
+        princ_coords = 1
+      )
+    } else if (is.empty(caobj@prin_coords_rows) ||
+      is.empty(caobj@std_coords_cols)) {
+      caobj <- ca_coords(
+        caobj = caobj,
+        dims = dims,
+        princ_only = FALSE,
+        princ_coords = 1
+      )
+    }
+  }
+
+  if (is.empty(caobj@apl_rows) || is.empty(caobj@apl_cols)) {
+    caobj <- apl_coords(caobj = caobj, group = group)
+  }
+
+
+  if (is.null(mark_rows)) {
+    if (score == TRUE) {
+      caobj <- apl_score(
+        caobj = caobj,
+        mat = obj,
+        dims = caobj@dims,
+        group = caobj@group,
+        reps = reps,
+        python = python
+      )
+
+      mark_rows <- head(caobj@APL_score$Row_num, nrow)
+
+      if (is(mark_cols, "character")) {
+        mark_cols <- match(mark_cols, rownames(caobj@apl_cols))
+        mark_cols <- na.omit(mark_cols)
+        if (anyNA(mark_cols)) {
+          warning(
+            "Not all names in 'mark_cols' are contained in the row names.",
+            " Maybe they were filtered out?",
+            "\nNon-matching values were ignored."
+          )
+        }
+      }
+    }
+  } else {
+    if (is(mark_rows, "character")) {
+      mark_rows <- match(mark_rows, rownames(caobj@apl_rows))
+      mark_rows <- na.omit(mark_rows)
+      if (anyNA(mark_rows)) {
+        warning(
+          "Not all names in 'mark_rows' are contained in the row names.",
+          " Maybe they were filtered out?",
+          "\n Non-matching values were ignored."
+        )
+      }
+    }
+
+    if (is(mark_cols, "character")) {
+      mark_cols <- match(mark_cols, rownames(caobj@apl_cols))
+      mark_cols <- na.omit(mark_cols)
+      if (anyNA(mark_cols)) {
+        warning(
+          "Not all names in 'mark_cols' are contained in the row names.",
+          " Maybe they were filtered out?",
+          "\n Non-matching values were ignored."
+        )
+      }
+    }
+  }
+
+  if (isTRUE(col_labs) & is.empty(mark_cols)) {
+    mark_cols <- caobj@group
+  }
+
+  p <- apl(
+    caobj = caobj,
+    type = type,
+    rows_idx = mark_rows,
+    cols_idx = mark_cols,
+    row_labs = row_labs,
+    col_labs = col_labs,
+    show_score = score,
+    show_cols = show_cols,
+    show_rows = show_rows,
+    score_cutoff = score_cutoff,
+    score_color = score_color
+  )
+
+  return(p)
+}
+
 #' Compute and plot Association Plot
 #'
 #' @description
@@ -1031,8 +1286,7 @@ setGeneric("runAPL", function(obj,
                               dims = NULL,
                               nrow = 10,
                               top = 5000,
-                              score = TRUE,
-                              mark_rows = NULL,
+                              score = TRUE, mark_rows = NULL,
                               mark_cols = caobj@group,
                               reps = 3,
                               python = FALSE,
@@ -1092,179 +1346,35 @@ setMethod(f = "runAPL",
                    pd_method = "elbow_rule",
                    pd_reps = 1,
                    pd_use = TRUE,
-                   ...){
-# TODO: Try removing.
-  if (!is(obj, "matrix")){
+                   ...) {
+
+  if (!is(obj, "matrix") & !is(obj, "dgCMatrix")) {
     obj <- as.matrix(obj)
   }
-  stopifnot(is(obj, "matrix"))
+  stopifnot(is(obj, "matrix") | is(obj, "dgCMatrix"))
 
-  if (is.null(caobj)){
-    caobj <- cacomp(obj = obj,
-                    coords = TRUE,
-                    top = top,
-                    princ_coords = 3,
-                    dims = dims,
-                    python = python)
-    
-    if(is.null(dims) & isTRUE(pd_use)){
-      
-      stopifnot("Cannot use scree plot to pick dimensions" = pd_method != "scree_plot")
-      pd <- pick_dims(obj = caobj,
-                      mat = obj,
-                      method = pd_method,
-                      reps = pd_reps,
-                      python = python,
-                      return_plot = FALSE)
-      
-      message("\n Using ",
-              pd,
-              " dimensions. Subsetting.")
-      
-      dims <- pd
-      caobj <- subset_dims(caobj, dims)
-      
-    } else if (is.null(dims) & !isTRUE(pd_use)) {
-      dims <- caobj@dims
-      message("\n Using ",
-              dims,
-              " dimensions. No subsetting performed.")
-      
-    } else if (!is.null(dims) & !isTRUE(pd_use)) {
-      message("\n Using ", dims, " dimensions.")
-    } else if(!is.null(dims) & isTRUE(pd_use)){
-      message("\nBoth dims and pd_use set. Using dimensions specified by dims.")
-      message("\nUsing ", dims, " dimensions.")
-    }
-    
+  run_APL(obj = obj,
+          caobj = caobj,
+          dims = dims,
+          group = group,
+          mark_rows = mark_rows,
+          mark_cols = mark_cols,
+          nrow = nrow,
+          top = top,
+          score = score,
+          reps = reps,
+          python = python,
+          row_labs = row_labs,
+          col_labs = col_labs,
+          type = type,
+          show_cols = show_cols,
+          show_rows = show_rows,
+          score_cutoff = score_cutoff,
+          score_color = score_color,
+          pd_method = pd_method,
+          pd_reps = pd_reps,
+          pd_use = pd_use)
 
-  } else {
-    if(!is.empty(caobj@dims) && is.null(dims)){
-      if(isTRUE(pd_use)){
-        stopifnot("Cannot use scree plot to pick dimensions" = 
-                    pd_method != "scree_plot")
-        pd <- pick_dims(obj = caobj,
-                        mat = obj,
-                        method = pd_method,
-                        reps = pd_reps,
-                        python = python,
-                        return_plot = FALSE)
-        
-        message("\n Using ",
-                pd,
-                " dimensions")
-        
-        dims <- pd
-        caobj <- subset_dims(caobj, dims)
-      } else {
-        dims <- caobj@dims
-        message("\n Using ",
-                dims,
-                " dimensions. No subsetting performed.")
-      }
-
-      
-    } else if (!is.empty(caobj@dims) && !is.null(dims)) {
-      if (dims < caobj@dims){
-
-        if (!isTRUE(pd_use)) {
-          message("\n Using ", dims, " dimensions.")
-        } else if(isTRUE(pd_use)){
-          message("\nBoth dims and pd_use set. Using dimensions specified by dims.")
-          message("\nUsing ",
-                  dims,
-                  " dimensions.")
-        }
-        
-        caobj <- subset_dims(caobj, dims = dims)
-      } else if(dims > length(caobj@D)){
-        warning("dims is larger than the number of available dimensions. ",
-                "Argument ignored")
-      }
-    }
-
-    if (is.empty(caobj@prin_coords_rows) && !is.empty(caobj@std_coords_rows)){
-      caobj <- ca_coords(caobj = caobj,
-                         dims = dims,
-                         princ_only = TRUE,
-                         princ_coords = 1)
-    } else if (is.empty(caobj@prin_coords_rows) || 
-               is.empty(caobj@std_coords_cols)){
-      caobj <- ca_coords(caobj = caobj,
-                         dims = dims,
-                         princ_only = FALSE,
-                         princ_coords = 1)
-    }
-  }
-
-  if (is.empty(caobj@apl_rows) || is.empty(caobj@apl_cols)){
-    caobj <- apl_coords(caobj = caobj, group = group)
-  }
-
-
-  if (is.null(mark_rows)){
-    if (score == TRUE){
-      caobj <- apl_score(caobj = caobj,
-                         mat = obj,
-                         dims = caobj@dims,
-                         group = caobj@group,
-                         reps= reps,
-                         python = python)
-
-      mark_rows <- head(caobj@APL_score$Row_num, nrow)
-
-      if (is(mark_cols, "character")){
-        mark_cols <- match(mark_cols, rownames(caobj@apl_cols))
-        mark_cols <- na.omit(mark_cols)
-        if (anyNA(mark_cols)){
-          warning(
-            "Not all names in 'mark_cols' are contained in the row names.",
-            " Maybe they were filtered out?",
-            "\nNon-matching values were ignored.")
-        }
-      }
-    }
-  } else{
-    if (is(mark_rows, "character")){
-      mark_rows <- match(mark_rows, rownames(caobj@apl_rows))
-      mark_rows <- na.omit(mark_rows)
-      if (anyNA(mark_rows)){
-        warning(
-          "Not all names in 'mark_rows' are contained in the row names.",
-          " Maybe they were filtered out?",
-          "\n Non-matching values were ignored.")
-      }
-    }
-
-    if (is(mark_cols, "character")){
-      mark_cols <- match(mark_cols, rownames(caobj@apl_cols))
-      mark_cols <- na.omit(mark_cols)
-      if (anyNA(mark_cols)){
-        warning(
-          "Not all names in 'mark_cols' are contained in the row names.",
-          " Maybe they were filtered out?",
-          "\n Non-matching values were ignored.")
-      }
-    }
-  }
-
-  if(isTRUE(col_labs) & is.empty(mark_cols)){
-    mark_cols <- caobj@group
-  }
-
-  p <- apl(caobj = caobj,
-           type = type,
-           rows_idx = mark_rows,
-           cols_idx = mark_cols,
-           row_labs = row_labs,
-           col_labs = col_labs,
-           show_score = score,
-           show_cols = show_cols,
-           show_rows = show_rows,
-           score_cutoff = score_cutoff,
-           score_color = score_color)
-
-  return(p)
 })
 
 
@@ -1340,11 +1450,11 @@ setMethod(f = "runAPL",
     caobj <- as.cacomp(obj, assay = assay)
   }
 
-  if (!is(mat, "matrix")) {
+  if (!is(mat, "matrix") & !is(mat, "dgCMatrix")) {
     mat <- as.matrix(mat)
   }
 
-  runAPL(obj = mat,
+  run_APL(obj = mat,
         caobj = caobj,
         dims = dims,
         group = group,
@@ -1445,25 +1555,98 @@ setMethod(f = "runAPL",
     caobj <- NULL
   }
 
-  runAPL(obj = seu,
-        caobj = caobj,
-        top = top,
-        dims= dims,
-        group = group,
-        score = score,
-        reps = reps,
-        python = python,
-        mark_rows = mark_rows,
-        mark_cols = mark_cols,
-        nrow = nrow,
-        row_labs = row_labs,
-        col_labs = col_labs,
-        type = type,
-        show_cols = show_cols,
-        show_rows = show_rows,
-        score_cutoff = score_cutoff,
-        score_color = score_color,
-        pd_method = pd_method,
-        pd_reps = pd_reps,
-        pd_use = pd_use)
+  run_APL(obj = seu,
+          caobj = caobj,
+          top = top,
+          dims= dims,
+          group = group,
+          score = score,
+          reps = reps,
+          python = python,
+          mark_rows = mark_rows,
+          mark_cols = mark_cols,
+          nrow = nrow,
+          row_labs = row_labs,
+          col_labs = col_labs,
+          type = type,
+          show_cols = show_cols,
+          show_rows = show_rows,
+          score_cutoff = score_cutoff,
+          score_color = score_color,
+          pd_method = pd_method,
+          pd_reps = pd_reps,
+          pd_use = pd_use)
 })
+
+
+#' @export
+#' @rdname runAPL
+#' @examples
+#' set.seed(1234)
+#'
+#' # Simulate counts
+#' cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+#'                x = sample(seq(0.01,0.1,by=0.01), 50, replace = TRUE))
+#' rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+#' colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+#' cnts <- Matrix::Matrix(cnts)
+#'
+#' # (nonsensical) APL
+#' runAPL(obj = cnts,
+#'        group = 1:10,
+#'        dims = 10,
+#'        top = 500,
+#'        score = TRUE,
+#'        show_cols = TRUE,
+#'        type = "ggplot")
+setMethod(f = "runAPL",
+          signature=(obj="dgCMatrix"),
+          function(obj,
+                   group,
+                   caobj = NULL,
+                   dims = NULL,
+                   nrow = 10,
+                   top = 5000,
+                   score = TRUE,
+                   mark_rows = NULL,
+                   mark_cols = NULL,
+                   reps = 3,
+                   python = FALSE,
+                   row_labs = TRUE,
+                   col_labs = TRUE,
+                   type = "plotly",
+                   show_cols = FALSE,
+                   show_rows = TRUE,
+                   score_cutoff = 0,
+                   score_color = "rainbow",
+                   pd_method = "elbow_rule",
+                   pd_reps = 1,
+                   pd_use = TRUE,
+                   ...) {
+
+  stopifnot(is(obj, "dgCMatrix"))
+
+  run_APL(obj = obj,
+          caobj = caobj,
+          dims = dims,
+          group = group,
+          mark_rows = mark_rows,
+          mark_cols = mark_cols,
+          nrow = nrow,
+          top = top,
+          score = score,
+          reps = reps,
+          python = python,
+          row_labs = row_labs,
+          col_labs = col_labs,
+          type = type,
+          show_cols = show_cols,
+          show_rows = show_rows,
+          score_cutoff = score_cutoff,
+          score_color = score_color,
+          pd_method = pd_method,
+          pd_reps = pd_reps,
+          pd_use = pd_use)
+
+})
+
