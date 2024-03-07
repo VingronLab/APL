@@ -21,7 +21,7 @@ NULL
 #' @param ... Further arguments forwarded to cacomp.
 recompute <- function(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...){
   stopifnot(is(calist, "list"))
-  stopifnot(is(mat, "matrix"))
+  stopifnot(is(mat, "matrix") | is(mat, "dgCMatrix"))
 
   if(isTRUE(rm_zeros)){
     mat <- rm_zeros(mat)

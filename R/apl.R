@@ -1093,7 +1093,7 @@ setMethod(f = "runAPL",
                    pd_reps = 1,
                    pd_use = TRUE,
                    ...){
-
+# TODO: Try removing.
   if (!is(obj, "matrix")){
     obj <- as.matrix(obj)
   }
