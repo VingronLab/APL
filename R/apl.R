@@ -982,7 +982,69 @@ apl <- function(caobj,
 #' correspondence analysis biplots \cr
 #' Elzbieta Gralinska, Martin Vingron \cr
 #' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
-#' @inheritParams runAPL
+#'
+#' @param obj A numeric matrix. For sequencing usually a count matrix,
+#' gene expression values with genes in rows and samples/cells in columns.
+#' Should contain row and column names.
+#'
+#' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied 
+#' will be calculated. Default NULL.
+#'
+#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all 
+#' dimensions).
+#'
+#' @param group Numeric/Character. Vector of indices or column names of the 
+#' columns to calculate centroid/x-axis direction.
+#'
+#' @param nrow Integer. The top nrow scored row labels will be added to the 
+#' plot if score = TRUE. Default 10.
+#'
+#' @param top Integer. Number of most variable rows to retain. Default 5000 
+#' rows (set NULL to keep all).
+#'
+#' @param score Logical. Whether rows should be scored and ranked. Ignored when 
+#' a vector is supplied to mark_rows. Default TRUE.
+#'
+#' @param mark_rows Character vector. Names of rows that should be highlighted 
+#' in the plot. If not NULL, score is ignored. Default NULL.
+#'
+#' @param mark_cols Character vector. Names of cols that should be highlighted 
+#' in the plot.
+#'
+#' @param reps Integer. Number of permutations during scoring. Default 3.
+#'
+#' @param python A logical value indicating whether to use singular value 
+#' decomposition from the python package torch.
+#' This implementation dramatically speeds up computation compared to `svd()` 
+#' in R.
+#'
+#' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
+#' should be labeled with text. Default TRUE.
+#'
+#' @param col_labs Logical. Whether labels for columns indicated by cols_idx 
+#' should be labeled with text. Default TRUE.
+#'
+#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an 
+#' interactive plot "plotly". Default "plotly".
+#'
+#' @param show_cols Logical. Whether column points should be plotted.
+#'
+#' @param show_rows Logical. Whether row points should be plotted.
+#'
+#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff
+#' will be colored according to their score if show_score = TRUE.
+#'
+#' @param score_color Either "rainbow" or "viridis".
+#'
+#' @param pd_method Which method to use for pick_dims (\link[APL]{pick_dims}).
+#'
+#' @param pd_reps Number of repetitions performed when using "elbow_rule" in 
+#' `pick_dims`.
+#' (\link[APL]{pick_dims})
+#'
+#' @param pd_use Whether to use `pick_dims` (\link[APL]{pick_dims}) to determine
+#' the number of dimensions. Ignored when `dims` is set by the user.
+#'
 #' @examples
 #' set.seed(1234)
 #'

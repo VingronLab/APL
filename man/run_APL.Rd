@@ -25,14 +25,12 @@ run_APL(
   score_color = "rainbow",
   pd_method = "elbow_rule",
   pd_reps = 1,
-  pd_use = TRUE,
-  ...
+  pd_use = TRUE
 )
 }
 \arguments{
-\item{obj}{A numeric matrix, Seurat or SingleCellExperiment object. For 
-sequencing a count matrix, gene expression values with genes in rows and 
-samples/cells in columns.
+\item{obj}{A numeric matrix. For sequencing usually a count matrix,
+gene expression values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
 \item{group}{Numeric/Character. Vector of indices or column names of the 
@@ -92,8 +90,6 @@ will be colored according to their score if show_score = TRUE.}
 
 \item{pd_use}{Whether to use `pick_dims` (\link[APL]{pick_dims}) to determine
 the number of dimensions. Ignored when `dims` is set by the user.}
-
-\item{...}{Arguments forwarded to methods.}
 }
 \value{
 Association Plot (plotly object).
