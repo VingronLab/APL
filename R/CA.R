@@ -337,7 +337,6 @@ inertia_rows <- function(mat, top = 5000, ...) {
 }
 
 
-# TODO: Stopped 20240211
 #' Internal function for `cacomp`
 #'
 #' @description
@@ -403,9 +402,9 @@ run_cacomp <- function(obj,
                        ...) {
 
   stopifnot("Input matrix does not have any rownames!" =
-              !is.null(rownames(obj)))
+            !is.null(rownames(obj)))
   stopifnot("Input matrix does not have any colnames!" =
-              !is.null(colnames(obj)))
+            !is.null(colnames(obj)))
 
   parameters <- list()
 
@@ -421,7 +420,7 @@ run_cacomp <- function(obj,
     if(isTRUE(update_top)) top <- nrow(obj)
   }
 
-    # Choose only top # of variable genes
+  # Choose only top # of variable genes
   if (!is.null(top) && top < nrow(obj)){
 
     obj <- var_rows(mat = obj,
@@ -455,7 +454,6 @@ run_cacomp <- function(obj,
   }
 
   S <- res$S
-  tot <- res$tot
   rowm <- res$rowm
   colm <- res$colm
 

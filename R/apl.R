@@ -1107,89 +1107,6 @@ apl <- function(caobj,
 
 
 
-#' Internal function to compute and plot Association Plot
-#'
-#' @description
-#' Computes singular value decomposition and coordinates for 
-#' the Association Plot.
-#'
-#' @details
-#' The function is a wrapper that calls `cacomp()`, `apl_coords()`, 
-#' `apl_score()` and finally `apl()` for ease of use.
-#' The chosen defaults are most useful for genomics experiments, but for more 
-#' fine grained control the functions
-#' can be also run individually for the same results.
-#' If score = FALSE, nrow and reps are ignored. If mark_rows is not NULL score 
-#' is treated as if FALSE.
-#' @return
-#' Association Plot (plotly object).
-#' 
-#' @references
-#' Association Plots: Visualizing associations in high-dimensional 
-#' correspondence analysis biplots \cr
-#' Elzbieta Gralinska, Martin Vingron \cr
-#' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
-#'
-#' @param obj A numeric matrix. For sequencing usually a count matrix,
-#' gene expression values with genes in rows and samples/cells in columns.
-#' Should contain row and column names.
-#'
-#' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied 
-#' will be calculated. Default NULL.
-#' @inheritParams cacomp
-#' @inheritParams apl_coords
-#' @inheritParams apl
-#' @inheritParams apl_score
-#' @param nrow Integer. The top nrow scored row labels will be added to the 
-#' plot if score = TRUE. Default 10.
-#' @param score Logical. Whether rows should be scored and ranked. Ignored when 
-#' a vector is supplied to mark_rows. Default TRUE.
-#' @param score_method Method to calculate the cutoff. Either "random" for random 
-#' direction method or "permutation" for the permutation method.
-#' @param mark_rows Character vector. Names of rows that should be highlighted 
-#' in the plot. If not NULL, score is ignored. Default NULL.
-#'
-#' @param mark_cols Character vector. Names of cols that should be highlighted 
-#' in the plot.
-#'
-#' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param pd_method Which method to use for pick_dims (\link[APL]{pick_dims}).
-#'
-#' @param pd_reps Number of repetitions performed when using "elbow_rule" in 
-#' `pick_dims`.
-#' (\link[APL]{pick_dims})
-#'
-#' @param pd_use Whether to use `pick_dims` (\link[APL]{pick_dims}) to determine
-#' the number of dimensions. Ignored when `dims` is set by the user.
-#' @param ... Arguments forwarded to methods.
-#' @export
-setGeneric("runAPL", function(obj,
-                              group,
-                              caobj = NULL,
-                              dims = NULL,
-                              nrow = 10,
-                              top = 5000,
-                              clip = FALSE,
-                              score = TRUE,
-                              score_method = "permutation",
-                              mark_rows = NULL,
-                              mark_cols = caobj@group,
-                              reps = 3,
-                              python = FALSE,
-                              row_labs = TRUE,
-                              col_labs = TRUE,
-                              type = "plotly",
-                              show_cols = FALSE,
-                              show_rows = TRUE,
-                              score_cutoff = 0,
-                              score_color = "rainbow",
-                              pd_method = "elbow_rule",
-                              pd_reps = 1,
-                              pd_use = TRUE,
-                              ...) {
-  standardGeneric("runAPL")
-})
-
 #' @export
 #' @rdname runAPL
 #' @examples
@@ -1449,47 +1366,35 @@ run_APL <- function(obj,
 #' correspondence analysis biplots \cr
 #' Elzbieta Gralinska, Martin Vingron \cr
 #' bioRxiv 2020.10.23.352096; doi: https://doi.org/10.1101/2020.10.23.352096 \cr
-#'
-#' @param obj A numeric matrix, Seurat or SingleCellExperiment object. For 
-#' sequencing a count matrix, gene expression values with genes in rows and 
-#' samples/cells in columns.
+#' @param obj A numeric matrix. For sequencing usually a count matrix,
+#' gene expression values with genes in rows and samples/cells in columns.
 #' Should contain row and column names.
+#'
 #' @param caobj A "cacomp" object as outputted from `cacomp()`. If not supplied 
 #' will be calculated. Default NULL.
-#' @param dims Integer. Number of dimensions to keep. Default NULL (keeps all 
-#' dimensions).
-#' @param group Numeric/Character. Vector of indices or column names of the 
-#' columns to calculate centroid/x-axis direction.
+#' @inheritParams cacomp
+#' @inheritParams apl_coords
+#' @inheritParams apl
+#' @inheritParams apl_score
 #' @param nrow Integer. The top nrow scored row labels will be added to the 
 #' plot if score = TRUE. Default 10.
-#' @param top Integer. Number of most variable rows to retain. Default 5000 
-#' rows (set NULL to keep all).
 #' @param score Logical. Whether rows should be scored and ranked. Ignored when 
 #' a vector is supplied to mark_rows. Default TRUE.
+#' @param score_method Method to calculate the cutoff. Either "random" for random 
+#' direction method or "permutation" for the permutation method.
 #' @param mark_rows Character vector. Names of rows that should be highlighted 
 #' in the plot. If not NULL, score is ignored. Default NULL.
+#'
 #' @param mark_cols Character vector. Names of cols that should be highlighted 
 #' in the plot.
+#'
 #' @param reps Integer. Number of permutations during scoring. Default 3.
-#' @param python A logical value indicating whether to use singular value 
-#' decomposition from the python package torch.
-#' This implementation dramatically speeds up computation compared to `svd()` 
-#' in R.
-#' @param row_labs Logical. Whether labels for rows indicated by rows_idx 
-#' should be labeled with text. Default TRUE.
-#' @param col_labs Logical. Whether labels for columns indicated by cols_idx 
-#' should be labeled with text. Default TRUE.
-#' @param type "ggplot"/"plotly". For a static plot a string "ggplot", for an 
-#' interactive plot "plotly". Default "plotly".
-#' @param show_cols Logical. Whether column points should be plotted.
-#' @param show_rows Logical. Whether row points should be plotted.
-#' @param score_cutoff Numeric. Rows (genes) with a score >= score_cutoff
-#' will be colored according to their score if show_score = TRUE.
-#' @param score_color Either "rainbow" or "viridis".
 #' @param pd_method Which method to use for pick_dims (\link[APL]{pick_dims}).
+#'
 #' @param pd_reps Number of repetitions performed when using "elbow_rule" in 
 #' `pick_dims`.
 #' (\link[APL]{pick_dims})
+#'
 #' @param pd_use Whether to use `pick_dims` (\link[APL]{pick_dims}) to determine
 #' the number of dimensions. Ignored when `dims` is set by the user.
 #' @param ... Arguments forwarded to methods.
@@ -1520,6 +1425,8 @@ setGeneric("runAPL", function(obj,
                               ...) {
   standardGeneric("runAPL")
 })
+
+
 
 #' @export
 #' @rdname runAPL
@@ -1837,7 +1744,8 @@ setMethod(f = "runAPL",
                    top = 5000,
                    clip = FALSE,
                    score = TRUE,
-                   score_method = "permutation",                   mark_rows = NULL,
+                   score_method = "permutation",
+                   mark_rows = NULL,
                    mark_cols = NULL,
                    reps = 3,
                    python = FALSE,
