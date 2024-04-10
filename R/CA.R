@@ -25,7 +25,12 @@ NULL
 comp_std_residuals <- function(mat, clip = FALSE, cutoff = NULL) {
 
     stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix") | is(mat, "dgCMatrix"))
-
+    
+    # TODO: Check if there are edge cases that need converting.
+    #if (!is(mat, "matrix") & !is(mat, "dgCMatrix")) {
+    #  mat <- as.matrix(mat)
+    #}
+    
     stopifnot(
         "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
     stopifnot(

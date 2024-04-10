@@ -53,6 +53,18 @@ cacomp(
   ...
 )
 
+\S4method{cacomp}{dgCMatrix}(
+  obj,
+  coords = TRUE,
+  princ_coords = 3,
+  python = FALSE,
+  dims = NULL,
+  top = 5000,
+  inertia = TRUE,
+  rm_zeros = TRUE,
+  ...
+)
+
 \S4method{cacomp}{Seurat}(
   obj,
   coords = TRUE,

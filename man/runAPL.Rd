@@ -5,6 +5,7 @@
 \alias{runAPL,matrix-method}
 \alias{runAPL,SingleCellExperiment-method}
 \alias{runAPL,Seurat-method}
+\alias{runAPL,dgCMatrix-method}
 \title{Compute and plot Association Plot}
 \usage{
 runAPL(
@@ -116,6 +117,31 @@ runAPL(
   ...,
   assay = Seurat::DefaultAssay(obj),
   slot = "counts"
+)
+
+\S4method{runAPL}{dgCMatrix}(
+  obj,
+  group,
+  caobj = NULL,
+  dims = NULL,
+  nrow = 10,
+  top = 5000,
+  score = TRUE,
+  mark_rows = NULL,
+  mark_cols = NULL,
+  reps = 3,
+  python = FALSE,
+  row_labs = TRUE,
+  col_labs = TRUE,
+  type = "plotly",
+  show_cols = FALSE,
+  show_rows = TRUE,
+  score_cutoff = 0,
+  score_color = "rainbow",
+  pd_method = "elbow_rule",
+  pd_reps = 1,
+  pd_use = TRUE,
+  ...
 )
 }
 \arguments{
@@ -288,6 +314,23 @@ runAPL(obj = seu,
        type = "ggplot",
        assay = "RNA",
        slot = "counts")
+set.seed(1234)
+
+# Simulate counts
+cnts <- mapply(function(x){rpois(n = 500, lambda = x)},
+               x = sample(seq(0.01,0.1,by=0.01), 50, replace = TRUE))
+rownames(cnts) <- paste0("gene_", 1:nrow(cnts))
+colnames(cnts) <- paste0("cell_", 1:ncol(cnts))
+cnts <- Matrix::Matrix(cnts)
+
+# (nonsensical) APL
+runAPL(obj = cnts,
+       group = 1:10,
+       dims = 10,
+       top = 500,
+       score = TRUE,
+       show_cols = TRUE,
+       type = "ggplot")
 }
 \references{
 Association Plots: Visualizing associations in high-dimensional 

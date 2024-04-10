@@ -1,7 +1,7 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 1.7.2
+Version: 1.7.4
 Authors@R:
     c(person(given = "Clemens",
         family = "Kohl",
@@ -72,5 +72,12 @@ Collate:
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "numpy"),
+      list(package = "torch")
+    )
+  )
 SystemRequirements: python, pytorch, numpy
 URL: https://vingronlab.github.io/APL/
