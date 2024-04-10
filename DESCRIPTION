@@ -70,5 +70,12 @@ Collate:
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "numpy"),
+      list(package = "torch")
+    )
+  )
 SystemRequirements: python, pytorch, numpy
 URL: https://vingronlab.github.io/APL/
