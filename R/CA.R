@@ -25,12 +25,12 @@ NULL
 comp_std_residuals <- function(mat, clip = FALSE, cutoff = NULL) {
 
     stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix") | is(mat, "dgCMatrix"))
-    
+
     # TODO: Check if there are edge cases that need converting.
     #if (!is(mat, "matrix") & !is(mat, "dgCMatrix")) {
     #  mat <- as.matrix(mat)
     #}
-    
+
     stopifnot(
         "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
     stopifnot(
@@ -156,7 +156,7 @@ comp_ft_residuals <- function(mat) {
     col.w <- Matrix::colSums(pmat)
 
     expectedp <- row.w %*% t(col.w)
-    
+
     # row.sum <- Matrix::rowSums(mat)
     # col.sum <- Matrix::colSums(mat)
     # expectedx <- row.sum %*% t(col.sum)
@@ -193,7 +193,7 @@ calc_residuals <- function(mat,
                            cutoff = NULL) {
 
     if (residuals == "pearson") {
-        
+
         if (is.null(cutoff)) cutoff <- 1
 
         res <-  comp_std_residuals(mat = mat,
@@ -401,179 +401,179 @@ run_cacomp <- function(obj,
                        clip = FALSE,
                        ...) {
 
-  stopifnot("Input matrix does not have any rownames!" =
-            !is.null(rownames(obj)))
-  stopifnot("Input matrix does not have any colnames!" =
-            !is.null(colnames(obj)))
+    stopifnot("Input matrix does not have any rownames!" =
+              !is.null(rownames(obj)))
+    stopifnot("Input matrix does not have any colnames!" =
+              !is.null(colnames(obj)))
 
-  parameters <- list()
+    parameters <- list()
 
-  if (rm_zeros == TRUE) {
+    if (rm_zeros == TRUE) {
 
-    if(top == nrow(obj)) {
-      update_top <- TRUE
-    } else {
-      update_top <- FALSE
+        if (top == nrow(obj)) {
+            update_top <- TRUE
+        } else {
+            update_top <- FALSE
+        }
+
+        obj <- rm_zeros(obj)
+        if (isTRUE(update_top)) top <- nrow(obj)
     }
 
-    obj <- rm_zeros(obj)
-    if(isTRUE(update_top)) top <- nrow(obj)
-  }
+    # Choose only top # of variable genes
+    if (!is.null(top) && top < nrow(obj)) {
 
-  # Choose only top # of variable genes
-  if (!is.null(top) && top < nrow(obj)){
+        obj <- var_rows(mat = obj,
+                        top = top,
+                        residuals = residuals,
+                        clip = clip,
+                        cutoff = cutoff)
 
-    obj <- var_rows(mat = obj,
-                    top = top,
-                    residuals = residuals,
-                    clip = clip,
-                    cutoff = cutoff)
+        res <- calc_residuals(mat = obj,
+                              residuals = residuals,
+                              clip = clip,
+                              cutoff = cutoff)
+        toptmp <- top
 
-    res <- calc_residuals(mat = obj,
-                          residuals = residuals,
-                          clip = clip,
-                          cutoff = cutoff)
-    toptmp <- top
+    } else {
 
-  } else {
+        if (top > nrow(obj)) {
+            warning("\nParameter top is >nrow(obj) and therefore ignored.")
+        } else if (is.null(top) || top == nrow(obj)) {
+            # do nothing. just here to allow for else statement.
+        } else {
+            warning("\nUnusual input for top, argument ignored.")
+        }
 
-      if (top > nrow(obj)) {
-          warning("\nParameter top is >nrow(obj) and therefore ignored.")
-      } else if (is.null(top) || top == nrow(obj)){
-          # do nothing. just here to allow for else statement.
-      } else {
-          warning("\nUnusual input for top, argument ignored.")
-      }
+        res <- calc_residuals(mat = obj,
+                              residuals = residuals,
+                              clip = clip,
+                              cutoff = cutoff)
+        toptmp <- nrow(obj)
 
-      res <- calc_residuals(mat = obj,
-                            residuals = residuals,
-                            clip = clip,
-                            cutoff = cutoff)
-      toptmp <- nrow(obj)
+    }
 
-  }
-
-  S <- res$S
-  rowm <- res$rowm
-  colm <- res$colm
+    S <- res$S
+    rowm <- res$rowm
+    colm <- res$colm
 
 
-  k <- min(dim(S))-1
+    k <- min(dim(S))-1
 
-  if (is.null(dims)) dims <- k
-  if (dims > k) {
+    if (is.null(dims)) dims <- k
+    if (dims > k) {
         warning(paste0("Number of dimensions is larger than the rank of the matrix. ",
-            "Reducing number of dimensions to rank of the matrix."))
+                       "Reducing number of dimensions to rank of the matrix."))
         dims <- k
     }
 
-  if (isTRUE(dims == k)){
+    if (isTRUE(dims == k)){
 
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
 
         if (python == TRUE){
-          svd_torch <- NULL
-          if(!is(S, "matrix")) S <- as.matrix(S)
+            svd_torch <- NULL
+            if(!is(S, "matrix")) S <- as.matrix(S)
 
-          reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
-          SVD <- svd_torch(S)
-          names(SVD) <- c("U", "D", "V")
-          SVD$D <- as.vector(SVD$D)
+            reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
+            SVD <- svd_torch(S)
+            names(SVD) <- c("U", "D", "V")
+            SVD$D <- as.vector(SVD$D)
 
         } else {
 
-          SVD <- svd(S, nu = dims, nv = dims)
-          names(SVD) <- c("D", "U", "V")
-          SVD <- SVD[c(2, 1, 3)]
-          SVD$D <- as.vector(SVD$D)
-          if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
+            SVD <- svd(S, nu = dims, nv = dims)
+            names(SVD) <- c("D", "U", "V")
+            SVD <- SVD[c(2, 1, 3)]
+            SVD$D <- as.vector(SVD$D)
+            if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
         }
     } else {
 
-      # if number of dimensions are given, turn to calculate partial SVD
+        # if number of dimensions are given, turn to calculate partial SVD
 
-      SVD <- irlba::irlba(S, nv = dims, smallest = FALSE) # eigenvalues in a decreasing order
-      SVD <- SVD[1:3]
-      names(SVD)[1:3] <- c("D", "U", "V")
-      SVD$D <- as.vector(SVD$D)
+        SVD <- irlba::irlba(S, nv = dims, smallest = FALSE) # eigenvalues in a decreasing order
+        SVD <- SVD[1:3]
+        names(SVD)[1:3] <- c("D", "U", "V")
+        SVD$D <- as.vector(SVD$D)
     }
 
-  ord <- order(SVD$D, decreasing = TRUE)
-  SVD$D <- SVD$D[ord]
-  SVD$V <- SVD$V[,ord]
-  SVD$U <- SVD$U[,ord]
-  names(SVD$D) <- paste0("Dim", seq_len(length(SVD$D)))
-  dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ncol(SVD$V))))
-  dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ncol(SVD$U))))
+    ord <- order(SVD$D, decreasing = TRUE)
+    SVD$D <- SVD$D[ord]
+    SVD$V <- SVD$V[, ord]
+    SVD$U <- SVD$U[, ord]
+    names(SVD$D) <- paste0("Dim", seq_len(length(SVD$D)))
+    dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ncol(SVD$V))))
+    dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ncol(SVD$U))))
 
 
-  if(inertia == TRUE){
-    #calculate inertia
-    SVD$tot_inertia <- sum(SVD$D^2)
-    SVD$row_inertia <- Matrix::rowSums(S^2)
-    SVD$col_inertia <- Matrix::colSums(S^2)
-  }
+    if(inertia == TRUE){
+        #calculate inertia
+        SVD$tot_inertia <- sum(SVD$D^2)
+        SVD$row_inertia <- Matrix::rowSums(S^2)
+        SVD$col_inertia <- Matrix::colSums(S^2)
+    }
 
-  SVD$row_masses <- rowm
-  SVD$col_masses <- colm
-
-
-   if(!is.null(dims)){
-      if (dims >= length(SVD$D)){
-          if (dims > length(SVD$D)){
-              warning("Chosen number of dimensions is larger than the ",
-                      "number of dimensions obtained from the singular ",
-                      "value decomposition. Argument ignored.")
-          }
-          dims <- length(SVD$D)
-      } else {
-          dims <- min(dims, length(SVD$D))
-          dimseq <- seq(dims)
-
-          # subset to number of dimensions
-          SVD$U <- SVD$U[,dimseq]
-          SVD$V <- SVD$V[,dimseq]
-          SVD$D <- SVD$D[dimseq]
-      }
-  } else {
-      dims <- length(SVD$D)
-  }
+    SVD$row_masses <- rowm
+    SVD$col_masses <- colm
 
 
-  SVD$dims <- dims
-  SVD$top_rows <- toptmp
+    if (!is.null(dims)) {
+        if (dims >= length(SVD$D)) {
+            if (dims > length(SVD$D)) {
+                warning("Chosen number of dimensions is larger than the ",
+                        "number of dimensions obtained from the singular ",
+                        "value decomposition. Argument ignored.")
+            }
+            dims <- length(SVD$D)
+        } else {
+            dims <- min(dims, length(SVD$D))
+            dimseq <- seq(dims)
 
-  # parameters$top_rows <- toptmp
-  # parameters$dims <- dims
-  parameters$residuals <- residuals
-  parameters$clip <- clip
-  parameters$cutoff <- cutoff
-  parameters$rm_zeros <- rm_zeros
-  parameters$python <- python
-
-  SVD$params <- parameters
-
-  SVD <- do.call(new_cacomp, SVD)
-
-  if (coords == TRUE){
-    # message("Calculating coordinates...")
-
-    SVD <- ca_coords(caobj = SVD,
-                     dims = dims,
-                     princ_coords = princ_coords,
-                     princ_only = FALSE)
-  }
-
-  # check if dimensions with ~zero singular values are selected,
-  # in case the dimensions selected are more then rank of matrix
-  if (min(SVD@D) <= 1e-7){
-      warning(paste("Too many dimensions are selected!",
-                    "Number of dimensions should be smaller than rank of matrix!"))
-  }
+            # subset to number of dimensions
+            SVD$U <- SVD$U[, dimseq]
+            SVD$V <- SVD$V[, dimseq]
+            SVD$D <- SVD$D[dimseq]
+        }
+    } else {
+        dims <- length(SVD$D)
+    }
 
 
-  stopifnot(validObject(SVD))
-  return(SVD)
+    SVD$dims <- dims
+    SVD$top_rows <- toptmp
+
+    # parameters$top_rows <- toptmp
+    # parameters$dims <- dims
+    parameters$residuals <- residuals
+    parameters$clip <- clip
+    parameters$cutoff <- cutoff
+    parameters$rm_zeros <- rm_zeros
+    parameters$python <- python
+
+    SVD$params <- parameters
+
+    SVD <- do.call(new_cacomp, SVD)
+
+    if (coords == TRUE) {
+        # message("Calculating coordinates...")
+
+        SVD <- ca_coords(caobj = SVD,
+                         dims = dims,
+                         princ_coords = princ_coords,
+                         princ_only = FALSE)
+    }
+
+    # check if dimensions with ~zero singular values are selected,
+    # in case the dimensions selected are more then rank of matrix
+    if (min(SVD@D) <= 1e-7) {
+        warning(paste("Too many dimensions are selected!",
+                      "Number of dimensions should be smaller than rank of matrix!"))
+    }
+
+
+    stopifnot(validObject(SVD))
+    return(SVD)
 }
 
 
