@@ -12,3 +12,4 @@ docs
 /renv/
 renv.lock
 .Rprofile
+.editorconfig
