@@ -1,7 +1,7 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 1.7.5
+Version: 1.9.0
 Authors@R:
     c(person(given = "Clemens",
         family = "Kohl",
