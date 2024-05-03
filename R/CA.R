@@ -19,9 +19,9 @@ NULL
 #' grand total of the original matrix "tot"
 #' as well as row and column masses "rowm" and "colm" respectively.
 #'
-comp_std_residuals <- function(mat){
+comp_std_residuals <- function(mat) {
 
-  if (!is(mat, "matrix")){
+  if (!is(mat, "matrix") & !is(mat, "dgCMatrix")) {
     mat <- as.matrix(mat)
   }
   stopifnot(
@@ -31,8 +31,8 @@ comp_std_residuals <- function(mat){
 
   tot <- sum(mat)
   P <- mat/tot               # proportions matrix
-  rowm <- rowSums(P)          # row masses
-  colm <- colSums(P)          # column masses
+  rowm <- Matrix::rowSums(P)          # row masses
+  colm <- Matrix::colSums(P)          # column masses
 
   E <- rowm %o% colm      # expected proportions
   S <-  (P - E) / sqrt(E)         # standardized residuals
@@ -47,10 +47,10 @@ comp_std_residuals <- function(mat){
 #' @param obj A matrix.
 #' @return Input matrix with rows & columns consisting of only 0 removed.
 rm_zeros <- function(obj){
-  stopifnot(is(obj, "matrix"))
+  stopifnot(is(obj, "matrix") | is(obj, "dgCMatrix"))
 
-  no_zeros_rows <- rowSums(obj) > 0
-  no_zeros_cols <- colSums(obj) > 0
+  no_zeros_rows <- Matrix::rowSums(obj) > 0
+  no_zeros_cols <- Matrix::colSums(obj) > 0
   if (sum(!no_zeros_rows) != 0){
     ## Delete genes with only zero values across all columns
     warning("Matrix contains rows with only 0s. ",
@@ -218,11 +218,18 @@ run_cacomp <- function(obj,
   # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
   # message("Running singular value decomposition ...")
 
-  if (python == TRUE){
+  if (python == TRUE) {
+
+    # python implementation currently can only handle dense matrices of the base class.
+    if (!is(S, "matrix")) {
+      S <- as.matrix(S)
+    }
+
     svd_torch <- NULL
     # require(reticulate)
     # source_python('./python_svd.py')
     reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
+    
     SVD <- svd_torch(S)
     # SVD <- svd_linalg_torch(S)
     names(SVD) <- c("U", "D", "V")
@@ -244,8 +251,8 @@ run_cacomp <- function(obj,
   if(inertia == TRUE){
     #calculate inertia
     SVD$tot_inertia <- sum(SVD$D^2)
-    SVD$row_inertia <- rowSums(S^2)
-    SVD$col_inertia <- colSums(S^2)
+    SVD$row_inertia <- Matrix::rowSums(S^2)
+    SVD$col_inertia <- Matrix::colSums(S^2)
   }
 
   SVD$row_masses <- rowm
@@ -369,6 +376,34 @@ setGeneric("cacomp", function(obj,
 #' @export
 setMethod(f = "cacomp",
           signature=(obj="matrix"),
+          function(obj,
+                   coords = TRUE,
+                   princ_coords = 3,
+                   python = FALSE,
+                   dims = NULL,
+                   top = 5000,
+                   inertia = TRUE,
+                   rm_zeros = TRUE,
+                   ...){
+
+    caobj <- run_cacomp(obj = obj,
+                        coords = coords,
+                        princ_coords = princ_coords,
+                        python = python,
+                        dims = dims,
+                        top = top,
+                        inertia = inertia,
+                        rm_zeros = rm_zeros,
+                        ...)
+
+    return(caobj)
+
+})
+
+#' @rdname cacomp
+#' @export
+setMethod(f = "cacomp",
+          signature=(obj="dgCMatrix"),
           function(obj,
                    coords = TRUE,
                    princ_coords = 3,

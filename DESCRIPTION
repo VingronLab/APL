@@ -1,15 +1,14 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 1.7.1
+Version: 1.9.0
 Authors@R:
     c(person(given = "Clemens",
         family = "Kohl",
         role = c("cre", "aut"),
         email = "kohl.clemens@gmail.com"),
     person(given = "Elzbieta",
-        family = "Gralinska",
-        role = c("aut"),
+        family = "Gralinska", role = c("aut"),
         email = "gralinska@molgen.mpg.de"),
     person(given = "Martin",
         family = "Vingron",
@@ -50,7 +49,8 @@ Imports:
     utils,
     org.Hs.eg.db,
     org.Mm.eg.db,
-    rlang
+    rlang,
+    Matrix
 Depends: R (>= 4.2)
 Suggests: 
     BiocStyle,
@@ -70,5 +70,12 @@ Collate:
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "numpy"),
+      list(package = "torch")
+    )
+  )
 SystemRequirements: python, pytorch, numpy
 URL: https://vingronlab.github.io/APL/
