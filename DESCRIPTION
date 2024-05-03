@@ -8,7 +8,8 @@ Authors@R:
         role = c("cre", "aut"),
         email = "kohl.clemens@gmail.com"),
     person(given = "Elzbieta",
-        family = "Gralinska", role = c("aut"),
+        family = "Gralinska",
+        role = c("aut"),
         email = "gralinska@molgen.mpg.de"),
     person(given = "Martin",
         family = "Vingron",
@@ -35,6 +36,8 @@ RoxygenNote: 7.3.1
 VignetteBuilder: knitr
 Imports: 
     reticulate,
+    Matrix,
+    irlba,
     ggrepel,
     ggplot2,
     viridisLite,
@@ -49,8 +52,7 @@ Imports:
     utils,
     org.Hs.eg.db,
     org.Mm.eg.db,
-    rlang,
-    Matrix
+    rlang
 Depends: R (>= 4.2)
 Suggests: 
     BiocStyle,

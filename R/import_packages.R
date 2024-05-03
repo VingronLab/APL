@@ -7,6 +7,7 @@
 #' @importFrom topGO showSigOfNodes score
 #' @importFrom viridisLite viridis
 #' @importFrom rlang .data
+#' @importFrom irlba irlba
 #' @importClassesFrom Seurat Seurat
 #' @importClassesFrom SingleCellExperiment SingleCellExperiment
 NULL

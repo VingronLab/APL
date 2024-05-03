@@ -4,20 +4,26 @@
 \alias{var_rows}
 \title{Find most variable rows}
 \usage{
-var_rows(mat, top = 5000)
+var_rows(mat, residuals = "pearson", top = 5000, ...)
 }
 \arguments{
 \item{mat}{A numeric matrix. For sequencing a count matrix,
 gene expression values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
+\item{residuals}{character string. Specifies which kind of residuals should
+be calculated. Can be "pearson" (default), "freemantukey" or "NB" for
+negative-binomial.}
+
 \item{top}{Integer. Number of most variable rows to retain. Default 5000.}
+
+\item{...}{Further arguments for `calc_residuals`.}
 }
 \value{
 Returns a matrix, which consists of the top variable rows of mat.
 }
 \description{
-Calculates the variance of the chi-square component matrix and selects the 
+Calculates the variance of the chi-square component matrix and selects the
 rows with the highest variance, e.g. 5,000.
 }
 \examples{

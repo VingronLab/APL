@@ -6,13 +6,14 @@
 \usage{
 apl_score(
   caobj,
-  mat,
+  mat = NULL,
   dims = caobj@dims,
   group = caobj@group,
   reps = 10,
   quant = 0.99,
   python = FALSE,
-  store_perm = TRUE
+  store_perm = TRUE,
+  method = "permutation"
 )
 }
 \arguments{
@@ -29,7 +30,7 @@ as in caobj!}
 \item{group}{Vector of indices of the columns to calculate centroid/x-axis 
 direction.}
 
-\item{reps}{Integer. Number of permutations to perform. Default = 10.}
+\item{reps}{Integer. Number of permutations to perform.}
 
 \item{quant}{Numeric. Single number between 0 and 1 indicating the quantile 
 used to calculate the cutoff. Default 0.99.}
@@ -41,6 +42,9 @@ decomposition from the python package torch.}
 object.
 This implementation dramatically speeds up computation compared to `svd()` 
 in R.}
+
+\item{method}{Method to calculate the cutoff. Either "random" for random 
+direction method or "permutation" for the permutation method.}
 }
 \value{
 Returns the input "cacomp" object with "APL_score" component added.
@@ -55,8 +59,14 @@ with the condition and how associated it is with other conditions.
 The score is calculated by permuting the values of each row to determine the 
 cutoff angle of the 99% quantile.
 \deqn{S_{alpha}(x,y)=x-\frac{y}{\tan\alpha}}
-By default the permutation is repeated 10 times, but for very large matrices 
+By default the permutation is repeated 10 times (for random direction min. 
+300 repetition is recommended!), but for very large matrices 
 this can be reduced.
+The method "permutation" permutes the columns in each row and calculates 
+AP-coordinates for each such permutation. The cutoff is then taken by the
+quantile specified by "quan". The "random" method in contrast calculates 
+AP-coordinates for the original data, but by looking into random directions.
+
 If store_perm is TRUE the permuted data is stored in the cacomp object and 
 can be used for future scoring.
 }
