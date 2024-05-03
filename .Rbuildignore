@@ -16,3 +16,4 @@
 ^.lintr
 ^renv
 ^renv.lock
+^.editorconfig
