@@ -21,7 +21,7 @@ NULL
 #' @param ... Further arguments forwarded to cacomp.
 recompute <- function(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...){
   stopifnot(is(calist, "list"))
-  stopifnot(is(mat, "matrix"))
+  stopifnot(is(mat, "matrix") | is(mat, "dgCMatrix"))
 
   if(isTRUE(rm_zeros)){
     mat <- rm_zeros(mat)
@@ -229,8 +229,8 @@ recompute <- function(calist, mat, rm_zeros = TRUE, top = nrow(mat), ...){
                              "*")
 
     calist$tot_inertia <- sum(calist$D^2)
-    calist$row_inertia <- rowSums(S^2)
-    calist$col_inertia <- colSums(S^2)
+    calist$row_inertia <- Matrix::rowSums(S^2)
+    calist$col_inertia <- Matrix::colSums(S^2)
 
     calist$top_rows <- nrow(mat)
     calist$dims <- length(calist$D)
