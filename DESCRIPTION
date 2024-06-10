@@ -1,7 +1,7 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 1.9.0
+Version: 1.9.1
 Authors@R:
     c(person(given = "Clemens",
         family = "Kohl",
@@ -16,14 +16,14 @@ Authors@R:
         role = c("aut"),
         email = "vingron@molgen.mpg.de"))
 Description: APL is a package developed for computation of Association Plots
-  (AP), a method for visualization and analysis of single cell transcriptomics 
+  (AP), a method for visualization and analysis of single cell transcriptomics
   data. The main focus of APL is the identification of genes characteristic for
-  individual clusters of cells from input data. The package performs 
+  individual clusters of cells from input data. The package performs
   correspondence analysis (CA) and allows to identify cluster-specific
-  genes using Association Plots. Additionally, APL computes the 
-  cluster-specificity scores for all genes which allows to rank the genes by 
+  genes using Association Plots. Additionally, APL computes the
+  cluster-specificity scores for all genes which allows to rank the genes by
   their specificity for a selected cell cluster of interest.
-biocViews: 
+biocViews:
   StatisticalMethod,
   DimensionReduction,
   SingleCell,
@@ -34,7 +34,7 @@ License: GPL (>= 3)
 Encoding: UTF-8
 RoxygenNote: 7.3.1
 VignetteBuilder: knitr
-Imports: 
+Imports:
     reticulate,
     Matrix,
     irlba,
@@ -54,7 +54,7 @@ Imports:
     org.Mm.eg.db,
     rlang
 Depends: R (>= 4.2)
-Suggests: 
+Suggests:
     BiocStyle,
     knitr,
     rmarkdown,
@@ -63,7 +63,7 @@ Suggests:
     scran,
     testthat
 Config/testthat/edition: 3
-Collate: 
+Collate:
     'constructor.R'
     'CA.R'
     'apl.R'
