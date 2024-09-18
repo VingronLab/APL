@@ -80,6 +80,13 @@ For this, please use the argument `python = FALSE` wherever applicable in this v
 
 ```{r reticulate, eval=FALSE}
 library(reticulate)
+py_install(packages = "numpy")
+py_install(packages = "pytorch")
+```
+
+The above might query you to use a python virtualenv. If you prefer to use conda to manage your python packages, you can use the following code:
+```{r reticulate, eval=FALSE}
+library(reticulate)
 install_miniconda()
 use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
              required=TRUE)
@@ -87,6 +94,7 @@ use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
 conda_install(envname = "r-reticulate", packages = "numpy")
 conda_install(envname = "r-reticulate", packages = "pytorch")
 ```
+IF you use both the virtualenv and the conda environment, after loading reticulate you might have to activate the condaenv with the above `use_condaenv` call in order to use the correct environment.
 
 ### Manually install pytorch with conda
 
@@ -119,8 +127,8 @@ For more information about the rational behind them please refer to the book.
 ```{r setup, message=FALSE, warning=FALSE}
 
 library(reticulate)
-use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
-             required=TRUE)
+# use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
+#              required=TRUE)
 
 library(APL)
 library(scRNAseq)
