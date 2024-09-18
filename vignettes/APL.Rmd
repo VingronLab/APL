@@ -85,7 +85,7 @@ py_install(packages = "pytorch")
 ```
 
 The above might query you to use a python virtualenv. If you prefer to use conda to manage your python packages, you can use the following code:
-```{r reticulate, eval=FALSE}
+```{r reticulate_conda, eval=FALSE}
 library(reticulate)
 install_miniconda()
 use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
