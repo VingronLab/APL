@@ -1,7 +1,7 @@
 Package: APL
 Type: Package
 Title: Association Plots
-Version: 1.9.1
+Version: 1.9.2
 Authors@R:
     c(person(given = "Clemens",
         family = "Kohl",
@@ -39,7 +39,7 @@ biocViews:
   GeneExpression
 License: GPL (>= 3)
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Imports:
     reticulate,
@@ -79,5 +79,6 @@ Collate:
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
+    'zzz.R'
 SystemRequirements: python, pytorch, numpy
 URL: https://vingronlab.github.io/APL/
