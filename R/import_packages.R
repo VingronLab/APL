@@ -11,9 +11,3 @@
 #' @importClassesFrom Seurat Seurat
 #' @importClassesFrom SingleCellExperiment SingleCellExperiment
 NULL
-
-
-# Load python packages
-.onLoad <- function(libname, pkgname) {
-  reticulate::configure_environment(pkgname)
-}

@@ -23,6 +23,13 @@ Description: APL is a package developed for computation of Association Plots
   genes using Association Plots. Additionally, APL computes the
   cluster-specificity scores for all genes which allows to rank the genes by
   their specificity for a selected cell cluster of interest.
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "numpy"),
+      list(package = "torch")
+    )
+  )
 biocViews:
   StatisticalMethod,
   DimensionReduction,
@@ -72,12 +79,5 @@ Collate:
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
-Config/reticulate:
-  list(
-    packages = list(
-      list(package = "numpy"),
-      list(package = "torch")
-    )
-  )
 SystemRequirements: python, pytorch, numpy
 URL: https://vingronlab.github.io/APL/
