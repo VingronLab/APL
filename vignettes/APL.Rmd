@@ -126,10 +126,6 @@ For more information about the rational behind them please refer to the book.
 
 ```{r setup, message=FALSE, warning=FALSE}
 
-library(reticulate)
-# use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
-#              required=TRUE)
-
 library(APL)
 library(scRNAseq)
 library(SingleCellExperiment)
