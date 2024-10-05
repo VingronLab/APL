@@ -18,3 +18,4 @@
 ^renv
 ^renv.lock
 .editorconfig
+.BBSoptions

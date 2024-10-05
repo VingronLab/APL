@@ -478,7 +478,7 @@ run_cacomp <- function(obj,
 
             proc <- basilisk::basiliskStart(APL_env)
 
-            SVD <- basiliskRun(proc, function(pear_res) {
+            SVD <- basilisk::basiliskRun(proc, function(pear_res) {
               reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
               SVD <- svd_torch(pear_res)
               return(SVD)
@@ -487,7 +487,7 @@ run_cacomp <- function(obj,
             names(SVD) <- c("U", "D", "V")
             SVD$D <- as.vector(SVD$D)
 
-            basiliskStop(proc)
+            basilisk::basiliskStop(proc)
         } else {
 
             SVD <- svd(S, nu = dims, nv = dims)

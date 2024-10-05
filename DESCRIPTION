@@ -75,12 +75,12 @@ Collate:
     'constructor.R'
     'CA.R'
     'apl.R'
+    'basilisk.R'
     'convert.R'
     'generic_methods.R'
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
-    'zzz.R'
 SystemRequirements: python, pytorch, numpy
 StagedInstall: no
 URL: https://vingronlab.github.io/APL/
