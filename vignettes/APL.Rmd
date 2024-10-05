@@ -71,44 +71,18 @@ Building the vignette will however take considerable time.
 
 ## pytorch installation
 
-In order to decrease the computation time of the singular value decomposition (SVD), we highly recommend the installation of `pytorch`.
-More information on the `pytorch` installation is given below.
-Instead of installing `pytorch`, users can also opt to use the R native SVD.
-For this, please use the argument `python = FALSE` wherever applicable in this vignette.
+In order to decrease the computation time of the singular value decomposition (SVD), we highly recommend the use of the the `pytorch` SVD by setting `python = TRUE` where applicable.
+`r BiocStyle::Rpackage("APL")` uses `r BiocStyle::Rpackage("basilisk")`to manage the python dependencies, which should install all required python dependencies automatically in a seperate environment.
+If necessary, the environment can also be accessed through reticulate:
 
-### Install pytorch with reticulate
-
-```{r reticulate, eval=FALSE}
-library(reticulate)
-py_install(packages = "numpy")
-py_install(packages = "pytorch")
-```
-
-The above might query you to use a python virtualenv. If you prefer to use conda to manage your python packages, you can use the following code:
 ```{r reticulate_conda, eval=FALSE}
 library(reticulate)
-install_miniconda()
-use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
+use_condaenv(condaenv = file.path(miniconda_path(),"envs/APL-env"),
              required=TRUE)
-      
-conda_install(envname = "r-reticulate", packages = "numpy")
-conda_install(envname = "r-reticulate", packages = "pytorch")
 ```
-IF you use both the virtualenv and the conda environment, after loading reticulate you might have to activate the condaenv with the above `use_condaenv` call in order to use the correct environment.
 
-### Manually install pytorch with conda
-
-To install `pytorch` please download the appropriate Miniconda installer for your system from [the conda website](https://docs.conda.io/en/latest/miniconda.html).
-Follow the installation instructions on their website and make sure the R package `reticulate` is also installed before proceeding.
-Once installed, list all available conda environments via <br> `conda info --envs` <br> One of the environments should have `r-reticulate` in its name.
-Depending on where you installed it and your system, the exact path might be different.
-Activate the environment and install `pytorch` into it.
-
-```{bash conda, eval=FALSE}
-conda activate ~/.local/share/r-miniconda/envs/r-reticulate # change path accordingly.
-conda install numpy
-conda install pytorch
-```
+Instead of installing `pytorch`, users can also opt to use the R native SVD/irlba.
+For this, please use the argument `python = FALSE` wherever applicable in this vignette.
 
 # Preprocessing
 
@@ -125,11 +99,6 @@ The preprocessing steps are performed according to the recommendations published
 For more information about the rational behind them please refer to the book.
 
 ```{r setup, message=FALSE, warning=FALSE}
-
-library(reticulate)
-# use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
-#              required=TRUE)
-
 library(APL)
 library(scRNAseq)
 library(SingleCellExperiment)

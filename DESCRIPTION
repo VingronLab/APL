@@ -42,6 +42,7 @@ Encoding: UTF-8
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Imports:
+    basilisk,
     reticulate,
     Matrix,
     irlba,
@@ -81,4 +82,5 @@ Collate:
     'utils-pipe.R'
     'zzz.R'
 SystemRequirements: python, pytorch, numpy
+StagedInstall: no
 URL: https://vingronlab.github.io/APL/
