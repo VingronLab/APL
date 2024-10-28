@@ -406,6 +406,12 @@ run_cacomp <- function(obj,
     stopifnot("Input matrix does not have any colnames!" =
               !is.null(colnames(obj)))
 
+    if (python == TRUE){
+        warning(
+            "The option `python = TRUE` is deprecated.",
+            "Continuing with base::svd for full SVD or irlba for truncated SVD.".
+            "In the future, please choose the number of dimensions <= 0.5 * min(nrow(mat), ncol(mat))."
+        )
     parameters <- list()
 
     if (rm_zeros == TRUE) {
@@ -470,24 +476,12 @@ run_cacomp <- function(obj,
     if (isTRUE(dims == k)){
 
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
+        SVD <- svd(S, nu = dims, nv = dims)
+        names(SVD) <- c("D", "U", "V")
+        SVD <- SVD[c(2, 1, 3)]
+        SVD$D <- as.vector(SVD$D)
+        if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
 
-        if (python == TRUE){
-            svd_torch <- NULL
-            if(!is(S, "matrix")) S <- as.matrix(S)
-
-            reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
-            SVD <- svd_torch(S)
-            names(SVD) <- c("U", "D", "V")
-            SVD$D <- as.vector(SVD$D)
-
-        } else {
-
-            SVD <- svd(S, nu = dims, nv = dims)
-            names(SVD) <- c("D", "U", "V")
-            SVD <- SVD[c(2, 1, 3)]
-            SVD$D <- as.vector(SVD$D)
-            if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
-        }
     } else {
 
         # if number of dimensions are given, turn to calculate partial SVD
