@@ -471,23 +471,15 @@ run_cacomp <- function(obj,
 
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
 
-        if (isTRUE(python)) {
-            
+        if (python == TRUE){
             svd_torch <- NULL
             if(!is(S, "matrix")) S <- as.matrix(S)
 
-            proc <- basilisk::basiliskStart(APL_env)
-
-            SVD <- basiliskRun(proc, function(pear_res) {
-              reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
-              SVD <- svd_torch(pear_res)
-              return(SVD)
-            }, pear_res = S)
-
+            reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
+            SVD <- svd_torch(S)
             names(SVD) <- c("U", "D", "V")
             SVD$D <- as.vector(SVD$D)
 
-            basiliskStop(proc)
         } else {
 
             SVD <- svd(S, nu = dims, nv = dims)
