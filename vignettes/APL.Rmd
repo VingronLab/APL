@@ -73,8 +73,15 @@ Building the vignette will however take considerable time.
 
 In order to decrease the computation time of the singular value decomposition (SVD), we highly recommend the use of the the `pytorch` SVD by setting `python = TRUE` where applicable.
 `r BiocStyle::Rpackage("APL")` uses `r BiocStyle::Rpackage("basilisk")`to manage the python dependencies, which should install all required python dependencies automatically in a seperate environment.
+If necessary, the environment can also be accessed through reticulate:
 
-Instead of the `pytorch` SVD, users can also opt to use the R native SVD/irlba.
+```{r reticulate_conda, eval=FALSE}
+library(reticulate)
+use_condaenv(condaenv = file.path(miniconda_path(),"envs/APL-env"),
+             required=TRUE)
+```
+
+Instead of installing `pytorch`, users can also opt to use the R native SVD/irlba.
 For this, please use the argument `python = FALSE` wherever applicable in this vignette.
 
 # Preprocessing
