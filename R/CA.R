@@ -467,7 +467,7 @@ run_cacomp <- function(obj,
         dims <- k
     }
 
-    if (isTRUE(dims == k)) {
+    if (isTRUE(dims == k)){
 
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
 
@@ -486,7 +486,7 @@ run_cacomp <- function(obj,
 
             names(SVD) <- c("U", "D", "V")
             SVD$D <- as.vector(SVD$D)
-            
+
             basilisk::basiliskStop(proc)
         } else {
 
