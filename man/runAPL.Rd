@@ -185,7 +185,7 @@ the columns to calculate centroid/x-axis direction.}
 will be calculated. Default NULL.}
 
 \item{dims}{Integer. Number of CA dimensions to retain. Default NULL
-(keeps all dimensions).}
+(0.5 * min(nrow(A), ncol(A)) - 1 ).}
 
 \item{nrow}{Integer. The top nrow scored row labels will be added to the 
 plot if score = TRUE. Default 10.}
@@ -210,7 +210,7 @@ in the plot.}
 
 \item{reps}{Integer. Number of permutations during scoring. Default 3.}
 
-\item{python}{A logical value indicating whether to use singular-value
+\item{python}{DEPRACTED. A logical value indicating whether to use singular-value
 decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to `svd()`
 in R when calculating the full SVD. This parameter only works when dims==NULL
