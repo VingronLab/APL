@@ -370,7 +370,7 @@ inertia_rows <- function(mat, top = 5000, ...) {
 #' Should contain row and column names.
 #' @param coords Logical. Indicates whether CA standard coordinates should be
 #' calculated.
-#' @param python A logical value indicating whether to use singular-value
+#' @param python DEPRACTED. A logical value indicating whether to use singular-value
 #' decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()`
 #' in R when calculating the full SVD. This parameter only works when dims==NULL
@@ -379,7 +379,7 @@ inertia_rows <- function(mat, top = 5000, ...) {
 #' coordinates should be calculated for the rows (=1), columns (=2),
 #' both (=3) or none (=0).
 #' @param dims Integer. Number of CA dimensions to retain. Default NULL
-#' (keeps all dimensions).
+#' (0.5 * min(nrow(A), ncol(A)) - 1 ).
 #' @param top Integer. Number of most variable rows to retain.
 #' Set NULL to keep all.
 #' @param inertia Logical. Whether total, row and column inertias should be
@@ -466,7 +466,10 @@ run_cacomp <- function(obj,
 
     k <- min(dim(S))-1
 
-    if (is.null(dims)) dims <- k
+    if (is.null(dims)) {
+      message("Setting dimensions to: ", 0.5 * k)
+      dims <- 0.5 * k
+    }
     if (dims > k) {
         warning(paste0("Number of dimensions is larger than the rank of the matrix. ",
                        "Reducing number of dimensions to rank of the matrix."))
