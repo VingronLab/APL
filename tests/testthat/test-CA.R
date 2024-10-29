@@ -16,9 +16,9 @@
 # save(smoke, smoke_ca, smoke_prin, file = "./tests/testthat/testdata/smoke.rda")
 
 load("./testdata/smoke.rda")
-
-ca_python <- cacomp(obj = smoke, top = nrow(smoke), princ_coords = 3, coords = TRUE, python = TRUE)
-ca_svd <- cacomp(obj = smoke, top = nrow(smoke), princ_coords = 3, coords = TRUE, python = FALSE)
+d <- min(nrow(smoke), ncol(smoke)) - 1
+suppressWarnings(ca_python <- cacomp(obj = smoke, top = nrow(smoke), dims = d, princ_coords = 3, coords = TRUE, python = TRUE))
+ca_svd <- cacomp(obj = smoke, top = nrow(smoke), dims = d, princ_coords = 3, coords = TRUE, python = FALSE)
 cac <- ca_coords(ca_svd, princ_coords = 3)
 
 

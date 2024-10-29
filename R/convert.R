@@ -5,28 +5,28 @@ NULL
 #' Recompute missing values of cacomp object.
 #'
 #' @description
-#' The caobj needs to have the std_coords_cols, the prin_coords_rows and D 
+#' The caobj needs to have the std_coords_cols, the prin_coords_rows and D
 #' calculated. From this the remainder will be calculated.
 #' Future updates might extend this functionality.
 #'
 #' @return
-#' A cacomp object with additional calculated row_masses, col_masses, 
+#' A cacomp object with additional calculated row_masses, col_masses,
 #' std_coords_rows, U and V.
 #'
 #' @param calist A list with std_coords_cols, the prin_coords_rows and D.
 #' @param mat A matrix from which the cacomp object is derived from.
 #' @param ... Further arguments forwarded to cacomp.
 recompute <- function(calist, mat, ...){
-    
+
   stopifnot(is(calist, "list"))
   stopifnot(is(mat, "matrix") | is(mat, "Matrix"))
-  
+
   if(is.null(calist$params)){
       warning("No parameters provided for recalculation!")
       calist$params <- list()
-      
+
   }
-  
+
   # if (is.null(calist$top_rows)) top <- nrow(mat)
   if(exists("rm_zeros")){
       if(isTRUE(rm_zeros)){
@@ -35,7 +35,7 @@ recompute <- function(calist, mat, ...){
   } else if (isTRUE(calist$params$rm_zeros)){
     mat <- rm_zeros(mat)
   }
-  
+
   # make stock of what we have
 
   std_rows <- is.null(calist$std_coords_rows)
@@ -202,14 +202,14 @@ recompute <- function(calist, mat, ...){
       done <- TRUE
     }
   }
-  
+
   if (!is.null(calist$std_coords_rows)) top <- nrow(calist$std_coords_rows)
-  
-  if (!is.null(calist$std_coords_rows) | 
+
+  if (!is.null(calist$std_coords_rows) |
       !is.null(calist$std_coords_cols) |
       !is.null(calist$D)){
-      
-      dims <- min(ncol(calist$std_coords_rows), 
+
+      dims <- min(ncol(calist$std_coords_rows),
                   ncol(calist$std_coords_cols),
                   length(calist$D),
                   na.rm = TRUE)
@@ -225,6 +225,7 @@ recompute <- function(calist, mat, ...){
                  clip = calist$params$clip,
                  cutoff = calist$params$cutoff,
                  rm_zeros = calist$params$rm_zeros,
+                 dims = min(nrow(mat), ncol(mat)) - 1,
                  ...)
     return(ca)
   } else {
@@ -273,15 +274,15 @@ recompute <- function(calist, mat, ...){
 #' Create cacomp object from Seurat/SingleCellExperiment container
 #'
 #' @description
-#' Converts the values stored in the Seurat/SingleCellExperiment dimensional 
+#' Converts the values stored in the Seurat/SingleCellExperiment dimensional
 #' reduction slot "CA" to a cacomp object.
-#' If recompute = TRUE additional parameters are recomputed from the saved 
+#' If recompute = TRUE additional parameters are recomputed from the saved
 #' values without rerunning SVD (need to specify assay to work).
 #'
 #' @details
-#' By default extracts std_coords_cols, D, prin_coords_rows, top_rows and dims 
+#' By default extracts std_coords_cols, D, prin_coords_rows, top_rows and dims
 #' from obj and outputs a cacomp object.
-#' If recompute = TRUE the following are additionally recalculated 
+#' If recompute = TRUE the following are additionally recalculated
 #' (doesn't run SVD):
 #' U, V, std_coords_rows, row_masses, col_masses.
 #'
@@ -291,7 +292,7 @@ recompute <- function(calist, mat, ...){
 #' @param obj An object of class "Seurat" or "SingleCellExperiment"
 #' with a dim. reduction named "CA" saved. For obj "cacomp" input is returned.
 #' @param assay Character. The assay from which extract the count matrix,
-#' e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+#' e.g. "RNA" for Seurat objects or "counts"/"logcounts" for
 #' SingleCellExperiments.
 #' @param ... Further arguments.
 #' @export
@@ -350,7 +351,7 @@ setMethod(f = "as.cacomp",
 })
 
 #' @description
-#' as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot 
+#' as.cacomp.Seurat: Converts the values stored in the Seurat DimReduc slot
 #' "CA" to an cacomp object.
 #' @param slot character. Slot of the Seurat assay to use. Default "counts".
 #' @rdname as.cacomp
@@ -381,13 +382,13 @@ setMethod(f = "as.cacomp",
   stopifnot("obj doesn't contain a DimReduc object named 'CA'. Try running cacomp()." =
               "CA" %in% names(obj@reductions))
 
-  if (is.null(assay)) assay <- Seurat::DefaultAssay(obj)
+  if (is.null(assay)) assay <- SeuratObject::DefaultAssay(obj)
 
-  ca_list <- list("std_coords_cols" = Seurat::Embeddings(obj, reduction = "CA"),
-                  "D" = Seurat::Stdev(obj, reduction = "CA"),
-                  "prin_coords_rows" = Seurat::Loadings(obj, reduction = "CA"),
+  ca_list <- list("std_coords_cols" = SeuratObject::Embeddings(obj, reduction = "CA"),
+                  "D" = SeuratObject::Stdev(obj, reduction = "CA"),
+                  "prin_coords_rows" = SeuratObject::Loadings(obj, reduction = "CA"),
                   "params" = obj@reductions$CA@misc)
-  
+
   ca_list$top_rows <- nrow(ca_list$prin_coords_rows)
   ca_list$dims <- length(ca_list$D)
 
@@ -397,7 +398,7 @@ setMethod(f = "as.cacomp",
 
   stopifnot("Assay is needed to recompute cacomp." = !is.null(assay))
 
-  seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
+  seu <- SeuratObject::LayerData(object = obj, assay = assay, layer = slot)
   seu <- as.matrix(seu)
   seu <- seu[rownames(ca_list$prin_coords_rows),]
 
@@ -411,7 +412,7 @@ setMethod(f = "as.cacomp",
 
 
 #' @description
-#' as.cacomp.SingleCellExperiment: Converts the values stored in the 
+#' as.cacomp.SingleCellExperiment: Converts the values stored in the
 #' SingleCellExperiment reducedDim slot "CA" to a cacomp object.
 #'
 #' @rdname as.cacomp
@@ -440,9 +441,9 @@ setMethod(f = "as.cacomp",
 
 # TODO: Change to principal coordingates or columns.
   sce_ca <- SingleCellExperiment::reducedDim(obj, "CA")
-  stopifnot("Attribute singval of dimension reduction slot CA is empty.\nThis can happen after subsetting the sce obj." = 
+  stopifnot("Attribute singval of dimension reduction slot CA is empty.\nThis can happen after subsetting the sce obj." =
               !is.null(attr(sce_ca, "singval")))
-  stopifnot("Attribute prin_coords_rows of dimension reduction slot CA is empty.\nThis can happen after subsetting the sce obj." = 
+  stopifnot("Attribute prin_coords_rows of dimension reduction slot CA is empty.\nThis can happen after subsetting the sce obj." =
               !is.null(attr(sce_ca, "prin_coords_rows")))
 
   ca_list <- list("std_coords_cols" = sce_ca,
@@ -456,7 +457,7 @@ setMethod(f = "as.cacomp",
   attr(ca_list$std_coords_cols, "singval") <- NULL
   attr(ca_list$std_coords_cols, "percInertia") <- NULL
   attr(ca_list$std_coords_cols, "params") <- NULL
-  
+
   ca_list$top_rows <- nrow(ca_list$prin_coords_rows)
   ca_list$dims <- length(ca_list$D)
 

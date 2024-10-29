@@ -406,9 +406,9 @@ run_cacomp <- function(obj,
 
     if (python == TRUE) {
         warning(
-            "The option `python = TRUE` is deprecated.",
-            "Continuing with base::svd for full SVD or irlba for truncated SVD.",
-            "In the future, please choose the number of dimensions <= 0.5 * min(nrow(mat), ncol(mat))."
+            "The option `python = TRUE` is deprecated. ",
+            "Continuing with base::svd for full SVD or irlba for truncated SVD. ",
+            "In the future, please choose the number of dimensions <= 0.5 * min(nrow(mat), ncol(mat)). "
         )
     }
     parameters <- list()
@@ -467,8 +467,8 @@ run_cacomp <- function(obj,
     k <- min(dim(S)) - 1
 
     if (is.null(dims)) {
-        message("Setting dimensions to: ", 0.5 * k)
-        dims <- 0.5 * k
+        dims <- floor(0.5 * k)
+        message("Setting dimensions to: ", dims)
     }
     if (dims > k) {
         warning(paste0(
@@ -494,13 +494,15 @@ run_cacomp <- function(obj,
         SVD$D <- as.vector(SVD$D)
     }
 
+    ndimv <- ncol(SVD$V)
+    ndimu <- ncol(SVD$U)
     ord <- order(SVD$D, decreasing = TRUE)
     SVD$D <- SVD$D[ord]
-    SVD$V <- SVD$V[, ord]
-    SVD$U <- SVD$U[, ord]
+    SVD$V <- SVD$V[, ord, drop = FALSE]
+    SVD$U <- SVD$U[, ord, drop = FALSE]
     names(SVD$D) <- paste0("Dim", seq_len(length(SVD$D)))
-    dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ncol(SVD$V))))
-    dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ncol(SVD$U))))
+    dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ndimv)))
+    dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ndimu)))
 
 
     if (inertia == TRUE) {
@@ -775,7 +777,7 @@ setMethod(
              cutoff = NULL,
              clip = FALSE,
              ...,
-             assay = Seurat::DefaultAssay(obj),
+             assay = SeuratObject::DefaultAssay(obj),
              slot = "counts",
              return_input = FALSE) {
         stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
@@ -783,7 +785,7 @@ setMethod(
         stopifnot("Set coords = TRUE when inputting a Seurat object and return_input = TRUE." = coords == TRUE)
 
 
-        seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
+        seu <- SeuratObject::LayerData(object = obj, assay = assay, layer = slot)
 
         if (!(is(seu, "matrix") | is(seu, "dgCMatrix") | is(seu, "dgeMatrix"))) {
             seu <- as.matrix(seu)
@@ -808,7 +810,7 @@ setMethod(
             colnames(caobj@V) <- paste0("DIM_", seq(ncol(caobj@V)))
             colnames(caobj@U) <- paste0("DIM_", seq(ncol(caobj@U)))
 
-            obj[["CA"]] <- Seurat::CreateDimReducObject(
+            obj[["CA"]] <- SeuratObject::CreateDimReducObject(
                 embeddings = caobj@std_coords_cols,
                 loadings = caobj@prin_coords_rows,
                 stdev = caobj@D,
@@ -963,9 +965,9 @@ setMethod(
 #' ca <- subset_dims(ca, 2)
 #' @export
 subset_dims <- function(caobj, dims) {
-    if (dims == 1) {
-        stop("Please choose more than 1 dimension.")
-    }
+    # if (dims == 1) {
+    #     stop("Please choose more than 1 dimension.")
+    # }
 
     stopifnot(is(caobj, "cacomp"))
 
@@ -986,22 +988,22 @@ subset_dims <- function(caobj, dims) {
     dims <- min(dims, length(caobj@D))
     caobj@dims <- dims
     dims <- seq(dims)
-    caobj@U <- caobj@U[, dims]
-    caobj@V <- caobj@V[, dims]
+    caobj@U <- caobj@U[, dims, drop = FALSE]
+    caobj@V <- caobj@V[, dims, drop = FALSE]
     caobj@D <- caobj@D[dims]
 
     if (!is.empty(caobj@std_coords_cols)) {
-        caobj@std_coords_cols <- caobj@std_coords_cols[, dims]
+        caobj@std_coords_cols <- caobj@std_coords_cols[, dims, drop = FALSE]
     }
     if (!is.empty(caobj@prin_coords_cols)) {
-        caobj@prin_coords_cols <- caobj@prin_coords_cols[, dims]
+        caobj@prin_coords_cols <- caobj@prin_coords_cols[, dims, drop = FALSE]
     }
 
     if (!is.empty(caobj@std_coords_rows)) {
-        caobj@std_coords_rows <- caobj@std_coords_rows[, dims]
+        caobj@std_coords_rows <- caobj@std_coords_rows[, dims, drop = FALSE]
     }
     if (!is.empty(caobj@prin_coords_rows)) {
-        caobj@prin_coords_rows <- caobj@prin_coords_rows[, dims]
+        caobj@prin_coords_rows <- caobj@prin_coords_rows[, dims, drop = FALSE]
     }
 
     stopifnot(validObject(caobj))
@@ -1218,9 +1220,9 @@ scree_plot <- function(df) {
 #' # Get example data from Seurat
 #' library(Seurat)
 #' set.seed(2358)
-#' cnts <- as.matrix(Seurat::GetAssayData(pbmc_small,
-#'                                        assay = "RNA",
-#'                                        slot = "data"))
+#' cnts <- as.matrix(SeuratObject::LayerData(pbmc_small,
+#'                                           assay = "RNA",
+#'                                           layer = "data"))
 #' # Run correspondence analysis.
 #' ca <- cacomp(obj = cnts)
 #'
@@ -1524,18 +1526,18 @@ setMethod(
              python = FALSE,
              return_plot = FALSE,
              ...,
-             assay = Seurat::DefaultAssay(obj),
+             assay = SeuratObject::DefaultAssay(obj),
              slot = "counts") {
         stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
         if (method == "elbow_rule") {
-            seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
+            seu <- SeuratObject::LayerData(object = obj, assay = assay, layer = slot)
             seu <- as.matrix(seu)
         } else {
             seu <- NULL
         }
 
-        if ("CA" %in% Seurat::Reductions(obj)) {
+        if ("CA" %in% SeuratObject::Reductions(obj)) {
             caobj <- as.cacomp(obj, assay = assay)
         } else {
             stop(

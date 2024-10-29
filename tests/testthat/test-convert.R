@@ -2,7 +2,9 @@
 
 load("./testdata/smoke.rda")
 load("./testdata/smoke_scRNAseq.rda")
-ca <- cacomp(smoke, top = nrow(smoke), princ_coords = 3)
+
+d <- min(nrow(smoke), ncol(smoke)) - 1
+ca <- cacomp(smoke, top = nrow(smoke), dims = d, princ_coords = 3)
 
 test_that("check recompute function", {
 
@@ -46,7 +48,7 @@ test_that("check recompute function", {
 #               return_input = TRUE,
 #               assay = "RNA",
 #               slot = "counts")
-# 
+#
 # sce <- SingleCellExperiment(list(counts=smoke))
 # sce <- cacomp(sce, princ_coords = 3, return_input = TRUE, assay = "counts")
 # save(seu, sce, file = "./tests/testthat/testdata/smoke_scRNAseq.rda")
