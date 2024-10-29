@@ -66,7 +66,7 @@ cacomp(
   cutoff = NULL,
   clip = FALSE,
   ...,
-  assay = Seurat::DefaultAssay(obj),
+  assay = SeuratObject::DefaultAssay(obj),
   slot = "counts",
   return_input = FALSE
 )

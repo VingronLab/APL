@@ -35,7 +35,7 @@ pick_dims(
   python = FALSE,
   return_plot = FALSE,
   ...,
-  assay = Seurat::DefaultAssay(obj),
+  assay = SeuratObject::DefaultAssay(obj),
   slot = "counts"
 )
 

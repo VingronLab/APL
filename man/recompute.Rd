@@ -14,11 +14,11 @@ recompute(calist, mat, ...)
 \item{...}{Further arguments forwarded to cacomp.}
 }
 \value{
-A cacomp object with additional calculated row_masses, col_masses, 
+A cacomp object with additional calculated row_masses, col_masses,
 std_coords_rows, U and V.
 }
 \description{
-The caobj needs to have the std_coords_cols, the prin_coords_rows and D 
+The caobj needs to have the std_coords_cols, the prin_coords_rows and D
 calculated. From this the remainder will be calculated.
 Future updates might extend this functionality.
 }
