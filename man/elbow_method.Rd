@@ -35,11 +35,11 @@ Helper function for pick_dims() to run the elbow method.
 \examples{
 
 # Get example data from Seurat
-library(Seurat)
+library(SeuratObject)
 set.seed(2358)
-cnts <- as.matrix(Seurat::GetAssayData(pbmc_small,
-                                       assay = "RNA",
-                                       slot = "data"))
+cnts <- as.matrix(SeuratObject::LayerData(pbmc_small,
+                                          assay = "RNA",
+                                          layer = "data"))
 # Run correspondence analysis.
 ca <- cacomp(obj = cnts)
 

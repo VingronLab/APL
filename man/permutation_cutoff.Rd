@@ -15,31 +15,31 @@ permutation_cutoff(
 )
 }
 \arguments{
-\item{caobj}{A "cacomp" object with principal row coordinates and 
+\item{caobj}{A "cacomp" object with principal row coordinates and
 standardized column coordinates calculated.}
 
-\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression 
+\item{mat}{A numeric matrix. For sequencing a count matrix, gene expression
 values with genes in rows and samples/cells in columns.
 Should contain row and column names.}
 
-\item{group}{Vector of indices of the columns to calculate centroid/x-axis 
+\item{group}{Vector of indices of the columns to calculate centroid/x-axis
 direction.}
 
-\item{dims}{Integer. Number of CA dimensions to retain. Needs to be the same 
+\item{dims}{Integer. Number of CA dimensions to retain. Needs to be the same
 as in caobj!}
 
 \item{reps}{Integer. Number of permutations to perform.}
 
-\item{store_perm}{Logical. Whether permuted data should be stored in the CA 
+\item{store_perm}{Logical. Whether permuted data should be stored in the CA
 object.
-This implementation dramatically speeds up computation compared to `svd()` 
+This implementation dramatically speeds up computation compared to `svd()`
 in R.}
 
-\item{python}{A logical value indicating whether to use singular-value 
+\item{python}{A logical value indicating whether to use singular-value
 decomposition from the python package torch.}
 }
 \value{
-List with permuted apl coordinates ("apl_perm") and, a list of saved ca 
+List with permuted apl coordinates ("apl_perm") and, a list of saved ca
 components ("saved_ca") that allow for quick recomputation of the CA results.
  For random_direction_cutoff this saved_ca is empty.
 }

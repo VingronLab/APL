@@ -8,6 +8,6 @@
 #' @importFrom viridisLite viridis
 #' @importFrom rlang .data
 #' @importFrom irlba irlba
-#' @importClassesFrom Seurat Seurat
+#' @importClassesFrom SeuratObject Seurat
 #' @importClassesFrom SingleCellExperiment SingleCellExperiment
 NULL

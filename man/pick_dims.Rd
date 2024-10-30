@@ -35,7 +35,7 @@ pick_dims(
   python = FALSE,
   return_plot = FALSE,
   ...,
-  assay = Seurat::DefaultAssay(obj),
+  assay = SeuratObject::DefaultAssay(obj),
   slot = "counts"
 )
 
@@ -140,7 +140,7 @@ ca_sub <- subset_dims(ca, dims = pd)
 ################################
 # pick_dims for Seurat objects #
 ################################
-library(Seurat)
+library(SeuratObject)
 set.seed(1234)
 
 # Simulate counts

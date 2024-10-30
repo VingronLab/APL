@@ -23,37 +23,32 @@ NULL
 #' @inherit calc_residuals return
 #'
 comp_std_residuals <- function(mat, clip = FALSE, cutoff = NULL) {
-
     stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix") | is(mat, "dgCMatrix"))
 
-    # TODO: Check if there are edge cases that need converting.
-    #if (!is(mat, "matrix") & !is(mat, "dgCMatrix")) {
-    #  mat <- as.matrix(mat)
-    #}
-
     stopifnot(
-        "Input matrix does not have any rownames!" = !is.null(rownames(mat)))
+        "Input matrix does not have any rownames!" = !is.null(rownames(mat))
+    )
     stopifnot(
-        "Input matrix does not have any colnames!" = !is.null(colnames(mat)))
+        "Input matrix does not have any colnames!" = !is.null(colnames(mat))
+    )
 
     tot <- sum(mat)
-    P <- mat/tot               # proportions matrix
-    rowm <- Matrix::rowSums(P)          # row masses
-    colm <- Matrix::colSums(P)          # column masses
+    P <- mat / tot # proportions matrix
+    rowm <- Matrix::rowSums(P) # row masses
+    colm <- Matrix::colSums(P) # column masses
 
-    E <- rowm %o% colm      # expected proportions
-    S <-  (P - E) / sqrt(E)         # standardized residuals
+    E <- rowm %o% colm # expected proportions
+    S <- (P - E) / sqrt(E) # standardized residuals
 
     S[is.na(S)] <- 0
 
     if (isTRUE(clip)) {
-
-        if(is.null(cutoff)) cutoff <- sqrt(ncol(S)/tot)
+        if (is.null(cutoff)) cutoff <- sqrt(ncol(S) / tot)
 
         S <- clip_residuals(S, cutoff = cutoff)
     }
 
-    out <- list("S"=S, "tot"=tot, "rowm"=rowm, "colm"=colm)
+    out <- list("S" = S, "tot" = tot, "rowm" = rowm, "colm" = colm)
 
     return(out)
 }
@@ -81,8 +76,6 @@ comp_NB_residuals <- function(mat,
                               clip = FALSE,
                               cutoff = NULL,
                               freq = TRUE) {
-
-
     if (isTRUE(freq)) mat <- mat / sum(mat)
 
     rowS <- Matrix::rowSums(mat)
@@ -94,18 +87,16 @@ comp_NB_residuals <- function(mat,
 
     Z <- (mat - mu) / sqrt(mu + (mu**2) / theta)
 
-    #convert to S:
+    # convert to S:
     # sqrt(tot)/tot*Z (for theta = Inf)
 
-    if (isTRUE(clip)){
-
-        if(is.null(cutoff)) cutoff <- sqrt(ncol(Z))
+    if (isTRUE(clip)) {
+        if (is.null(cutoff)) cutoff <- sqrt(ncol(Z))
 
         Z <- clip_residuals(Z, cutoff = cutoff)
     }
 
     return(list("S" = Z, "tot" = tot, "rowm" = rowS, "colm" = colS))
-
 }
 
 
@@ -127,8 +118,7 @@ comp_NB_residuals <- function(mat,
 #' @returns
 #' Matrix of clipped residuals.
 clip_residuals <- function(S, cutoff = sqrt(ncol(S))) {
-
-    S[S >  cutoff] <-  cutoff
+    S[S > cutoff] <- cutoff
     S[S < -cutoff] <- -cutoff
 
     return(S)
@@ -145,7 +135,6 @@ clip_residuals <- function(S, cutoff = sqrt(ncol(S))) {
 #'
 #' @inherit calc_residuals return
 comp_ft_residuals <- function(mat) {
-
     stopifnot(is(mat, "matrix") | is(mat, "dgeMatrix") | is(mat, "dgCMatrix"))
 
     N <- sum(mat)
@@ -164,7 +153,6 @@ comp_ft_residuals <- function(mat) {
     S <- pmat^.5 + (pmat + 1 / N)^.5 - (4 * expectedp + 1 / N)^.5
 
     return(list("S" = S, "tot" = N, "rowm" = row.w, "colm" = col.w))
-
 }
 
 
@@ -191,30 +179,28 @@ calc_residuals <- function(mat,
                            residuals = "pearson",
                            clip = FALSE,
                            cutoff = NULL) {
-
     if (residuals == "pearson") {
-
         if (is.null(cutoff)) cutoff <- 1
 
-        res <-  comp_std_residuals(mat = mat,
-                                   clip = TRUE,
-                                   cutoff = cutoff)
-
+        res <- comp_std_residuals(
+            mat = mat,
+            clip = TRUE,
+            cutoff = cutoff
+        )
     } else if (residuals == "freemantukey") {
-
-        if(!is.null(cutoff)){
+        if (!is.null(cutoff)) {
             warning("Clipping for freemantukey residuals is not implemented. Argument ignored.")
         }
         res <- comp_ft_residuals(mat)
-
     } else if (residuals == "NB") {
-
-        res <- comp_NB_residuals(mat = mat,
-                                 theta = 100,
-                                 cutoff = cutoff,
-                                 clip = TRUE)
+        res <- comp_NB_residuals(
+            mat = mat,
+            theta = 100,
+            cutoff = cutoff,
+            clip = TRUE
+        )
     } else {
-      stop("Unknown type of residuals.")
+        stop("Unknown type of residuals.")
     }
 
     return(res)
@@ -232,16 +218,20 @@ rm_zeros <- function(obj) {
 
     if (sum(!no_zeros_rows) != 0) {
         ## Delete genes with only zero values across all columns
-        warning("Matrix contains rows with only 0s. ",
+        warning(
+            "Matrix contains rows with only 0s. ",
             "These rows were removed. ",
-            "If undesired set rm_zeros = FALSE.")
+            "If undesired set rm_zeros = FALSE."
+        )
         obj <- obj[no_zeros_rows, ]
     }
     if (sum(!no_zeros_cols) != 0) {
         ## Delete cells with only zero values across all genes
-        warning("Matrix contains columns with only 0s. ",
+        warning(
+            "Matrix contains columns with only 0s. ",
             "These columns were removed. ",
-            "If undesired set rm_zeros = FALSE.")
+            "If undesired set rm_zeros = FALSE."
+        )
         obj <- obj[, no_zeros_cols]
     }
 
@@ -281,27 +271,29 @@ var_rows <- function(mat,
                      residuals = "pearson",
                      top = 5000,
                      ...) {
+    res <- calc_residuals(
+        mat = mat,
+        residuals = residuals,
+        ...
+    )
 
-    res <- calc_residuals(mat = mat,
-                          residuals = residuals,
-                          ...)
-
-    if(top > nrow(mat)) {
-        warning("Top is larger than the number of rows in matrix. ",
-            "Top was set to nrow(mat).")
+    if (top > nrow(mat)) {
+        warning(
+            "Top is larger than the number of rows in matrix. ",
+            "Top was set to nrow(mat)."
+        )
     }
 
     top <- min(nrow(mat), top)
     S <- res$S
     if (residuals == "pearson") {
-        S <- res$tot * (S^2)		# chi-square components matrix
+        S <- res$tot * (S^2) # chi-square components matrix
     }
 
-    variances <- apply(S, 1, var) #row-wise variances
+    variances <- apply(S, 1, var) # row-wise variances
     ix_var <- order(-variances)
     mat <- mat[ix_var[seq_len(top)], ] # choose top rows
     return(mat)
-
 }
 
 #' Find most variable rows
@@ -317,13 +309,16 @@ var_rows <- function(mat,
 #' @return
 #' Returns a matrix, which consists of the top variable rows of mat.
 inertia_rows <- function(mat, top = 5000, ...) {
+    res <- comp_std_residuals(
+        mat = mat,
+        ...
+    )
 
-    res <-  comp_std_residuals(mat = mat,
-                               ...)
-
-    if(top > nrow(mat)) {
-        warning("Top is larger than the number of rows in matrix. ",
-            "Top was set to nrow(mat).")
+    if (top > nrow(mat)) {
+        warning(
+            "Top is larger than the number of rows in matrix. ",
+            "Top was set to nrow(mat)."
+        )
     }
 
     top <- min(nrow(mat), top)
@@ -370,7 +365,7 @@ inertia_rows <- function(mat, top = 5000, ...) {
 #' Should contain row and column names.
 #' @param coords Logical. Indicates whether CA standard coordinates should be
 #' calculated.
-#' @param python A logical value indicating whether to use singular-value
+#' @param python DEPRACTED. A logical value indicating whether to use singular-value
 #' decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()`
 #' in R when calculating the full SVD. This parameter only works when dims==NULL
@@ -379,7 +374,7 @@ inertia_rows <- function(mat, top = 5000, ...) {
 #' coordinates should be calculated for the rows (=1), columns (=2),
 #' both (=3) or none (=0).
 #' @param dims Integer. Number of CA dimensions to retain. Default NULL
-#' (keeps all dimensions).
+#' (0.5 * min(nrow(A), ncol(A)) - 1 ).
 #' @param top Integer. Number of most variable rows to retain.
 #' Set NULL to keep all.
 #' @param inertia Logical. Whether total, row and column inertias should be
@@ -400,16 +395,25 @@ run_cacomp <- function(obj,
                        cutoff = NULL,
                        clip = FALSE,
                        ...) {
+    stopifnot(
+        "Input matrix does not have any rownames!" =
+            !is.null(rownames(obj))
+    )
+    stopifnot(
+        "Input matrix does not have any colnames!" =
+            !is.null(colnames(obj))
+    )
 
-    stopifnot("Input matrix does not have any rownames!" =
-              !is.null(rownames(obj)))
-    stopifnot("Input matrix does not have any colnames!" =
-              !is.null(colnames(obj)))
-
+    if (python == TRUE) {
+        warning(
+            "The option `python = TRUE` is deprecated. ",
+            "Continuing with base::svd for full SVD or irlba for truncated SVD. ",
+            "In the future, please choose the number of dimensions <= 0.5 * min(nrow(mat), ncol(mat)). "
+        )
+    }
     parameters <- list()
 
     if (rm_zeros == TRUE) {
-
         if (top == nrow(obj)) {
             update_top <- TRUE
         } else {
@@ -422,21 +426,22 @@ run_cacomp <- function(obj,
 
     # Choose only top # of variable genes
     if (!is.null(top) && top < nrow(obj)) {
+        obj <- var_rows(
+            mat = obj,
+            top = top,
+            residuals = residuals,
+            clip = clip,
+            cutoff = cutoff
+        )
 
-        obj <- var_rows(mat = obj,
-                        top = top,
-                        residuals = residuals,
-                        clip = clip,
-                        cutoff = cutoff)
-
-        res <- calc_residuals(mat = obj,
-                              residuals = residuals,
-                              clip = clip,
-                              cutoff = cutoff)
+        res <- calc_residuals(
+            mat = obj,
+            residuals = residuals,
+            clip = clip,
+            cutoff = cutoff
+        )
         toptmp <- top
-
     } else {
-
         if (top > nrow(obj)) {
             warning("\nParameter top is >nrow(obj) and therefore ignored.")
         } else if (is.null(top) || top == nrow(obj)) {
@@ -445,12 +450,13 @@ run_cacomp <- function(obj,
             warning("\nUnusual input for top, argument ignored.")
         }
 
-        res <- calc_residuals(mat = obj,
-                              residuals = residuals,
-                              clip = clip,
-                              cutoff = cutoff)
+        res <- calc_residuals(
+            mat = obj,
+            residuals = residuals,
+            clip = clip,
+            cutoff = cutoff
+        )
         toptmp <- nrow(obj)
-
     }
 
     S <- res$S
@@ -458,46 +464,28 @@ run_cacomp <- function(obj,
     colm <- res$colm
 
 
-    k <- min(dim(S))-1
+    k <- min(dim(S)) - 1
 
-    if (is.null(dims)) dims <- k
+    if (is.null(dims)) {
+        dims <- floor(0.5 * k)
+        message("Setting dimensions to: ", dims)
+    }
     if (dims > k) {
-        warning(paste0("Number of dimensions is larger than the rank of the matrix. ",
-                       "Reducing number of dimensions to rank of the matrix."))
+        warning(paste0(
+            "Number of dimensions is larger than the rank of the matrix. ",
+            "Reducing number of dimensions to rank of the matrix."
+        ))
         dims <- k
     }
 
     if (isTRUE(dims == k)) {
-
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
-
-        if (isTRUE(python)) {
-            
-            svd_torch <- NULL
-            if(!is(S, "matrix")) S <- as.matrix(S)
-
-            proc <- basilisk::basiliskStart(APL_env)
-
-            SVD <- basilisk::basiliskRun(proc, function(pear_res) {
-              reticulate::source_python(system.file("python/python_svd.py", package = "APL"))
-              SVD <- svd_torch(pear_res)
-              return(SVD)
-            }, pear_res = S)
-
-            names(SVD) <- c("U", "D", "V")
-            SVD$D <- as.vector(SVD$D)
-            
-            basilisk::basiliskStop(proc)
-        } else {
-
-            SVD <- svd(S, nu = dims, nv = dims)
-            names(SVD) <- c("D", "U", "V")
-            SVD <- SVD[c(2, 1, 3)]
-            SVD$D <- as.vector(SVD$D)
-            if(length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
-        }
+        SVD <- svd(S, nu = dims, nv = dims)
+        names(SVD) <- c("D", "U", "V")
+        SVD <- SVD[c(2, 1, 3)]
+        SVD$D <- as.vector(SVD$D)
+        if (length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
     } else {
-
         # if number of dimensions are given, turn to calculate partial SVD
 
         SVD <- irlba::irlba(S, nv = dims, smallest = FALSE) # eigenvalues in a decreasing order
@@ -506,17 +494,19 @@ run_cacomp <- function(obj,
         SVD$D <- as.vector(SVD$D)
     }
 
+    ndimv <- ncol(SVD$V)
+    ndimu <- ncol(SVD$U)
     ord <- order(SVD$D, decreasing = TRUE)
     SVD$D <- SVD$D[ord]
-    SVD$V <- SVD$V[, ord]
-    SVD$U <- SVD$U[, ord]
+    SVD$V <- SVD$V[, ord, drop = FALSE]
+    SVD$U <- SVD$U[, ord, drop = FALSE]
     names(SVD$D) <- paste0("Dim", seq_len(length(SVD$D)))
-    dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ncol(SVD$V))))
-    dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ncol(SVD$U))))
+    dimnames(SVD$V) <- list(colnames(S), paste0("Dim", seq_len(ndimv)))
+    dimnames(SVD$U) <- list(rownames(S), paste0("Dim", seq_len(ndimu)))
 
 
-    if(inertia == TRUE){
-        #calculate inertia
+    if (inertia == TRUE) {
+        # calculate inertia
         SVD$tot_inertia <- sum(SVD$D^2)
         SVD$row_inertia <- Matrix::rowSums(S^2)
         SVD$col_inertia <- Matrix::colSums(S^2)
@@ -529,9 +519,11 @@ run_cacomp <- function(obj,
     if (!is.null(dims)) {
         if (dims >= length(SVD$D)) {
             if (dims > length(SVD$D)) {
-                warning("Chosen number of dimensions is larger than the ",
-                        "number of dimensions obtained from the singular ",
-                        "value decomposition. Argument ignored.")
+                warning(
+                    "Chosen number of dimensions is larger than the ",
+                    "number of dimensions obtained from the singular ",
+                    "value decomposition. Argument ignored."
+                )
             }
             dims <- length(SVD$D)
         } else {
@@ -566,17 +558,21 @@ run_cacomp <- function(obj,
     if (coords == TRUE) {
         # message("Calculating coordinates...")
 
-        SVD <- ca_coords(caobj = SVD,
-                         dims = dims,
-                         princ_coords = princ_coords,
-                         princ_only = FALSE)
+        SVD <- ca_coords(
+            caobj = SVD,
+            dims = dims,
+            princ_coords = princ_coords,
+            princ_only = FALSE
+        )
     }
 
     # check if dimensions with ~zero singular values are selected,
     # in case the dimensions selected are more then rank of matrix
     if (min(SVD@D) <= 1e-7) {
-        warning(paste("Too many dimensions are selected!",
-                      "Number of dimensions should be smaller than rank of matrix!"))
+        warning(paste(
+            "Too many dimensions are selected!",
+            "Number of dimensions should be smaller than rank of matrix!"
+        ))
     }
 
 
@@ -640,77 +636,81 @@ setGeneric("cacomp", function(obj,
                               cutoff = NULL,
                               clip = FALSE,
                               ...) {
-  standardGeneric("cacomp")
+    standardGeneric("cacomp")
 })
 
 
 #' @rdname cacomp
 #' @export
-setMethod(f = "cacomp",
-          signature=(obj="matrix"),
-          function(obj,
-                   coords = TRUE,
-                   princ_coords = 3,
-                   python = FALSE,
-                   dims = NULL,
-                   top = 5000,
-                   inertia = TRUE,
-                   rm_zeros = TRUE,
-                   residuals = "pearson",
-                   cutoff = NULL,
-                   clip = FALSE,
-                   ...){
+setMethod(
+    f = "cacomp",
+    signature = (obj = "matrix"),
+    function(obj,
+             coords = TRUE,
+             princ_coords = 3,
+             python = FALSE,
+             dims = NULL,
+             top = 5000,
+             inertia = TRUE,
+             rm_zeros = TRUE,
+             residuals = "pearson",
+             cutoff = NULL,
+             clip = FALSE,
+             ...) {
+        caobj <- run_cacomp(
+            obj = obj,
+            coords = coords,
+            princ_coords = princ_coords,
+            python = python,
+            dims = dims,
+            top = top,
+            inertia = inertia,
+            rm_zeros = rm_zeros,
+            residuals = residuals,
+            cutoff = cutoff,
+            clip = clip,
+            ...
+        )
 
-    caobj <- run_cacomp(obj = obj,
-                        coords = coords,
-                        princ_coords = princ_coords,
-                        python = python,
-                        dims = dims,
-                        top = top,
-                        inertia = inertia,
-                        rm_zeros = rm_zeros,
-                        residuals = residuals,
-                        cutoff = cutoff,
-                        clip = clip,
-                        ...)
-
-    return(caobj)
-
-})
+        return(caobj)
+    }
+)
 
 #' @rdname cacomp
 #' @export
-setMethod(f = "cacomp",
-          signature=(obj="dgCMatrix"),
-          function(obj,
-                   coords = TRUE,
-                   princ_coords = 3,
-                   python = FALSE,
-                   dims = NULL,
-                   top = 5000,
-                   inertia = TRUE,
-                   rm_zeros = TRUE,
-                   residuals = "pearson",
-                   cutoff = NULL,
-                   clip = FALSE,
-                   ...){
+setMethod(
+    f = "cacomp",
+    signature = (obj = "dgCMatrix"),
+    function(obj,
+             coords = TRUE,
+             princ_coords = 3,
+             python = FALSE,
+             dims = NULL,
+             top = 5000,
+             inertia = TRUE,
+             rm_zeros = TRUE,
+             residuals = "pearson",
+             cutoff = NULL,
+             clip = FALSE,
+             ...) {
+        caobj <- run_cacomp(
+            obj = obj,
+            coords = coords,
+            princ_coords = princ_coords,
+            python = python,
+            dims = dims,
+            top = top,
+            inertia = inertia,
+            rm_zeros = rm_zeros,
+            residuals = residuals,
+            cutoff = cutoff,
+            clip = clip,
+            ...
+        )
 
-            caobj <- run_cacomp(obj = obj,
-                                coords = coords,
-                                princ_coords = princ_coords,
-                                python = python,
-                                dims = dims,
-                                top = top,
-                                inertia = inertia,
-                                rm_zeros = rm_zeros,
-                                residuals = residuals,
-                                cutoff = cutoff,
-                                clip = clip,
-                                ...)
-
-            return(caobj)
-
-          })
+        return(caobj)
+    }
+)
 
 #' Correspondance Analysis for Seurat objects
 #'
@@ -745,7 +745,7 @@ setMethod(f = "cacomp",
 #' ###########
 #' # Seurat  #
 #' ###########
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(1234)
 #'
 #' # Simulate counts
@@ -762,65 +762,69 @@ setMethod(f = "cacomp",
 #'
 #' # Run CA and return cacomp object
 #' ca <- cacomp(seu, return_input = FALSE, assay = "RNA", slot = "counts")
-setMethod(f = "cacomp",
-          signature=(obj="Seurat"),
-          function(obj,
-                   coords = TRUE,
-                   princ_coords = 3,
-                   python = FALSE,
-                   dims = NULL,
-                   top = 5000,
-                   inertia = TRUE,
-                   rm_zeros = TRUE,
-                   residuals = "pearson",
-                   cutoff = NULL,
-                   clip = FALSE,
-                   ...,
-                   assay = Seurat::DefaultAssay(obj),
-                   slot = "counts",
-                   return_input = FALSE){
+setMethod(
+    f = "cacomp",
+    signature = (obj = "Seurat"),
+    function(obj,
+             coords = TRUE,
+             princ_coords = 3,
+             python = FALSE,
+             dims = NULL,
+             top = 5000,
+             inertia = TRUE,
+             rm_zeros = TRUE,
+             residuals = "pearson",
+             cutoff = NULL,
+             clip = FALSE,
+             ...,
+             assay = SeuratObject::DefaultAssay(obj),
+             slot = "counts",
+             return_input = FALSE) {
+        stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
 
-  stopifnot("obj doesnt belong to class 'Seurat'" = is(obj, "Seurat"))
-
-  stopifnot("Set coords = TRUE when inputting a Seurat object and return_input = TRUE." = coords == TRUE)
+        stopifnot("Set coords = TRUE when inputting a Seurat object and return_input = TRUE." = coords == TRUE)
 
 
-  seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
+        seu <- SeuratObject::LayerData(object = obj, assay = assay, layer = slot)
 
-  if (!(is(seu, 'matrix') | is(seu, 'dgCMatrix') | is(seu, 'dgeMatrix'))){
-    seu <- as.matrix(seu)
-  }
+        if (!(is(seu, "matrix") | is(seu, "dgCMatrix") | is(seu, "dgeMatrix"))) {
+            seu <- as.matrix(seu)
+        }
 
-  caobj <- run_cacomp(obj = seu,
-                      coords = coords,
-                      top = top,
-                      princ_coords = princ_coords,
-                      dims = dims,
-                      python = python,
-                      rm_zeros = rm_zeros,
-                      inertia = inertia,
-                      residuals = residuals,
-                      cutoff = cutoff,
-                      clip = clip,
-                      ...)
+        caobj <- run_cacomp(
+            obj = seu,
+            coords = coords,
+            top = top,
+            princ_coords = princ_coords,
+            dims = dims,
+            python = python,
+            rm_zeros = rm_zeros,
+            inertia = inertia,
+            residuals = residuals,
+            cutoff = cutoff,
+            clip = clip,
+            ...
+        )
 
-  if (return_input == TRUE){
-    colnames(caobj@V) <- paste0("DIM_", seq(ncol(caobj@V)))
-    colnames(caobj@U) <- paste0("DIM_", seq(ncol(caobj@U)))
+        if (return_input == TRUE) {
+            colnames(caobj@V) <- paste0("DIM_", seq(ncol(caobj@V)))
+            colnames(caobj@U) <- paste0("DIM_", seq(ncol(caobj@U)))
 
-    obj[["CA"]] <- Seurat::CreateDimReducObject(embeddings = caobj@std_coords_cols,
-                                               loadings = caobj@prin_coords_rows,
-                                               stdev = caobj@D,
-                                               key = "Dim_",
-                                               assay = assay,
-                                               misc = caobj@params)
+            obj[["CA"]] <- SeuratObject::CreateDimReducObject(
+                embeddings = caobj@std_coords_cols,
+                loadings = caobj@prin_coords_rows,
+                stdev = caobj@D,
+                key = "Dim_",
+                assay = assay,
+                misc = caobj@params
+            )
 
-    return(obj)
-  } else {
-    return(caobj)
-  }
-
-})
+            return(obj)
+        } else {
+            return(caobj)
+        }
+    }
+)
 
 
 #' Correspondance Analysis for SingleCellExperiment objects
@@ -876,67 +880,68 @@ setMethod(f = "cacomp",
 #'
 #' # run CA and return cacomp object.
 #' ca <- cacomp(sce, return_input = FALSE, assay = "counts")
-setMethod(f = "cacomp",
-          signature=(obj="SingleCellExperiment"),
-          function(obj,
-                   coords = TRUE,
-                   princ_coords = 3,
-                   python = FALSE,
-                   dims = NULL,
-                   top = 5000,
-                   inertia = TRUE,
-                   rm_zeros = TRUE,
-                   residuals = "pearson",
-                   cutoff = NULL,
-                   clip = FALSE,
-                   ...,
-                   assay = "counts",
-                   return_input = FALSE){
+setMethod(
+    f = "cacomp",
+    signature = (obj = "SingleCellExperiment"),
+    function(obj,
+             coords = TRUE,
+             princ_coords = 3,
+             python = FALSE,
+             dims = NULL,
+             top = 5000,
+             inertia = TRUE,
+             rm_zeros = TRUE,
+             residuals = "pearson",
+             cutoff = NULL,
+             clip = FALSE,
+             ...,
+             assay = "counts",
+             return_input = FALSE) {
+        stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
+        stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
 
-  stopifnot("obj doesnt belong to class 'SingleCellExperiment'" = is(obj, "SingleCellExperiment"))
-  stopifnot("Set coords = TRUE when inputting a SingleCellExperiment object and return_input = TRUE." = coords == TRUE)
+        mat <- SummarizedExperiment::assay(obj, assay)
 
-  mat <- SummarizedExperiment::assay(obj, assay)
+        if (!(is(mat, "matrix") | is(mat, "dgCMatrix") | is(mat, "dgeMatrix"))) {
+            mat <- as.matrix(mat)
+        }
 
-  if (!(is(mat, 'matrix') | is(mat, 'dgCMatrix') | is(mat, 'dgeMatrix'))){
-    mat <- as.matrix(mat)
-  }
+        top <- min(nrow(mat), top)
 
-  top <- min(nrow(mat), top)
+        caobj <- run_cacomp(
+            obj = mat,
+            coords = coords,
+            top = top,
+            princ_coords = princ_coords,
+            dims = dims,
+            python = python,
+            rm_zeros = rm_zeros,
+            inertia = inertia,
+            residuals = residuals,
+            cutoff = cutoff,
+            clip = clip,
+            ...
+        )
 
-  caobj <- run_cacomp(obj = mat,
-                     coords = coords,
-                     top = top,
-                     princ_coords = princ_coords,
-                     dims = dims,
-                     python = python,
-                     rm_zeros = rm_zeros,
-                     inertia = inertia,
-                     residuals = residuals,
-                     cutoff = cutoff,
-                     clip = clip,
-                     ...)
+        if (return_input == TRUE) {
+            prinInertia <- caobj@D^2
+            percentInertia <- prinInertia / sum(prinInertia) * 100
 
-  if (return_input == TRUE){
-    prinInertia <- caobj@D^2
-    percentInertia <- prinInertia / sum(prinInertia) * 100
+            # Saving the results
+            ca <- caobj@std_coords_cols
+            attr(ca, "prin_coords_rows") <- caobj@prin_coords_rows
+            attr(ca, "singval") <- caobj@D
+            attr(ca, "percInertia") <- percentInertia
+            attr(ca, "params") <- caobj@params
 
-    # Saving the results
-    ca <- caobj@std_coords_cols
-    attr(ca, "prin_coords_rows") <- caobj@prin_coords_rows
-    attr(ca, "singval") <- caobj@D
-    attr(ca, "percInertia") <- percentInertia
-    attr(ca, "params") <- caobj@params
+            SingleCellExperiment::reducedDim(obj, "CA") <- ca
 
-    SingleCellExperiment::reducedDim(obj, "CA") <- ca
-
-    return(obj)
-
-  } else {
-    return(caobj)
-  }
-
-})
+            return(obj)
+        } else {
+            return(caobj)
+        }
+    }
+)
 
 
 #' Subset dimensions of a caobj
@@ -959,47 +964,50 @@ setMethod(f = "cacomp",
 #' ca <- cacomp(cnts)
 #' ca <- subset_dims(ca, 2)
 #' @export
-subset_dims <- function(caobj, dims){
+subset_dims <- function(caobj, dims) {
+    # if (dims == 1) {
+    #     stop("Please choose more than 1 dimension.")
+    # }
 
-  if (dims == 1){stop("Please choose more than 1 dimension.")}
+    stopifnot(is(caobj, "cacomp"))
 
-  stopifnot(is(caobj, "cacomp"))
+    if (is.null(dims)) {
+        return(caobj)
+    }
 
-  if (is.null(dims)){
-    return(caobj)
-  }
+    if (dims > length(caobj@D)) {
+        warning(
+            "dims is larger than the number of available dimensions.",
+            " Argument ignored"
+        )
+    } else if (dims == length(caobj@D)) {
+        caobj@dims <- dims
+        return(caobj)
+    }
 
-  if(dims > length(caobj@D)){
-    warning("dims is larger than the number of available dimensions.",
-            " Argument ignored")
-  } else if (dims == length(caobj@D)){
+    dims <- min(dims, length(caobj@D))
     caobj@dims <- dims
+    dims <- seq(dims)
+    caobj@U <- caobj@U[, dims, drop = FALSE]
+    caobj@V <- caobj@V[, dims, drop = FALSE]
+    caobj@D <- caobj@D[dims]
+
+    if (!is.empty(caobj@std_coords_cols)) {
+        caobj@std_coords_cols <- caobj@std_coords_cols[, dims, drop = FALSE]
+    }
+    if (!is.empty(caobj@prin_coords_cols)) {
+        caobj@prin_coords_cols <- caobj@prin_coords_cols[, dims, drop = FALSE]
+    }
+
+    if (!is.empty(caobj@std_coords_rows)) {
+        caobj@std_coords_rows <- caobj@std_coords_rows[, dims, drop = FALSE]
+    }
+    if (!is.empty(caobj@prin_coords_rows)) {
+        caobj@prin_coords_rows <- caobj@prin_coords_rows[, dims, drop = FALSE]
+    }
+
+    stopifnot(validObject(caobj))
     return(caobj)
-  }
-
-  dims <- min(dims, length(caobj@D))
-  caobj@dims <- dims
-  dims <- seq(dims)
-  caobj@U <- caobj@U[,dims]
-  caobj@V <- caobj@V[,dims]
-  caobj@D <- caobj@D[dims]
-
-  if (!is.empty(caobj@std_coords_cols)){
-    caobj@std_coords_cols <- caobj@std_coords_cols[,dims]
-  }
-  if (!is.empty(caobj@prin_coords_cols)){
-    caobj@prin_coords_cols <- caobj@prin_coords_cols[,dims]
-  }
-
-  if (!is.empty(caobj@std_coords_rows)){
-    caobj@std_coords_rows <- caobj@std_coords_rows[,dims]
-  }
-  if (!is.empty(caobj@prin_coords_rows)){
-    caobj@prin_coords_rows <- caobj@prin_coords_rows[,dims]
-  }
-
-  stopifnot(validObject(caobj))
-  return(caobj)
 }
 
 
@@ -1043,105 +1051,114 @@ subset_dims <- function(caobj, dims){
 #' ca <- cacomp(obj = cnts, princ_coords = 1)
 #' ca <- ca_coords(ca, princ_coords = 3)
 #' @export
-ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
+ca_coords <- function(caobj, dims = NULL, princ_coords = 3, princ_only = FALSE) {
+    stopifnot(is(caobj, "cacomp"))
+    stopifnot(dims <= length(caobj@D))
 
-  stopifnot(is(caobj, "cacomp"))
-  stopifnot(dims <= length(caobj@D))
-
-  if(!is.null(dims)){
-    if (dims > length(caobj@D)){
-      warning("Chosen dimensions are larger than the number of ",
-              "dimensions obtained from the singular value ",
-              "decomposition. Argument ignored.")
-     }
-      caobj <- subset_dims(caobj = caobj, dims = dims)
+    if (!is.null(dims)) {
+        if (dims > length(caobj@D)) {
+            warning(
+                "Chosen dimensions are larger than the number of ",
+                "dimensions obtained from the singular value ",
+                "decomposition. Argument ignored."
+            )
+        }
+        caobj <- subset_dims(caobj = caobj, dims = dims)
     }
 
 
-  if(princ_only == FALSE){
+    if (princ_only == FALSE) {
+        # standard coordinates
+        if (dims == 1 && !is.null(dims)) {
+            caobj@std_coords_rows <- caobj@U / sqrt(caobj@row_masses)
+            caobj@std_coords_cols <- caobj@V / sqrt(caobj@col_masses)
+        } else {
+            caobj@std_coords_rows <- sweep(
+                x = caobj@U,
+                MARGIN = 1,
+                STATS = sqrt(caobj@row_masses),
+                FUN = "/"
+            )
+            caobj@std_coords_cols <- sweep(
+                x = caobj@V,
+                MARGIN = 1,
+                STATS = sqrt(caobj@col_masses),
+                FUN = "/"
+            )
+        }
 
-    #standard coordinates
-    if(dims == 1 && !is.null(dims)){
-      caobj@std_coords_rows <- caobj@U/sqrt(caobj@row_masses)
-      caobj@std_coords_cols <- caobj@V/sqrt(caobj@col_masses)
-    } else {
-      caobj@std_coords_rows <- sweep(x = caobj@U,
-                                     MARGIN = 1,
-                                     STATS = sqrt(caobj@row_masses),
-                                     FUN = "/")
-      caobj@std_coords_cols <- sweep(x = caobj@V,
-                                     MARGIN = 1,
-                                     STATS = sqrt(caobj@col_masses),
-                                     FUN = "/")
+
+        # Ensure no NA/Inf after dividing by 0.
+        caobj@std_coords_rows[is.na(caobj@std_coords_rows)] <- 0
+        caobj@std_coords_cols[is.na(caobj@std_coords_cols)] <- 0
+        caobj@std_coords_rows[is.infinite(caobj@std_coords_rows)] <- 0
+        caobj@std_coords_cols[is.infinite(caobj@std_coords_cols)] <- 0
     }
 
 
-    # Ensure no NA/Inf after dividing by 0.
-    caobj@std_coords_rows[is.na(caobj@std_coords_rows)] <- 0
-    caobj@std_coords_cols[is.na(caobj@std_coords_cols)] <- 0
-    caobj@std_coords_rows[is.infinite(caobj@std_coords_rows)] <- 0
-    caobj@std_coords_cols[is.infinite(caobj@std_coords_cols)] <- 0
+    stopifnot(
+        "princ_coords must be either 0, 1, 2 or 3" =
+            (princ_coords == 0 ||
+                princ_coords == 1 ||
+                princ_coords == 2 ||
+                princ_coords == 3)
+    )
 
-  }
+    if (princ_coords != 0) {
+        stopifnot(!is.empty(caobj@std_coords_rows))
+        stopifnot(!is.empty(caobj@std_coords_cols))
 
-
-  stopifnot("princ_coords must be either 0, 1, 2 or 3" =
-              (princ_coords == 0 ||
-               princ_coords == 1 ||
-               princ_coords == 2 ||
-               princ_coords == 3))
-
-  if(princ_coords != 0){
-    stopifnot(!is.empty(caobj@std_coords_rows))
-    stopifnot(!is.empty(caobj@std_coords_cols))
-
-      if (princ_coords == 1){
-        #principal coordinates for rows
-        if (dims == 1 && !is.null(dims)){
-          caobj@prin_coords_rows <- caobj@std_coords_rows*caobj@D
-        } else {
-          caobj@prin_coords_rows <- sweep(caobj@std_coords_rows,
-                                          2,
-                                          caobj@D,
-                                          "*")
+        if (princ_coords == 1) {
+            # principal coordinates for rows
+            if (dims == 1 && !is.null(dims)) {
+                caobj@prin_coords_rows <- caobj@std_coords_rows * caobj@D
+            } else {
+                caobj@prin_coords_rows <- sweep(
+                    caobj@std_coords_rows,
+                    2,
+                    caobj@D,
+                    "*"
+                )
+            }
+        } else if (princ_coords == 2) {
+            # principal coordinates for columns
+            if (dims == 1 && !is.null(dims)) {
+                caobj@prin_coords_cols <- caobj@std_coords_cols * caobj@D
+            } else {
+                caobj@prin_coords_cols <- sweep(
+                    caobj@std_coords_cols,
+                    2,
+                    caobj@D,
+                    "*"
+                )
+            }
+        } else if (princ_coords == 3) {
+            if (dims == 1 && !is.null(dims)) {
+                # principal coordinates for rows
+                caobj@prin_coords_rows <- caobj@std_coords_rows * caobj@D
+                # principal coordinates for columns
+                caobj@prin_coords_cols <- caobj@std_coords_cols * caobj@D
+            } else {
+                # principal coordinates for rows
+                caobj@prin_coords_rows <- sweep(
+                    caobj@std_coords_rows,
+                    2,
+                    caobj@D,
+                    "*"
+                )
+                # principal coordinates for columns
+                caobj@prin_coords_cols <- sweep(
+                    caobj@std_coords_cols,
+                    2,
+                    caobj@D,
+                    "*"
+                )
+            }
         }
+    }
 
-      } else if (princ_coords == 2) {
-        #principal coordinates for columns
-        if (dims == 1 && !is.null(dims)){
-          caobj@prin_coords_cols <- caobj@std_coords_cols*caobj@D
-        } else {
-          caobj@prin_coords_cols <- sweep(caobj@std_coords_cols,
-                                          2,
-                                          caobj@D,
-                                          "*")
-        }
-      } else if (princ_coords  == 3) {
-
-        if (dims == 1 && !is.null(dims)){
-          #principal coordinates for rows
-          caobj@prin_coords_rows <- caobj@std_coords_rows*caobj@D
-          #principal coordinates for columns
-          caobj@prin_coords_cols <- caobj@std_coords_cols*caobj@D
-        } else {
-          #principal coordinates for rows
-          caobj@prin_coords_rows <- sweep(caobj@std_coords_rows,
-                                          2,
-                                          caobj@D,
-                                          "*")
-          #principal coordinates for columns
-          caobj@prin_coords_cols <- sweep(caobj@std_coords_cols,
-                                          2,
-                                          caobj@D,
-                                          "*")
-        }
-
-      }
-
-  }
-
-  stopifnot(validObject(caobj))
-  return(caobj)
+    stopifnot(validObject(caobj))
+    return(caobj)
 }
 
 
@@ -1153,23 +1170,25 @@ ca_coords <- function(caobj, dims=NULL, princ_coords = 3, princ_only = FALSE){
 #'Returns a ggplot object.
 #'
 #'@param df A data frame with columns "dims" and "inertia".
-scree_plot <- function(df){
+scree_plot <- function(df) {
+    stopifnot(c("dims", "inertia") %in% colnames(df))
 
-  stopifnot(c("dims", "inertia") %in% colnames(df))
+    avg_inertia <- 100 / nrow(df)
+    max_num_dims <- nrow(df)
 
-  avg_inertia <- 100/nrow(df)
-  max_num_dims <- nrow(df)
-
-  screeplot <- ggplot2::ggplot(df, ggplot2::aes(x=.data$dims,
-                                                y=.data$inertia)) +
-    ggplot2::geom_col(fill="#4169E1") +
-    ggplot2::geom_line(color="#B22222", size=1) +
-    ggplot2::labs(
-         title = "Scree plot of explained inertia per dimensions and the average inertia",
-         y="Explained inertia [%]",
-         x="Dimension") +
-    ggplot2::theme_bw()
-  return(screeplot)
+    screeplot <- ggplot2::ggplot(df, ggplot2::aes(
+        x = .data$dims,
+        y = .data$inertia
+    )) +
+        ggplot2::geom_col(fill = "#4169E1") +
+        ggplot2::geom_line(color = "#B22222", size = 1) +
+        ggplot2::labs(
+            title = "Scree plot of explained inertia per dimensions and the average inertia",
+            y = "Explained inertia [%]",
+            x = "Dimension"
+        ) +
+        ggplot2::theme_bw()
+    return(screeplot)
 }
 
 #' Runs elbow method
@@ -1199,11 +1218,11 @@ scree_plot <- function(df){
 #' @examples
 #'
 #' # Get example data from Seurat
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(2358)
-#' cnts <- as.matrix(Seurat::GetAssayData(pbmc_small,
-#'                                        assay = "RNA",
-#'                                        slot = "data"))
+#' cnts <- as.matrix(SeuratObject::LayerData(pbmc_small,
+#'                                           assay = "RNA",
+#'                                           layer = "data"))
 #' # Run correspondence analysis.
 #' ca <- cacomp(obj = cnts)
 #'
@@ -1220,87 +1239,93 @@ elbow_method <- function(obj,
                          mat,
                          reps,
                          python = FALSE,
-                         return_plot = FALSE){
-  ev <- obj@D^2
-  expl_inertia <- (ev/sum(ev)) *100
-  max_num_dims <- length(obj@D)
+                         return_plot = FALSE) {
+    ev <- obj@D^2
+    expl_inertia <- (ev / sum(ev)) * 100
+    max_num_dims <- length(obj@D)
 
-  if(isTRUE(obj@params$rm_zeros)){
-      mat <- rm_zeros(mat)
-  }
-
-  matrix_expl_inertia_perm <- matrix(0, nrow = max_num_dims , ncol = reps)
-
-  pb <- txtProgressBar(min = 0, max = reps, style = 3)
-
-  for (k in seq(reps)) {
-
-    # mat <- as.matrix(mat)
-    mat_perm <- apply(mat, 2, FUN=sample)
-    colnames(mat_perm) <- colnames(mat)
-    rownames(mat_perm) <- seq_len(nrow(mat_perm))
-
-    obj_perm <- cacomp(obj=mat_perm,
-                       top = obj@top_rows,
-                       dims = obj@dims,
-                       coords = FALSE,
-                       python = python,
-                       residuals = obj@params$residuals,
-                       cutoff = obj@params$cutoff,
-                       clip = obj@params$clip)
-
-    ev_perm <- obj_perm@D^2
-    expl_inertia_perm <- (ev_perm/sum(ev_perm))*100
-
-    matrix_expl_inertia_perm[,k] <- expl_inertia_perm
-    colnames(matrix_expl_inertia_perm) <- paste0("perm",seq_len(reps))
-
-    setTxtProgressBar(pb, k)
-
-  }
-  close(pb)
-
-
-  if (return_plot == TRUE){
-    df <- data.frame(dims = seq_len(max_num_dims),
-                     inertia = expl_inertia)
-
-    df <- cbind(df, matrix_expl_inertia_perm)
-
-    screeplot <- scree_plot(df)
-
-    for (k in seq_len(reps)) {
-
-      colnm <- ggplot2::sym(paste0("perm",k))
-
-      screeplot <- screeplot +
-        ggplot2::geom_line(data = df, ggplot2::aes(x=.data$dims,
-                                                   y=!!colnm),
-                           color="black",
-                           alpha=0.8,
-                           linetype=2)
-
+    if (isTRUE(obj@params$rm_zeros)) {
+        mat <- rm_zeros(mat)
     }
-  }
 
-  avg_inertia_perm <- rowMeans(matrix_expl_inertia_perm)
+    matrix_expl_inertia_perm <- matrix(0, nrow = max_num_dims, ncol = reps)
 
-  tmp <- as.integer(expl_inertia>avg_inertia_perm)
-  if (sum(tmp)==0 || sum(tmp)==max_num_dims){
-    dim_number <- max_num_dims
-  } else if (tmp[1] == 0){
-    stop("Average inertia of the permutated data is above ",
-         "the explained inertia of the data in the first dimension. ",
-         "Please either try more permutations or a different method.")
-  }else{
-    dim_number <- length(tmp[cumsum(tmp == 0)<1 & tmp!=0])
-  }
+    pb <- txtProgressBar(min = 0, max = reps, style = 3)
 
-  if (return_plot == FALSE){
-    return(dim_number)
-  } else {
-    return(list("dims" = dim_number, "plot" = screeplot))
-  }
+    for (k in seq(reps)) {
+        # mat <- as.matrix(mat)
+        mat_perm <- apply(mat, 2, FUN = sample)
+        colnames(mat_perm) <- colnames(mat)
+        rownames(mat_perm) <- seq_len(nrow(mat_perm))
+
+        obj_perm <- cacomp(
+            obj = mat_perm,
+            top = obj@top_rows,
+            dims = obj@dims,
+            coords = FALSE,
+            python = python,
+            residuals = obj@params$residuals,
+            cutoff = obj@params$cutoff,
+            clip = obj@params$clip
+        )
+
+        ev_perm <- obj_perm@D^2
+        expl_inertia_perm <- (ev_perm / sum(ev_perm)) * 100
+
+        matrix_expl_inertia_perm[, k] <- expl_inertia_perm
+        colnames(matrix_expl_inertia_perm) <- paste0("perm", seq_len(reps))
+
+        setTxtProgressBar(pb, k)
+    }
+    close(pb)
+
+
+    if (return_plot == TRUE) {
+        df <- data.frame(
+            dims = seq_len(max_num_dims),
+            inertia = expl_inertia
+        )
+
+        df <- cbind(df, matrix_expl_inertia_perm)
+
+        screeplot <- scree_plot(df)
+
+        for (k in seq_len(reps)) {
+            colnm <- ggplot2::sym(paste0("perm", k))
+
+            screeplot <- screeplot +
+                ggplot2::geom_line(
+                    data = df, ggplot2::aes(
+                        x = .data$dims,
+                        y = !!colnm
+                    ),
+                    color = "black",
+                    alpha = 0.8,
+                    linetype = 2
+                )
+        }
+    }
+
+    avg_inertia_perm <- rowMeans(matrix_expl_inertia_perm)
+
+    tmp <- as.integer(expl_inertia > avg_inertia_perm)
+    if (sum(tmp) == 0 || sum(tmp) == max_num_dims) {
+        dim_number <- max_num_dims
+    } else if (tmp[1] == 0) {
+        stop(
+            "Average inertia of the permutated data is above ",
+            "the explained inertia of the data in the first dimension. ",
+            "Please either try more permutations or a different method."
+        )
+    } else {
+        dim_number <- length(tmp[cumsum(tmp == 0) < 1 & tmp != 0])
+    }
+
+    if (return_plot == FALSE) {
+        return(dim_number)
+    } else {
+        return(list("dims" = dim_number, "plot" = screeplot))
+    }
 }
 
 
@@ -1377,82 +1402,84 @@ elbow_method <- function(obj,
 #' @md
 setGeneric("pick_dims", function(obj,
                                  mat = NULL,
-                                 method="scree_plot",
-                                 reps=3,
+                                 method = "scree_plot",
+                                 reps = 3,
                                  python = FALSE,
                                  return_plot = FALSE,
                                  ...) {
-  standardGeneric("pick_dims")
+    standardGeneric("pick_dims")
 })
 
 
 #' @rdname pick_dims
 #' @export
-setMethod(f = "pick_dims",
-          signature=(obj="cacomp"),
-          function(obj,
-                   mat = NULL,
-                   method="scree_plot",
-                   reps=3,
-                   python = FALSE,
-                   return_plot = FALSE,
-                   ...){
+setMethod(
+    f = "pick_dims",
+    signature = (obj = "cacomp"),
+    function(obj,
+             mat = NULL,
+             method = "scree_plot",
+             reps = 3,
+             python = FALSE,
+             return_plot = FALSE,
+             ...) {
+        if (!is(obj, "cacomp")) {
+            stop("Not a CA object. Please run cacomp() first!")
+        }
 
-  if (!is(obj,"cacomp")){
-    stop("Not a CA object. Please run cacomp() first!")
-  }
+        ev <- obj@D^2
+        expl_inertia <- (ev / sum(ev)) * 100
+        max_num_dims <- length(obj@D)
 
-  ev <- obj@D^2
-  expl_inertia <- (ev/sum(ev)) *100
-  max_num_dims <- length(obj@D)
+        if (method == "avg_inertia") {
+            # Method 1: Dim's > average inertia
+            # percentage of inertia explained by 1 dimension (on average)
+            avg_inertia <- 100 / max_num_dims
+            # result: number of dimensions, all of which explain more than avg_inertia
+            dim_num <- sum(expl_inertia > avg_inertia)
+            return(dim_num)
+        } else if (method == "maj_inertia") {
+            # Method 2: Sum of dim's > 80% of the total inertia
+            # the first dimension for which the cumulative sum of inertia (from dim1
+            # up to given dimension) is higher than 80%
+            dim_num <- min(which(cumsum(expl_inertia) > 80))
+            return(dim_num)
+        } else if (method == "scree_plot") {
+            # Method 3: Graphical representation of explained inertia (scree plot)
+            # the user can set the threshold based on the scree plot
 
-  if (method == "avg_inertia"){
-    # Method 1: Dim's > average inertia
-    # percentage of inertia explained by 1 dimension (on average)
-    avg_inertia <- 100/max_num_dims
-    # result: number of dimensions, all of which explain more than avg_inertia
-    dim_num <- sum(expl_inertia > avg_inertia)
-    return(dim_num)
+            df <- data.frame(
+                dims = seq_len(max_num_dims),
+                inertia = expl_inertia
+            )
 
-  } else if (method == "maj_inertia"){
-    # Method 2: Sum of dim's > 80% of the total inertia
-    # the first dimension for which the cumulative sum of inertia (from dim1
-    # up to given dimension) is higher than 80%
-    dim_num <- min(which(cumsum(expl_inertia)>80))
-    return(dim_num)
+            screeplot <- scree_plot(df)
 
-  } else if (method == "scree_plot"){
-    # Method 3: Graphical representation of explained inertia (scree plot)
-    # the user can set the threshold based on the scree plot
+            return(screeplot)
+        } else if (method == "elbow_rule") {
+            if (is.null(mat)) {
+                cat(paste0(
+                    "When running method=\"elbow_rule\", ",
+                    "please provide the original data matrix (paramater mat) ",
+                    "which was earlier submitted to cacomp()!"
+                ))
+                stop()
+            }
 
-    df <- data.frame(dims = seq_len(max_num_dims),
-                     inertia = expl_inertia)
-
-    screeplot <- scree_plot(df)
-
-    return(screeplot)
-
-  } else if (method == "elbow_rule") {
-
-    if(is.null(mat)){
-      cat(paste0("When running method=\"elbow_rule\", ",
-                 "please provide the original data matrix (paramater mat) ",
-                 "which was earlier submitted to cacomp()!"))
-      stop()
+            pd <- elbow_method(
+                obj = obj,
+                mat = mat,
+                reps = reps,
+                python = python,
+                return_plot = return_plot
+            )
+            return(pd)
+        } else {
+            cat("Please pick a valid method!")
+            stop()
+        }
     }
-
-    pd <- elbow_method(obj = obj,
-                       mat = mat,
-                       reps = reps,
-                       python = python,
-                       return_plot = return_plot)
-    return(pd)
-
-  } else {
-    cat("Please pick a valid method!")
-    stop()
-  }
-})
+)
 
 
 
@@ -1469,7 +1496,7 @@ setMethod(f = "pick_dims",
 #' ################################
 #' # pick_dims for Seurat objects #
 #' ################################
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(1234)
 #'
 #' # Simulate counts
@@ -1489,44 +1516,49 @@ setMethod(f = "pick_dims",
 #'                 method = "maj_inertia",
 #'                 assay = "RNA",
 #'                 slot = "counts")
-setMethod(f = "pick_dims",
-          signature=(obj="Seurat"),
-          function(obj,
-                   mat = NULL,
-                   method="scree_plot",
-                   reps=3,
-                   python = FALSE,
-                   return_plot = FALSE,
-                   ...,
-                   assay = Seurat::DefaultAssay(obj),
-                   slot = "counts"){
+setMethod(
+    f = "pick_dims",
+    signature = (obj = "Seurat"),
+    function(obj,
+             mat = NULL,
+             method = "scree_plot",
+             reps = 3,
+             python = FALSE,
+             return_plot = FALSE,
+             ...,
+             assay = SeuratObject::DefaultAssay(obj),
+             slot = "counts") {
+        stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
 
-  stopifnot("obj doesn't belong to class 'Seurat'" = is(obj, "Seurat"))
+        if (method == "elbow_rule") {
+            seu <- SeuratObject::LayerData(object = obj, assay = assay, layer = slot)
+            seu <- as.matrix(seu)
+        } else {
+            seu <- NULL
+        }
 
-  if (method == "elbow_rule") {
-    seu <- Seurat::GetAssayData(object = obj, assay = assay, slot = slot)
-    seu <- as.matrix(seu)
-  } else {
-    seu <- NULL
-  }
+        if ("CA" %in% SeuratObject::Reductions(obj)) {
+            caobj <- as.cacomp(obj, assay = assay)
+        } else {
+            stop(
+                "No 'CA' dimension reduction object found. ",
+                "Please run cacomp(seurat_obj, top, coords = FALSE, ",
+                "return_input=TRUE) first."
+            )
+        }
 
-  if ("CA" %in% Seurat::Reductions(obj)){
-    caobj <- as.cacomp(obj, assay = assay)
-  } else {
-    stop("No 'CA' dimension reduction object found. ",
-         "Please run cacomp(seurat_obj, top, coords = FALSE, ",
-         "return_input=TRUE) first.")
-  }
+        stopifnot(is(caobj, "cacomp"))
 
-  stopifnot(is(caobj, "cacomp"))
-
-  pick_dims(obj = caobj,
+        pick_dims(
+            obj = caobj,
             mat = seu,
             method = method,
             reps = reps,
             return_plot = return_plot,
-            python = python)
-})
+            python = python
+        )
+    }
+)
 
 
 #' @param assay Character. The assay from which to extract the count matrix
@@ -1559,40 +1591,46 @@ setMethod(f = "pick_dims",
 #' pd <- pick_dims(obj = sce,
 #'                 method = "maj_inertia",
 #'                 assay = "counts")
-setMethod(f = "pick_dims",
-          signature=(obj="SingleCellExperiment"),
-          function(obj,
-                   mat = NULL,
-                   method="scree_plot",
-                   reps=3,
-                   python = FALSE,
-                   return_plot = FALSE,
-                   ...,
-                   assay = "counts"){
+setMethod(
+    f = "pick_dims",
+    signature = (obj = "SingleCellExperiment"),
+    function(obj,
+             mat = NULL,
+             method = "scree_plot",
+             reps = 3,
+             python = FALSE,
+             return_plot = FALSE,
+             ...,
+             assay = "counts") {
+        stopifnot(
+            "obj doesn't belong to class 'SingleCellExperiment'" =
+                is(obj, "SingleCellExperiment")
+        )
 
-  stopifnot("obj doesn't belong to class 'SingleCellExperiment'" =
-              is(obj, "SingleCellExperiment"))
+        if (method == "elbow_rule") {
+            mat <- SummarizedExperiment::assay(obj, assay)
+        } else {
+            mat <- NULL
+        }
 
-  if (method == "elbow_rule") {
-    mat <- SummarizedExperiment::assay(obj, assay)
-  } else {
-    mat <- NULL
-  }
+        if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)) {
+            caobj <- as.cacomp(obj, assay = assay)
+        } else {
+            stop(
+                "No 'CA' dim. reduction object found. ",
+                "Please run cacomp(sce, top, coords = FALSE, ",
+                "return_input=TRUE) first."
+            )
+        }
 
-  if ("CA" %in% SingleCellExperiment::reducedDimNames(obj)){
-    caobj <- as.cacomp(obj, assay = assay)
-  } else {
-    stop("No 'CA' dim. reduction object found. ",
-         "Please run cacomp(sce, top, coords = FALSE, ",
-         "return_input=TRUE) first.")
-  }
-
-  stopifnot(is(caobj, "cacomp"))
-  pick_dims(obj = caobj,
-           mat = mat,
-           method = method,
-           reps = reps,
-           return_plot = return_plot,
-           python = python)
-
-})
+        stopifnot(is(caobj, "cacomp"))
+        pick_dims(
+            obj = caobj,
+            mat = mat,
+            method = method,
+            reps = reps,
+            return_plot = return_plot,
+            python = python
+        )
+    }
+)

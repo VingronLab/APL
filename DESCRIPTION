@@ -23,13 +23,6 @@ Description: APL is a package developed for computation of Association Plots
   genes using Association Plots. Additionally, APL computes the
   cluster-specificity scores for all genes which allows to rank the genes by
   their specificity for a selected cell cluster of interest.
-Config/reticulate:
-  list(
-    packages = list(
-      list(package = "numpy"),
-      list(package = "torch")
-    )
-  )
 biocViews:
   StatisticalMethod,
   DimensionReduction,
@@ -42,15 +35,13 @@ Encoding: UTF-8
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
 Imports:
-    basilisk,
-    reticulate,
     Matrix,
     irlba,
     ggrepel,
     ggplot2,
     viridisLite,
     plotly,
-    Seurat,
+    SeuratObject,
     SingleCellExperiment,
     magrittr,
     SummarizedExperiment,
@@ -61,7 +52,7 @@ Imports:
     org.Hs.eg.db,
     org.Mm.eg.db,
     rlang
-Depends: R (>= 4.4.0)
+Depends: R (>= 4.2)
 Suggests:
     BiocStyle,
     knitr,
@@ -75,12 +66,9 @@ Collate:
     'constructor.R'
     'CA.R'
     'apl.R'
-    'basilisk.R'
     'convert.R'
     'generic_methods.R'
     'import_packages.R'
     'plot.R'
     'utils-pipe.R'
-SystemRequirements: python, pytorch, numpy
-StagedInstall: no
 URL: https://vingronlab.github.io/APL/
