@@ -84,7 +84,7 @@ ca <- as.cacomp(ca_list, mat = cnts)
 ##########
 # Seurat #
 ##########
-library(Seurat)
+library(SeuratObject)
 set.seed(1234)
 
 # Simulate counts

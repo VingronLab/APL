@@ -18,7 +18,7 @@ Returns a ggplot plot.
 Plots the results from the data frame generated via apl_topGO.
 }
 \examples{
-library(Seurat)
+library(SeuratObject)
 set.seed(1234)
 cnts <- SeuratObject::LayerData(pbmc_small, assay = "RNA", layer = "counts")
 cnts <- as.matrix(cnts)

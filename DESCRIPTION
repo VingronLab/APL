@@ -41,7 +41,7 @@ Imports:
     ggplot2,
     viridisLite,
     plotly,
-    Seurat,
+    SeuratObject,
     SingleCellExperiment,
     magrittr,
     SummarizedExperiment,

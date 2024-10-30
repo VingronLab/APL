@@ -47,7 +47,7 @@ NULL
 #' cnts <- as.matrix(cnts)
 #'
 #' # Run correspondence analysis
-#' ca <- cacomp(obj = cnts, princ_coords = 3)
+#' ca <- cacomp(obj = cnts, princ_coords = 3, dims = 3)
 #' # Calculate APL coordinates
 #' ca <- apl_coords(ca, group = 3:4)
 apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE) {
@@ -491,7 +491,7 @@ random_direction_cutoff <- function(caobj, dims = caobj@dims, reps = 100){
 #'
 #' @export
 #' @examples
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(1234)
 #' cnts <- SeuratObject::LayerData(pbmc_small, assay = "RNA", layer = "counts")
 #' cnts <- as.matrix(cnts)
@@ -1628,7 +1628,7 @@ setMethod(f = "runAPL",
 #' ###########
 #' # Seurat  #
 #' ###########
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(1234)
 #'
 #' # Simulate counts

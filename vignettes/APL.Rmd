@@ -20,8 +20,8 @@ vignette: |
   %\VignetteIndexEntry{Analyzing data with APL}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  markdown: 
+editor_options:
+  markdown:
     wrap: sentence
 ---
 
@@ -36,8 +36,8 @@ The main focus of "APL" is the identification of genes characteristic for indivi
 
 When working with `r BiocStyle::Rpackage("APL")` package please cite:
 
-	Gralinska, E., Kohl, C., Fadakar, B. S., & Vingron, M. (2022). 
-	Visualizing Cluster-specific Genes from Single-cell Transcriptomics Data Using Association Plots. 
+	Gralinska, E., Kohl, C., Fadakar, B. S., & Vingron, M. (2022).
+	Visualizing Cluster-specific Genes from Single-cell Transcriptomics Data Using Association Plots.
 	Journal of Molecular Biology, 434(11), 167525.
 
 A citation can also be obtained in R by running `citation("APL")`.
@@ -48,8 +48,9 @@ For a mathematical description of the method, please refer to the manuscript.
 To install the `r BiocStyle::Rpackage("APL")` from Bioconductor, run:
 
 ```{r bioc_install, eval=FALSE}
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
 
 BiocManager::install("APL")
 ```
@@ -69,46 +70,12 @@ install_github("VingronLab/APL", build_vignettes = TRUE, dependencies = TRUE)
 
 Building the vignette will however take considerable time.
 
-## pytorch installation
+## Changes regarding python dependencies
 
-In order to decrease the computation time of the singular value decomposition (SVD), we highly recommend the installation of `pytorch`.
-More information on the `pytorch` installation is given below.
-Instead of installing `pytorch`, users can also opt to use the R native SVD.
-For this, please use the argument `python = FALSE` wherever applicable in this vignette.
-
-### Install pytorch with reticulate
-
-```{r reticulate, eval=FALSE}
-library(reticulate)
-py_install(packages = "numpy")
-py_install(packages = "pytorch")
-```
-
-The above might query you to use a python virtualenv. If you prefer to use conda to manage your python packages, you can use the following code:
-```{r reticulate_conda, eval=FALSE}
-library(reticulate)
-install_miniconda()
-use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
-             required=TRUE)
-      
-conda_install(envname = "r-reticulate", packages = "numpy")
-conda_install(envname = "r-reticulate", packages = "pytorch")
-```
-IF you use both the virtualenv and the conda environment, after loading reticulate you might have to activate the condaenv with the above `use_condaenv` call in order to use the correct environment.
-
-### Manually install pytorch with conda
-
-To install `pytorch` please download the appropriate Miniconda installer for your system from [the conda website](https://docs.conda.io/en/latest/miniconda.html).
-Follow the installation instructions on their website and make sure the R package `reticulate` is also installed before proceeding.
-Once installed, list all available conda environments via <br> `conda info --envs` <br> One of the environments should have `r-reticulate` in its name.
-Depending on where you installed it and your system, the exact path might be different.
-Activate the environment and install `pytorch` into it.
-
-```{bash conda, eval=FALSE}
-conda activate ~/.local/share/r-miniconda/envs/r-reticulate # change path accordingly.
-conda install numpy
-conda install pytorch
-```
+Previous versions of `r BiocStyle::Rpackage("APL")` used pytorch SVD to speed up the computation of the full SVD. This has been deprecated in favor of fast truncated SVD implementations starting with Version 1.11.1.
+Calling `runAPL` or `cacomp` with `python = TRUE` will not lead to an error, but only issue a warning.
+If you still want to perform a full SVD, set the dimensions to rank of the matrix. Until a faster replacement is identified, this computation will be performed by the rather slow base R svd and should therefore not be done on very large matrices.
+The default number of dimensions now defaults to half of the rank of the matrix.
 
 # Preprocessing
 
@@ -125,18 +92,12 @@ The preprocessing steps are performed according to the recommendations published
 For more information about the rational behind them please refer to the book.
 
 ```{r setup, message=FALSE, warning=FALSE}
-
-library(reticulate)
-# use_condaenv(condaenv = file.path(miniconda_path(),"envs/r-reticulate"),
-#              required=TRUE)
-
 library(APL)
 library(scRNAseq)
 library(SingleCellExperiment)
 library(scran)
 library(scater)
 set.seed(1234)
-
 ```
 
 ## Loading the data
@@ -157,19 +118,17 @@ Therefore, we first normalize the counts from the Darmanis data and calculate bo
 For now, `r BiocStyle::Rpackage("APL")` requires the data to be clustered beforehand. The darmanis data comes already annotated, so we will use the cell types stored in the `cell.type` metadata column instead of performing a clustering.
 
 ```{r preprocess}
-
 set.seed(100)
-clust <- quickCluster(darmanis) 
-darmanis <- computeSumFactors(darmanis, cluster=clust, min.mean=0.1)
+clust <- quickCluster(darmanis)
+darmanis <- computeSumFactors(darmanis, cluster = clust, min.mean = 0.1)
 darmanis <- logNormCounts(darmanis)
 
 dec <- modelGeneVar(darmanis)
-top_darmanis <- getTopHVGs(dec, n=5000)
-darmanis <- fixedPCA(darmanis, subset.row=top_darmanis) 
-darmanis <- runUMAP(darmanis, dimred="PCA")
+top_darmanis <- getTopHVGs(dec, n = 5000)
+darmanis <- fixedPCA(darmanis, subset.row = top_darmanis)
+darmanis <- runUMAP(darmanis, dimred = "PCA")
 
-plotReducedDim(darmanis, dimred="UMAP", colour_by="cell.type")
-
+plotReducedDim(darmanis, dimred = "UMAP", colour_by = "cell.type")
 ```
 
 # Quick start
@@ -180,12 +139,13 @@ The fastest way to compute the Association Plot for a selected cluster of cells 
 For example, to generate an Association Plot for the oligodendrocytes we can use the following command:
 
 ```{r runAPL}
-runAPL(darmanis,
-       assay = "logcounts",
-       top = 5000,
-       group = which(darmanis$cell.type == "oligodendrocytes"),
-       type = "ggplot",
-       python = TRUE)
+runAPL(
+  darmanis,
+  assay = "logcounts",
+  top = 5000,
+  group = which(darmanis$cell.type == "oligodendrocytes"),
+  type = "ggplot"
+)
 ```
 
 The generated Association Plot is computed based on the log-normalized count matrix.
@@ -213,16 +173,15 @@ In this example we perform CA on the log-normalized count matrix of the darmanis
 ```{r cacomp}
 # Computing CA on logcounts
 logcounts <- logcounts(darmanis)
-ca <- cacomp(obj = logcounts,
-             top = 5000,
-             python = TRUE)
+ca <- cacomp(
+  obj = logcounts,
+  top = 5000
+)
 
 # The above is equivalent to:
 # ca <- cacomp(obj = darmanis,
 #              assay = "logcounts",
-#              top = 5000,
-#              python = TRUE)
-
+#              top = 5000)
 ```
 
 The function `cacomp` accepts as an input any matrix with non-negative entries, be it a single-cell RNA-seq, bulk RNA-seq or other data.
@@ -252,19 +211,23 @@ In the case of `r BiocStyle::Biocpkg("SingleCellExperiment")` and `r BiocStyle::
 This also allows for using the plotting functions that come with these packages:
 
 ```{r ca_pbmc}
-darmanis <- cacomp(obj = darmanis,
-               assay = "logcounts",
-               top = 5000,
-               return_input = TRUE,
-               python = TRUE)
+darmanis <- cacomp(
+  obj = darmanis,
+  assay = "logcounts",
+  top = 5000,
+  return_input = TRUE
+)
 
-plotReducedDim(darmanis, dimred="CA",
-               ncomponents = c(1,2),
-               colour_by="cell.type")
-plotReducedDim(darmanis, dimred="CA",
-               ncomponents = c(3,4),
-               colour_by="cell.type")
-
+plotReducedDim(darmanis,
+  dimred = "CA",
+  ncomponents = c(1, 2),
+  colour_by = "cell.type"
+)
+plotReducedDim(darmanis,
+  dimred = "CA",
+  ncomponents = c(3, 4),
+  colour_by = "cell.type"
+)
 ```
 
 However, some functions such as apl_coords() require information that cannot be stored in the single-cell container objects.
@@ -294,7 +257,7 @@ Additionally, the user can compute a scree plot to choose the number of dimensio
 
 ```{r scree_plot}
 pick_dims(ca, method = "scree_plot") +
-  xlim(c(0,20))
+  xlim(c(0, 20))
 ```
 
 In the scree plot above we can see that the first dimension explains only \~1% of the total inertia and we observe the "jump" in the scree plot at roughly 5 dimensions.
@@ -304,11 +267,12 @@ Here we compute the number of dimensions using the elbow rule.
 For demonstration, only three data permutations are computed:
 
 ```{r pick_dims, results = "hide"}
-pd <- pick_dims(ca,
-                mat = logcounts(darmanis),
-                method = "elbow_rule",
-                reps = 3, 
-                python = TRUE)
+pd <- pick_dims(
+  ca,
+  mat = logcounts(darmanis),
+  method = "elbow_rule",
+  reps = 3
+)
 ```
 
 ```{r show_dims, message=FALSE}
@@ -320,9 +284,9 @@ In this case the elbow rule leads to a much higher number of dimensions.
 ```{r expl_inert}
 # Compute the amount of inertia explained by each of the dimensions
 D <- cacomp_slot(ca, "D")
-expl_inertia <- (D^2/sum(D^2))*100
+expl_inertia <- (D^2 / sum(D^2)) * 100
 
-# Compute the amount of intertia explained 
+# Compute the amount of intertia explained
 # by the number of dimensions defined by elbow rule
 sum(expl_inertia[seq_len(pd)])
 ```
@@ -352,16 +316,15 @@ ca <- apl_coords(ca, group = endo)
 After computing the coordinates of genes and cells in the Association Plot we are able to plot the results using the `apl` function.
 
 ```{r apl_platelets_plot, fig.wide = TRUE}
-
 # endothelial marker genes
 marker_genes <- c("APOLD1", "TM4SF1", "SULT1B1", "ESM1", "SELE")
 
 # Plot APL
 apl(ca,
-    row_labs = TRUE,
-    rows_idx = marker_genes, 
-    type = "ggplot") # type = "plotly" for an interactive plot
-
+  row_labs = TRUE,
+  rows_idx = marker_genes,
+  type = "ggplot"
+) # type = "plotly" for an interactive plot
 ```
 
 In the Association Plot all genes are represented by blue circles.
@@ -387,15 +350,16 @@ To display the $S_\alpha$-scores in the Association Plot, we can use the argumen
 # Compute S-alpha score
 # For the calculation the input matrix is also required.
 ca <- apl_score(ca,
-                mat = logcounts(darmanis),
-                reps = 5,
-                python = TRUE)
+  mat = logcounts(darmanis),
+  reps = 5
+)
 ```
 
 ```{r apl_plot_platelets, fig.wide = TRUE}
 apl(ca,
-    show_score = TRUE,
-    type = "ggplot") 
+  show_score = TRUE,
+  type = "ggplot"
+)
 ```
 
 By default, only genes that have a $S_\alpha$-score larger than 0 are colored as these tend to be genes of interest and we consider them as cluster-specific genes.
@@ -412,14 +376,16 @@ To see the expression of genes with the highest $S_\alpha$-scores (or any select
 ```{r seurat_apl, fig.wide = TRUE}
 scores <- cacomp_slot(ca, "APL_score")
 
-plotExpression(darmanis, 
-               features = head(scores$Rowname,3),
-               x = "cell.type", 
-               colour_by = "cell.type")
+plotExpression(darmanis,
+  features = head(scores$Rowname, 3),
+  x = "cell.type",
+  colour_by = "cell.type"
+)
 
-plotReducedDim(darmanis, 
-               dimred="UMAP",
-               colour_by= scores$Rowname[2])
+plotReducedDim(darmanis,
+  dimred = "UMAP",
+  colour_by = scores$Rowname[2]
+)
 ```
 
 As expected, the 3 most highly scored genes are over-expressed in the endothelial cells. Due to the small size of the data set and number of cells in the cluster (only 20 out of 466 cells are endothelial cells) some cluster specific genes are only expressed in a few cells. Most data sets nowadays are significantly larger so this should not be a major concern and it can further be mitigated by performing a more stringent feature selection before CA.
@@ -433,7 +399,6 @@ Alternatively, a three-dimensional data projection plot can be generated using t
 To generate such biplots a `cacomp` object is required.
 
 ```{r biplot, fig.wide = TRUE}
-
 # Specifying a cell cluster of interest
 endo <- which(darmanis$cell.type == "endothelial")
 
@@ -445,7 +410,6 @@ ca_biplot(ca, col_labels = endo, type = "ggplot")
 
 # 3D plot
 # ca_3Dplot(ca, col_labels = platelets)
-
 ```
 
 The above described plots give us a quick overview of the first 2 dimensions of the data (more dimensions can be plotted).
@@ -464,9 +428,9 @@ microglia <- which(darmanis$cell.type == "microglia")
 ca <- apl_coords(ca, group = microglia)
 
 ca <- apl_score(ca,
-                mat = logcounts(darmanis),
-                reps = 5,
-                python = TRUE)
+  mat = logcounts(darmanis),
+  reps = 5
+)
 ```
 
 Now we can conduct GO enrichment analysis as implemented in the package `r BiocStyle::Biocpkg("topGO")` using the most cluster-specific genes from the Association Plot.
@@ -476,9 +440,10 @@ In case that no $S_\alpha$-scores were calculated, one can also choose to use th
 
 ```{r topGO, message=FALSE}
 enr <- apl_topGO(ca,
-                 ontology = "BP",
-                 organism = "hs",
-                 score_cutoff = 1)
+  ontology = "BP",
+  organism = "hs",
+  score_cutoff = 1
+)
 head(enr)
 ```
 
@@ -487,7 +452,7 @@ The function `plot_enrichment()` was implemented to visualize the `topGO` result
 ```{r topGO_plot, message=FALSE}
 plot_enrichment(enr)
 ```
-Microglia cells are innate immune cells of the brain and as such the most highly scored genes are enriched in gene sets related to the immune response and microglia specific gene sets as one would expect. 
+Microglia cells are innate immune cells of the brain and as such the most highly scored genes are enriched in gene sets related to the immune response and microglia specific gene sets as one would expect.
 
 
 # Session info {.unnumbered}

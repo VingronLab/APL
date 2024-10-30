@@ -361,7 +361,7 @@ setMethod(f = "as.cacomp",
 #' ##########
 #' # Seurat #
 #' ##########
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(1234)
 #'
 #' # Simulate counts

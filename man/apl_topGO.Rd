@@ -55,7 +55,7 @@ The genes are ranked either by the precomputed APL score, or, if
 not available by their APL x-coordinates.
 }
 \examples{
-library(Seurat)
+library(SeuratObject)
 set.seed(1234)
 cnts <- SeuratObject::LayerData(pbmc_small, assay = "RNA", layer = "counts")
 cnts <- as.matrix(cnts)

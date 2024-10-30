@@ -207,7 +207,7 @@ ca <- cacomp(obj = cnts, princ_coords = 3, top = 5)
 ###########
 # Seurat  #
 ###########
-library(Seurat)
+library(SeuratObject)
 set.seed(1234)
 
 # Simulate counts

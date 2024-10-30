@@ -35,7 +35,7 @@ Helper function for pick_dims() to run the elbow method.
 \examples{
 
 # Get example data from Seurat
-library(Seurat)
+library(SeuratObject)
 set.seed(2358)
 cnts <- as.matrix(SeuratObject::LayerData(pbmc_small,
                                           assay = "RNA",

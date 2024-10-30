@@ -745,7 +745,7 @@ setMethod(
 #' ###########
 #' # Seurat  #
 #' ###########
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(1234)
 #'
 #' # Simulate counts
@@ -1218,7 +1218,7 @@ scree_plot <- function(df) {
 #' @examples
 #'
 #' # Get example data from Seurat
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(2358)
 #' cnts <- as.matrix(SeuratObject::LayerData(pbmc_small,
 #'                                           assay = "RNA",
@@ -1496,7 +1496,7 @@ setMethod(
 #' ################################
 #' # pick_dims for Seurat objects #
 #' ################################
-#' library(Seurat)
+#' library(SeuratObject)
 #' set.seed(1234)
 #'
 #' # Simulate counts

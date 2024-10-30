@@ -337,7 +337,7 @@ runAPL(obj = sce,
 ###########
 # Seurat  #
 ###########
-library(Seurat)
+library(SeuratObject)
 set.seed(1234)
 
 # Simulate counts

@@ -47,7 +47,7 @@ rownames(cnts) <- paste0("gene_", 1:10)
 cnts <- as.matrix(cnts)
 
 # Run correspondence analysis
-ca <- cacomp(obj = cnts, princ_coords = 3)
+ca <- cacomp(obj = cnts, princ_coords = 3, dims = 3)
 # Calculate APL coordinates
 ca <- apl_coords(ca, group = 3:4)
 }
