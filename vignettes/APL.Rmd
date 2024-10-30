@@ -72,7 +72,7 @@ Building the vignette will however take considerable time.
 
 ## Changes regarding python dependencies
 
-Previous versions of `r BiocStyle::Rpackage("APL")` used pytorch SVD to speed up the computation of the full SVD. This has been deprecated in favor of fast truncated SVD implementations starting with Version 1.11.1.
+Previous versions of `r BiocStyle::Rpackage("APL")` used pytorch SVD to speed up the computation of the full SVD. This has been deprecated in favor of fast truncated SVD implementations starting with Version 1.10.1.
 Calling `runAPL` or `cacomp` with `python = TRUE` will not lead to an error, but only issue a warning.
 If you still want to perform a full SVD, set the dimensions to rank of the matrix. Until a faster replacement is identified, this computation will be performed by the rather slow base R svd and should therefore not be done on very large matrices.
 The default number of dimensions now defaults to half of the rank of the matrix.
