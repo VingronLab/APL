@@ -279,7 +279,7 @@ pd <- pick_dims(
 pd
 ```
 
-In this case the elbow rule leads to a much higher number of dimensions.
+In this case the elbow rule leads to a higher number of dimensions.
 
 ```{r expl_inert}
 # Compute the amount of inertia explained by each of the dimensions
@@ -384,7 +384,7 @@ plotExpression(darmanis,
 
 plotReducedDim(darmanis,
   dimred = "UMAP",
-  colour_by = scores$Rowname[2]
+  colour_by = scores$Rowname[1]
 )
 ```
 
