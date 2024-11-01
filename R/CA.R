@@ -478,14 +478,21 @@ run_cacomp <- function(obj,
         dims <- k
     }
 
-    if (isTRUE(dims == k)) {
-        message("Computing all singular vectors. Please consider setting the dimensions to a lower value to speed up the calculation.")
+    if (isTRUE(dims >= (0.5 * k))) {
+        message(
+            "Using base::svd.",
+            " Please consider setting the dimensions to a lower value",
+            " to speed up the calculation.",
+            "\nRecommended dimensionality: < min(nrows, ncols) * 0.5"
+        )
+
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
         SVD <- svd(S, nu = dims, nv = dims)
         names(SVD) <- c("D", "U", "V")
         SVD <- SVD[c(2, 1, 3)]
         SVD$D <- as.vector(SVD$D)
         if (length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
+
     } else {
         # if number of dimensions are given, turn to calculate partial SVD
 
