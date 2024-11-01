@@ -479,6 +479,7 @@ run_cacomp <- function(obj,
     }
 
     if (isTRUE(dims == k)) {
+        message("Computing all singular vectors. Please consider setting the dimensions to a lower value to speed up the calculation.")
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
         SVD <- svd(S, nu = dims, nv = dims)
         names(SVD) <- c("D", "U", "V")
