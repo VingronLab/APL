@@ -31,8 +31,8 @@ test_that("Example 1, 39 genes and 19 dimensions", {
   ca <- cacomp(mat, princ_coords = 3, dims = 19, top = 39)
   ca <- apl_coords(ca, group = grp)
 
-  expect_equal(ca@apl_cols, samples1, tolerance = 1e-8)
-  expect_equal(ca@apl_rows, genes1_sort, tolerance = 1e-8)
+  expect_equal(ca@apl_cols, samples1, tolerance = 1e-6)
+  expect_equal(ca@apl_rows, genes1_sort, tolerance = 1e-6)
 
  })
 

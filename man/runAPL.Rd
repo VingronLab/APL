@@ -185,7 +185,7 @@ the columns to calculate centroid/x-axis direction.}
 will be calculated. Default NULL.}
 
 \item{dims}{Integer. Number of CA dimensions to retain. Default NULL
-(0.5 * min(nrow(A), ncol(A)) - 1 ).}
+(0.2 * min(nrow(A), ncol(A)) - 1 ).}
 
 \item{nrow}{Integer. The top nrow scored row labels will be added to the
 plot if score = TRUE. Default 10.}

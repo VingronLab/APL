@@ -2,6 +2,7 @@
 
 load("./testdata/smoke.rda")
 load("./testdata/smoke_scRNAseq.rda")
+set.seed(2358)
 
 d <- min(nrow(smoke), ncol(smoke)) - 1
 ca <- cacomp(smoke, top = nrow(smoke), dims = d, princ_coords = 3)
@@ -42,19 +43,27 @@ test_that("check recompute function", {
 
 })
 
-# seu <- CreateSeuratObject(smoke)
+# d <- min(nrow(smoke), ncol(smoke)) - 1
+# seu <- SeuratObject::CreateSeuratObject(smoke)
 # seu <- cacomp(seu,
 #               princ_coords = 3,
 #               return_input = TRUE,
+#               dims = d,
 #               assay = "RNA",
 #               slot = "counts")
 #
-# sce <- SingleCellExperiment(list(counts=smoke))
-# sce <- cacomp(sce, princ_coords = 3, return_input = TRUE, assay = "counts")
+# sce <- SingleCellExperiment::SingleCellExperiment(list(counts = smoke))
+# sce <- cacomp(
+#     sce,
+#     dims = 3,
+#     princ_coords = 3,
+#     return_input = TRUE,
+#     assay = "counts"
+# )
 # save(seu, sce, file = "./tests/testthat/testdata/smoke_scRNAseq.rda")
 
 test_that("check Seurat integration", {
-  expect_equal(as.cacomp(seu, assay="RNA", slot = "counts"), ca)
+  expect_equal(as.cacomp(seu, assay = "RNA", slot = "counts"), ca)
 })
 
 test_that("check SingleCellExperiment integration", {

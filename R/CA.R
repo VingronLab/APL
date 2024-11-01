@@ -373,8 +373,8 @@ inertia_rows <- function(mat, top = 5000, ...) {
 #' @param princ_coords Integer. Number indicating whether principal
 #' coordinates should be calculated for the rows (=1), columns (=2),
 #' both (=3) or none (=0).
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL
-#' (0.5 * min(nrow(A), ncol(A)) - 1 ).
+#' @param dims Integer. Number of CA dimensions to retain. Default NULL:
+#' (0.2 * min(nrow(A), ncol(A)) - 1 ).
 #' @param top Integer. Number of most variable rows to retain.
 #' Set NULL to keep all.
 #' @param inertia Logical. Whether total, row and column inertias should be
@@ -408,7 +408,7 @@ run_cacomp <- function(obj,
         warning(
             "The option `python = TRUE` is deprecated. ",
             "Continuing with base::svd for full SVD or irlba for truncated SVD. ",
-            "In the future, please choose the number of dimensions <= 0.5 * min(nrow(mat), ncol(mat)). "
+            "In the future, please choose the number of dimensions <= 0.2 * min(nrow(mat), ncol(mat)). "
         )
     }
     parameters <- list()
@@ -467,8 +467,9 @@ run_cacomp <- function(obj,
     k <- min(dim(S)) - 1
 
     if (is.null(dims)) {
-        dims <- floor(0.5 * k)
-        message("Setting dimensions to: ", dims)
+        dims <- floor(0.2 * k)
+        if (dims == 0) dims  <- 2
+        message("No dimensions specified. Setting dimensions to: ", dims)
     }
     if (dims > k) {
         warning(paste0(
@@ -480,16 +481,15 @@ run_cacomp <- function(obj,
 
     if (isTRUE(dims >= (0.5 * k))) {
         message(
-            "Using base::svd.",
-            " Please consider setting the dimensions to a lower value",
+            "Please consider setting the dimensions to a lower value",
             " to speed up the calculation.",
-            "\nRecommended dimensionality: < min(nrows, ncols) * 0.5"
+            "\nRecommended dimensionality: << min(nrows, ncols) * 0.2"
         )
 
         # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
-        SVD <- svd(S, nu = dims, nv = dims)
-        names(SVD) <- c("D", "U", "V")
-        SVD <- SVD[c(2, 1, 3)]
+        SVD <- RSpectra::svds(S, k = dims)
+        SVD <- SVD[c("u", "d", "v")]
+        names(SVD) <- c("U", "D", "V")
         SVD$D <- as.vector(SVD$D)
         if (length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
 
