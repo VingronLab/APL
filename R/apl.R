@@ -167,7 +167,7 @@ apl_coords <- function(caobj, group, calc_rows = TRUE, calc_cols = TRUE) {
 #' used to calculate the cutoff. Default 0.99.
 #' @param method Method to calculate the cutoff. Either "random" for random
 #' direction method or "permutation" for the permutation method.
-#' @param python A logical value indicating whether to use singular-value
+#' @param python DEPRACTED. A logical value indicating whether to use singular-value
 #' decomposition from the python package torch.
 #' @param store_perm Logical. Whether permuted data should be stored in the CA
 #' object.

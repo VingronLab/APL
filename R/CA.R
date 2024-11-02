@@ -340,10 +340,7 @@ inertia_rows <- function(mat, top = 5000, ...) {
 #'
 #' @details
 #' The calculation is performed according to the work of Michael Greenacre.
-#' Singular value decomposition
-#' can be performed either with the base R function `svd` or preferably by the
-#' faster
-#' pytorch implementation (python = TRUE). When working with large matrices,
+#' When working with large matrices,
 #' CA coordinates and
 #' principal coordinates should only be computed when needed to save
 #' computational time.
@@ -1373,7 +1370,7 @@ elbow_method <- function(obj,
 #' "elbow_rule". Default 3.
 #' @param return_plot TRUE/FALSE. Whether a plot should be returned when
 #' choosing "elbow_rule". Default FALSE.
-#' @param python A logical value indicating whether to use singular value
+#' @param python DEPRACTED. A logical value indicating whether to use singular value
 #' decomposition from the python package torch.
 #' This implementation dramatically speeds up computation compared to `svd()`
 #' in R.
