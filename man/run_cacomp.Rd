@@ -9,7 +9,7 @@ run_cacomp(
   coords = TRUE,
   princ_coords = 3,
   python = FALSE,
-  dims = NULL,
+  dims = 100,
   top = 5000,
   inertia = TRUE,
   rm_zeros = TRUE,
@@ -38,7 +38,7 @@ This implementation dramatically speeds up computation compared to `svd()`
 in R when calculating the full SVD. This parameter only works when dims==NULL
 or dims==rank(mat), where caculating a full SVD is demanded.}
 
-\item{dims}{Integer. Number of CA dimensions to retain. Default NULL:
+\item{dims}{Integer. Number of CA dimensions to retain. If NULL:
 (0.2 * min(nrow(A), ncol(A)) - 1 ).}
 
 \item{top}{Integer. Number of most variable rows to retain.

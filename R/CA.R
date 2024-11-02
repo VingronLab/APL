@@ -373,7 +373,7 @@ inertia_rows <- function(mat, top = 5000, ...) {
 #' @param princ_coords Integer. Number indicating whether principal
 #' coordinates should be calculated for the rows (=1), columns (=2),
 #' both (=3) or none (=0).
-#' @param dims Integer. Number of CA dimensions to retain. Default NULL:
+#' @param dims Integer. Number of CA dimensions to retain. If NULL:
 #' (0.2 * min(nrow(A), ncol(A)) - 1 ).
 #' @param top Integer. Number of most variable rows to retain.
 #' Set NULL to keep all.
@@ -387,7 +387,7 @@ run_cacomp <- function(obj,
                        coords = TRUE,
                        princ_coords = 3,
                        python = FALSE,
-                       dims = NULL,
+                       dims = 100,
                        top = 5000,
                        inertia = TRUE,
                        rm_zeros = TRUE,
@@ -485,22 +485,20 @@ run_cacomp <- function(obj,
             " to speed up the calculation.",
             "\nRecommended dimensionality: << min(nrows, ncols) * 0.2"
         )
-
-        # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
-        SVD <- RSpectra::svds(S, k = dims)
-        SVD <- SVD[c("u", "d", "v")]
-        names(SVD) <- c("U", "D", "V")
-        SVD$D <- as.vector(SVD$D)
-        if (length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
-
-    } else {
-        # if number of dimensions are given, turn to calculate partial SVD
-
-        SVD <- irlba::irlba(S, nv = dims, smallest = FALSE) # eigenvalues in a decreasing order
-        SVD <- SVD[1:3]
-        names(SVD)[1:3] <- c("D", "U", "V")
-        SVD$D <- as.vector(SVD$D)
     }
+
+    # S <- (diag(1/sqrt(r)))%*%(P-r%*%t(c))%*%(diag(1/sqrt(c)))
+    SVD <- RSpectra::svds(S, k = dims)
+    SVD <- SVD[c("u", "d", "v")]
+    names(SVD) <- c("U", "D", "V")
+    SVD$D <- as.vector(SVD$D)
+    if (length(SVD$D) > dims) SVD$D <- SVD$D[seq_len(dims)]
+
+    # irlba
+    # SVD <- irlba::irlba(S, nv = dims, smallest = FALSE) # eigenvalues in a decreasing order
+    # SVD <- SVD[1:3]
+    # names(SVD)[1:3] <- c("D", "U", "V")
+    # SVD$D <- as.vector(SVD$D)
 
     ndimv <- ncol(SVD$V)
     ndimu <- ncol(SVD$U)

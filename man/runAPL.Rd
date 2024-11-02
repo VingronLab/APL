@@ -184,7 +184,7 @@ the columns to calculate centroid/x-axis direction.}
 \item{caobj}{A "cacomp" object as outputted from `cacomp()`. If not supplied
 will be calculated. Default NULL.}
 
-\item{dims}{Integer. Number of CA dimensions to retain. Default NULL:
+\item{dims}{Integer. Number of CA dimensions to retain. If NULL:
 (0.2 * min(nrow(A), ncol(A)) - 1 ).}
 
 \item{nrow}{Integer. The top nrow scored row labels will be added to the
