@@ -35,7 +35,7 @@ object.
 This implementation dramatically speeds up computation compared to `svd()`
 in R.}
 
-\item{python}{A logical value indicating whether to use singular-value
+\item{python}{DEPRACTED. A logical value indicating whether to use singular-value
 decomposition from the python package torch.}
 }
 \value{
