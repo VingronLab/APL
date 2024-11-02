@@ -65,7 +65,7 @@ Should contain row and column names.}
 \item{reps}{Integer. Number of permutations to perform when choosing
 "elbow_rule". Default 3.}
 
-\item{python}{A logical value indicating whether to use singular value
+\item{python}{DEPRACTED. A logical value indicating whether to use singular value
 decomposition from the python package torch.
 This implementation dramatically speeds up computation compared to \code{svd()}
 in R.}

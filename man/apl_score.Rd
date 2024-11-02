@@ -35,7 +35,7 @@ direction.}
 \item{quant}{Numeric. Single number between 0 and 1 indicating the quantile
 used to calculate the cutoff. Default 0.99.}
 
-\item{python}{A logical value indicating whether to use singular-value
+\item{python}{DEPRACTED. A logical value indicating whether to use singular-value
 decomposition from the python package torch.}
 
 \item{store_perm}{Logical. Whether permuted data should be stored in the CA
