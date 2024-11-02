@@ -43,13 +43,13 @@ apl_plotly(
 
 \item{score_color}{Color scheme for row points with a score.}
 
-\item{row_labs}{Logical. Whether labels for rows indicated by rows_idx 
+\item{row_labs}{Logical. Whether labels for rows indicated by rows_idx
 should be labeled with text. Default TRUE.}
 
-\item{col_labs}{Logical. Whether labels for columns indicated by cols_idx 
+\item{col_labs}{Logical. Whether labels for columns indicated by cols_idx
 shouls be labeled with text. Default FALSE.}
 
-\item{show_score}{Logical. Whether the S-alpha score should be shown in 
+\item{show_score}{Logical. Whether the S-alpha score should be shown in
 the plot.}
 
 \item{show_cols}{Logical. Whether column points should be plotted.}

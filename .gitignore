@@ -2,13 +2,15 @@
 .Rhistory
 .RData
 .Ruserdata
+.Rproj
+.ipynb_checkpoints
+.ipynb*
+.ipynb*/
 APL.Rproj
-
 /doc/
 /Meta/
 inst/doc
 docs
-
 /renv/
 renv.lock
 .Rprofile

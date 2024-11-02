@@ -4,6 +4,7 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^.git
+^.git/*
 ^.Rhistory
 ^.gitignore
 ^doc$
@@ -16,4 +17,4 @@
 ^.lintr
 ^renv
 ^renv.lock
-^.editorconfig
+.editorconfig

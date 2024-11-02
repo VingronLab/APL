@@ -14,7 +14,10 @@ ca_biplot(
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
-  type = "plotly",
+  type = "ggplot",
+  col_metadata = NULL,
+  row_metadata = NULL,
+  show_all = TRUE,
   ...
 )
 
@@ -25,7 +28,10 @@ ca_biplot(
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
-  type = "plotly",
+  type = "ggplot",
+  col_metadata = NULL,
+  row_metadata = NULL,
+  show_all = TRUE,
   ...
 )
 
@@ -36,9 +42,12 @@ ca_biplot(
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
-  type = "plotly",
+  type = "ggplot",
+  col_metadata = NULL,
+  row_metadata = NULL,
+  show_all = TRUE,
   ...,
-  assay = Seurat::DefaultAssay(obj),
+  assay = SeuratObject::DefaultAssay(obj),
   slot = "counts"
 )
 
@@ -49,36 +58,53 @@ ca_biplot(
   princ_coords = 1,
   row_labels = NULL,
   col_labels = NULL,
-  type = "plotly",
+  type = "ggplot",
+  col_metadata = NULL,
+  row_metadata = NULL,
+  show_all = TRUE,
   ...,
   assay = "counts"
 )
 }
 \arguments{
-\item{obj}{An object of class "cacomp" with the relevant standardized and 
+\item{obj}{An object of class "cacomp" with the relevant standardized and
 principal coordinates calculated,
- or alternatively an object of class "Seurat" or "SingleCellExperiment" 
+ or alternatively an object of class "Seurat" or "SingleCellExperiment"
  with a dim. reduction named "CA" saved.}
 
 \item{xdim}{Integer. The dimension for the x-axis. Default 1.}
 
 \item{ydim}{Integer. The dimension for the y-axis. Default 2.}
 
-\item{princ_coords}{Integer. If 1 then principal coordinates are used for 
+\item{princ_coords}{Integer. If 1 then principal coordinates are used for
 the rows,
 if 2 for the columns. Default 1 (rows).}
 
-\item{row_labels}{Numeric vector. Indices for the rows for which a label 
+\item{row_labels}{Numeric vector. Indices for the rows for which a label
 should be added
 (label should be stored in rownames). Default NULL.}
 
-\item{col_labels}{Numeric vector. Indices for the columns for which a label 
+\item{col_labels}{Numeric vector. Indices for the columns for which a label
 should be added
 (label should be stored in colnames).
 Default NULL (no columns).}
 
-\item{type}{String. Type of plot to draw. Either "ggplot" or "plotly". 
-Default "plotly".}
+\item{type}{String. Type of plot to draw. Either "ggplot" or "plotly".
+Default "ggplot".}
+
+\item{col_metadata}{named vector of additional metadata to color points.
+The names of the elements in col_metadata should correspond to the column
+names in 'obj'. If NULL columns will be in a single color. Can also specify
+a metadata column for Seurat/SingleCellExperiment objects.}
+
+\item{row_metadata}{named vector of additional metadata to color points.
+The names of the elements in row_metadata should correspond to the row
+names in 'obj'. If NULL rows will be in a single color. Can also specify
+a metadata column for Seurat/SingleCellExperiment objects.}
+
+\item{show_all}{logical. If FALSE cells/genes that are not in col_metadata/
+row_metadata are not plotted. If *_metadata is NULL, the cell or genes
+respectively will still be plotted.}
 
 \item{...}{Further arguments.}
 
@@ -93,14 +119,14 @@ Plot of class "plotly" or "ggplot".
 Plots the first 2 dimensions of the rows and columns in the same plot.
 }
 \details{
-Choosing type "plotly" will generate an interactive html plot with the 
+Choosing type "plotly" will generate an interactive html plot with the
 package plotly.
 Type "ggplot" generates a static plot.
 Depending on whether `princ_coords` is set to 1 or 2 either
 the principal coordinates of either the rows (1) or the columns (2)
-are chosen. For the other the standard coordinates are plotted 
+are chosen. For the other the standard coordinates are plotted
 (assymetric biplot).
-Labels for rows and columns should be stored in the row and column names 
+Labels for rows and columns should be stored in the row and column names
 respectively.
 }
 \examples{

@@ -35,7 +35,7 @@ pick_dims(
   python = FALSE,
   return_plot = FALSE,
   ...,
-  assay = Seurat::DefaultAssay(obj),
+  assay = SeuratObject::DefaultAssay(obj),
   slot = "counts"
 )
 
@@ -75,11 +75,11 @@ choosing "elbow_rule". Default FALSE.}
 
 \item{...}{Arguments forwarded to methods.}
 
-\item{assay}{Character. The assay from which to extract the count matrix 
-for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for 
+\item{assay}{Character. The assay from which to extract the count matrix
+for SVD, e.g. "RNA" for Seurat objects or "counts"/"logcounts" for
 SingleCellExperiments.}
 
-\item{slot}{Character. Data slot of the Seurat assay. 
+\item{slot}{Character. Data slot of the Seurat assay.
 E.g. "data" or "counts". Default "counts".}
 }
 \value{
@@ -140,7 +140,7 @@ ca_sub <- subset_dims(ca, dims = pd)
 ################################
 # pick_dims for Seurat objects #
 ################################
-library(Seurat)
+library(SeuratObject)
 set.seed(1234)
 
 # Simulate counts
